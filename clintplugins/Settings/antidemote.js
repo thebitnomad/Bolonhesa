@@ -10,8 +10,8 @@ module.exports = async (context) => {
     if (!jid.endsWith('@g.us')) {
       return await m.reply(
         `◈━━━━━━━━━━━━━━━━◈\n` +
-        `│❒ Epic fail, loser! 😈\n` +
-        `│❒ This command is for groups only, moron!\n` +
+        `│❒ Este comando só pode ser usado em grupos.\n` +
+        `│❒ Tente novamente em um grupo. 😊\n` +
         `┗━━━━━━━━━━━━━━━┛`
       );
     }
@@ -28,8 +28,8 @@ module.exports = async (context) => {
       if (isEnabled === action) {
         return await m.reply(
           `◈━━━━━━━━━━━━━━━━◈\n` +
-          `│❒ Antidemote is already ${value.toUpperCase()}, you brainless fool! 🥶\n` +
-          `│❒ Quit wasting my time! 🖕\n` +
+          `│❒ O Antidemote já está definido como ${value.toUpperCase()}.\n` +
+          `│❒ Nenhuma alteração foi necessária. 😉\n` +
           `┗━━━━━━━━━━━━━━━┛`
         );
       }
@@ -37,15 +37,15 @@ module.exports = async (context) => {
       await updateGroupSetting(jid, 'antidemote', action ? 'true' : 'false');
       await m.reply(
         `◈━━━━━━━━━━━━━━━━◈\n` +
-        `│❒ Antidemote ${value.toUpperCase()}! 🔥\n` +
-        `│❒ Demotions are under my watch, king! 😈\n` +
+        `│❒ Antidemote definido para ${value.toUpperCase()}! 🔥\n` +
+        `│❒ Agora as remoções de admin serão monitoradas neste grupo.\n` +
         `┗━━━━━━━━━━━━━━━┛`
       );
     } else {
       await m.reply(
         `◈━━━━━━━━━━━━━━━━◈\n` +
-        `│❒ Antidemote Status: ${isEnabled ? 'ON 🥶' : 'OFF 😴'}\n` +
-        `│❒ Use "${prefix}antidemote on" or "${prefix}antidemote off", peasant!\n` +
+        `│❒ Status do Antidemote: ${isEnabled ? 'ON 🥶' : 'OFF 😴'}\n` +
+        `│❒ Use "${prefix}antidemote on" ou "${prefix}antidemote off" para alterar.\n` +
         `┗━━━━━━━━━━━━━━━┛`
       );
     }
