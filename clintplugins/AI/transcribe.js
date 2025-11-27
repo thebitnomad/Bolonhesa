@@ -4,32 +4,57 @@ const crypto = require('crypto');
 
 module.exports = async (context) => {
   const { client, m } = context;
+
+  const formatStylishReply = (message) => {
+    return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n◈━━━━━━━━━━━━━━━━◈`;
+  };
+
   const quoted = m.quoted || m;
   const mime = (quoted.msg || quoted).mimetype || '';
 
   if (!/audio|video/.test(mime)) {
-    return m.reply('Send or reply to an audio/video file with the caption _transcribe_idiot');
+    return m.reply(
+      formatStylishReply(
+        'Envie ou responda a um áudio/vídeo com a legenda _transcribe_idiot.'
+      )
+    );
   }
 
-  m.reply('*Processing, please wait...*');
+  m.reply(
+    formatStylishReply('Processando o arquivo, por favor aguarde...')
+  );
 
   try {
     const buffer = await m.quoted.download();
 
     if (buffer.length > 5 * 1024 * 1024) {
-      return m.reply('Maximum file size is 5 MB.');
+      return m.reply(
+        formatStylishReply('O tamanho máximo do arquivo é de 5 MB.')
+      );
     }
 
     const result = await transcribeWithTalknotes(buffer);
 
     if (!result || !result.text) {
-      return m.reply('Failed to extract text. Please try again later.');
+      return m.reply(
+        formatStylishReply('Não foi possível extrair o texto. Tente novamente mais tarde.')
+      );
     }
 
-    return m.reply(`*Transcription Result:*\n\n${result.text}`);
+    return m.reply(
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Resultado da transcrição:
+◈━━━━━━━━━━━━━━━━◈
+
+${result.text}
+
+◈━━━━━━━━━━━━━━━━◈`
+    );
   } catch (error) {
     console.error(error);
-    m.reply('An error occurred while processing the file.');
+    m.reply(
+      formatStylishReply('Ocorreu um erro ao processar o arquivo.')
+    );
   }
 };
 
@@ -58,12 +83,17 @@ async function transcribeWithTalknotes(buffer) {
     const headers = {
       ...form.getHeaders(),
       ...tokenData,
-      'referer': 'https://talknotes.io/',
-      'origin': 'https://talknotes.io',
-      'user-agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Mobile Safari/537.36',
+      referer: 'https://talknotes.io/',
+      origin: 'https://talknotes.io',
+      'user-agent':
+        'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Mobile Safari/537.36'
     };
 
-    const { data } = await axios.post('https://api.talknotes.io/tools/converter', form, { headers });
+    const { data } = await axios.post(
+      'https://api.talknotes.io/tools/converter',
+      form,
+      { headers }
+    );
 
     return data;
   } catch (err) {
