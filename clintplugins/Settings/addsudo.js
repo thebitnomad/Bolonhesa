@@ -18,8 +18,8 @@ module.exports = async (context) => {
     if (!numberToAdd || !/^\d+$/.test(numberToAdd)) {
       return await m.reply(
         `◈━━━━━━━━━━━━━━━━◈\n` +
-        `│❒ Pathetic attempt, moron! 😈\n` +
-        `│❒ Give me a valid number or quote a user, fool!\n` +
+        `│❒ Por favor, informe um número válido.\n` +
+        `│❒ Você pode citar uma mensagem, marcar um usuário ou enviar o número diretamente.\n` +
         `┗━━━━━━━━━━━━━━━┛`
       );
     }
@@ -28,8 +28,8 @@ module.exports = async (context) => {
     if (sudoUsers.includes(numberToAdd)) {
       return await m.reply(
         `◈━━━━━━━━━━━━━━━━◈\n` +
-        `│❒ Already a sudo user, you clueless twit! 🥶\n` +
-        `│❒ ${numberToAdd} is already in the elite ranks.\n` +
+        `│❒ Este número já é um usuário sudo.\n` +
+        `│❒ ${numberToAdd} já está na lista de permissões elevadas.\n` +
         `┗━━━━━━━━━━━━━━━┛`
       );
     }
@@ -37,8 +37,8 @@ module.exports = async (context) => {
     await addSudoUser(numberToAdd);
     await m.reply(
       `◈━━━━━━━━━━━━━━━━◈\n` +
-      `│❒ Bow down! 🔥\n` +
-      `│❒ ${numberToAdd} is now a Sudo King! 😈\n` +
+      `│❒ Novo usuário sudo adicionado com sucesso.\n` +
+      `│❒ ${numberToAdd} agora possui permissões de administrador do bot.\n` +
       `┗━━━━━━━━━━━━━━━┛`
     );
   });
