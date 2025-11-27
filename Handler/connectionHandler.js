@@ -13,10 +13,10 @@ async function connectionHandler(socket, connectionUpdate, reconnect) {
 
   function getGreeting() {
     const hour = DateTime.now().setZone("Africa/Nairobi").hour;
-    if (hour >= 5 && hour < 12) return "Hey there! Ready to kick off the day? 🚀";
-    if (hour >= 12 && hour < 18) return "What's up? Time to make things happen! ⚡";
-    if (hour >= 18 && hour < 22) return "Evening vibes! Let's get to it! 🌟";
-    return "Late night? Let's see what's cooking! 🌙";
+    if (hour >= 5 && hour < 12) return "E aí! Bora começar o dia? 🚀";
+    if (hour >= 12 && hour < 18) return "Tudo certo? Hora de fazer as coisas acontecerem! ⚡";
+    if (hour >= 18 && hour < 22) return "Climão de fim de tarde! Bora continuar? 🌟";
+    return "Virando a noite? Vamos ver o que tá pegando! 🌙";
   }
 
   function getCurrentTime() {
@@ -72,7 +72,7 @@ async function connectionHandler(socket, connectionUpdate, reconnect) {
   }
 
   if (connection === "open") {
-    // Clear console logs completely
+    // Limpar o console
     console.clear();
 
     try {
@@ -106,56 +106,50 @@ async function connectionHandler(socket, connectionUpdate, reconnect) {
         ? [
             `◈━━━━━━━━━━━━━━━━◈`,
             `│❒ *${getGreeting()}*`,
-            `│❒ Welcome to *${botName}*! You're now connected.`,
+            `│❒ Bem-vindo ao *${botName}*! Você está conectado agora. 🚀`,
             ``,
-            `✨ *Bot Name*: ${botName}`,
-            `🔧 *Mode*: ${settings.mode}`,
-            `➡️ *Prefix*: ${settings.prefix}`,
-            `📋 *Commands*: ${totalCommands}`,
-            `🕒 *Time*: ${getCurrentTime()}`,
-            `💾 *Database*: Postgres SQL`,
-            `📚 *Library*: Baileys`,
+            `✨ *Nome do Bot*: ${botName}`,
+            `🔧 *Modo*: ${settings.mode}`,
+            `➡️ *Prefixo*: ${settings.prefix}`,
+            `📋 *Comandos*: ${totalCommands}`,
+            `🕒 *Hora (Nairobi)*: ${getCurrentTime()}`,
             ``,
-            `│❒ *New User Alert*: You've been added to the sudo list.`,
+            `│❒ *Novo usuário*: você foi adicionado à lista sudo. ✅`,
             ``,
-            `│❒ *Credits*: xh_clinton`,
             `◈━━━━━━━━━━━━━━━━◈`
           ].join("\n")
         : [
             `◈━━━━━━━━━━━━━━━━◈`,
             `│❒ *${getGreeting()}*`,
-            `│❒ Welcome back to *${botName}*! Connection established.`,
+            `│❒ Bem-vindo de volta ao *${botName}*! Conexão estabelecida. ✅`,
             ``,
-            `✨ *Bot Name*: ${botName}`,
-            `🔧 *Mode*: ${settings.mode}`,
-            `➡️ *Prefix*: ${settings.prefix}`,
-            `📋 *Commands*: ${totalCommands}`,
-            `🕒 *Time*: ${getCurrentTime()}`,
-            `💾 *Database*: Postgres SQL`,
-            `📚 *Library*: Baileys`,
+            `✨ *Nome do Bot*: ${botName}`,
+            `🔧 *Modo*: ${settings.mode}`,
+            `➡️ *Prefixo*: ${settings.prefix}`,
+            `📋 *Comandos*: ${totalCommands}`,
+            `🕒 *Hora (Nairobi)*: ${getCurrentTime()}`,
             ``,
-            `│❒ Ready to proceed? Select an option below.`,
+            `│❒ Tudo pronto! Escolha uma opção abaixo para continuar. 👇`,
             ``,
-            `│❒ *Credits*: xh_clinton`,
             `◈━━━━━━━━━━━━━━━━◈`
           ].join("\n");
 
       const secondMessage = [
         `◈━━━━━━━━━━━━━━━━◈`,
-        `│❒ Please select an option to continue:`,
+        `│❒ Escolha uma opção para continuar:`,
         `◈━━━━━━━━━━━━━━━━◈`
       ].join("\n");
 
       try {
         await socket.sendMessage(socket.user.id, {
           text: firstMessage,
-          footer: `Powered by ${botName}`,
+          footer: `Rodando com ${botName}`,
           viewOnce: true,
           contextInfo: {
             externalAdReply: {
               showAdAttribution: false,
               title: botName,
-              body: `Bot initialized successfully.`,
+              body: `Bot iniciado com sucesso.`,
               sourceUrl: `https://github.com/xhclintohn/Toxic-MD`,
               mediaType: 1,
               renderLargerThumbnail: true
@@ -165,7 +159,7 @@ async function connectionHandler(socket, connectionUpdate, reconnect) {
 
         await socket.sendMessage(socket.user.id, {
           text: secondMessage,
-          footer: `Powered by ${botName}`,
+          footer: `Rodando com ${botName}`,
           buttons: [
             {
               buttonId: `${settings.prefix || ''}settings`,
