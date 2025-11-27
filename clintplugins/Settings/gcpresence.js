@@ -2,32 +2,57 @@ const { getSettings, getGroupSetting, updateGroupSetting } = require('../../Data
 const ownerMiddleware = require('../../utility/botUtil/Ownermiddleware');
 
 module.exports = async (context) => {
-    await ownerMiddleware(context, async () => {
-        const { m, args } = context;
-        const value = args[0]?.toLowerCase();
-        const jid = m.chat;
+  await ownerMiddleware(context, async () => {
+    const { m, args } = context;
+    const value = args[0]?.toLowerCase();
+    const jid = m.chat;
 
-        if (!jid.endsWith('@g.us')) {
-            return await m.reply('❌ This command can only be used in groups.');
-        }
+    const formatStylishReply = (message) => {
+      return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n┗━━━━━━━━━━━━━━━┛`;
+    };
 
-        const settings = await getSettings();
-        const prefix = settings.prefix;
+    if (!jid.endsWith('@g.us')) {
+      return await m.reply(
+        formatStylishReply(
+          'Este comando só pode ser usado em grupos.\n│❒ Use em um grupo para ativar/desativar a presença fake do bot. 😉'
+        )
+      );
+    }
 
-        let groupSettings = await getGroupSetting(jid);
-        let isEnabled = groupSettings?.gcpresence === true;
+    const settings = await getSettings();
+    const prefix = settings.prefix;
 
-        if (value === 'on' || value === 'off') {
-            const action = value === 'on';
+    let groupSettings = await getGroupSetting(jid);
+    let isEnabled = groupSettings?.gcpresence === true || groupSettings?.gcpresence === 'true';
 
-            if (isEnabled === action) {
-                return await m.reply(`✅ GCPresence is already ${value.toUpperCase()}.`);
-            }
+    if (value === 'on' || value === 'off') {
+      const action = value === 'on';
 
-            await updateGroupSetting(jid, 'gcpresence', action ? 'true' : 'false');
-            await m.reply(`✅ GCPresence has been turned ${value.toUpperCase()} for this group. Bot will now simulate fake typing and recording.`);
-        } else {
-            await m.reply(`📄 Current GCPresence setting for this group: ${isEnabled ? 'ON' : 'OFF'}\n\n _Use ${prefix}gcpresence on or ${prefix}gcpresence off to change it._`);
-        }
-    });
+      if (isEnabled === action) {
+        return await m.reply(
+          formatStylishReply(
+            `A GCPresence já está ${value.toUpperCase()} neste grupo.\n│❒ Nenhuma alteração necessária. 😉`
+          )
+        );
+      }
+
+      await updateGroupSetting(jid, 'gcpresence', action ? 'true' : 'false');
+
+      return await m.reply(
+        formatStylishReply(
+          `GCPresence ${value.toUpperCase()} para este grupo.\n` +
+          (action
+            ? '│❒ O bot agora vai simular digitando e gravando de vez em quando. 🎭'
+            : '│❒ O bot não vai mais simular presença neste grupo. 😴')
+        )
+      );
+    } else {
+      await m.reply(
+        formatStylishReply(
+          `Configuração atual da GCPresence neste grupo: ${isEnabled ? 'ON ✅' : 'OFF ❌'}\n` +
+          `│❒ Use *${prefix}gcpresence on* ou *${prefix}gcpresence off* para alterar.`
+        )
+      );
+    }
+  });
 };
