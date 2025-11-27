@@ -4,30 +4,56 @@ module.exports = async (context) => {
     await ownerMiddleware(context, async () => {
         const { client, m, text, participants, pushname } = context;
 
-if (!text) return m.reply("Provide a broadcast message!");
-if (!m.isGroup) return m.reply("This command is meant for groups");
+        if (!text) {
+            return m.reply(
+                "◈━━━━━━━━━━━━━━━━◈\n" +
+                "│❒ Por favor, informe a mensagem que deseja enviar no broadcast.\n" +
+                "◈━━━━━━━━━━━━━━━━◈"
+            );
+        }
 
-let getGroups = await client.groupFetchAllParticipating() 
-         let groups = Object.entries(getGroups) 
-             .slice(0) 
-             .map(entry => entry[1]) 
-         let res = groups.map(v => v.id) 
+        if (!m.isGroup) {
+            return m.reply(
+                "◈━━━━━━━━━━━━━━━━◈\n" +
+                "│❒ Este comando só pode ser utilizado em grupos.\n" +
+                "◈━━━━━━━━━━━━━━━━◈"
+            );
+        }
 
-await m.reply("sending broadcast message...")
+        let allGroups = await client.groupFetchAllParticipating();
+        let groups = Object.entries(allGroups).map(entry => entry[1]);
+        let groupIds = groups.map(v => v.id);
 
-for (let i of res) { 
+        await m.reply(
+            "◈━━━━━━━━━━━━━━━━◈\n" +
+            "│❒ Enviando mensagem de broadcast para todos os grupos...\n" +
+            "◈━━━━━━━━━━━━━━━━◈"
+        );
 
+        for (let group of groupIds) {
 
-let txt = `BROADCAST MESSAGE (Toxic) \n\n🀄 Message: ${text}\n\nWritten by: ${pushname}` 
+            const formattedMessage =
+                `◈━━━━━━━━━━━━━━━━◈\n` +
+                `│❒ *BROADCAST MESSAGE*\n` +
+                `◈━━━━━━━━━━━━━━━━◈\n` +
+                `│🀄 *Mensagem:* ${text}\n` +
+                `│✒️ *Enviado por:* ${pushname}\n` +
+                `◈━━━━━━━━━━━━━━━━◈`;
 
-await client.sendMessage(i, { 
-                 image: { 
-                     url: "https://qu.ax/XxQwp.jpg" 
-                 }, mentions: participants.map(a => a.id),
-                 caption: `${txt}` 
-             }) 
-         } 
-await m.reply("Message sent across all groups");
-})
+            await client.sendMessage(
+                group,
+                {
+                    image: { url: "https://qu.ax/XxQwp.jpg" },
+                    mentions: participants.map(a => a.id),
+                    caption: formattedMessage
+                }
+            );
+        }
 
-}
+        await m.reply(
+            "◈━━━━━━━━━━━━━━━━◈\n" +
+            "│❒ Mensagem enviada com sucesso em todos os grupos!\n" +
+            "◈━━━━━━━━━━━━━━━━◈"
+        );
+    });
+};
