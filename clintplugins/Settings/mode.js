@@ -14,7 +14,7 @@ module.exports = async (context) => {
       if (!settings || Object.keys(settings).length === 0) {
         return await client.sendMessage(
           m.chat,
-          { text: formatStylishReply("Database is fucked, no settings found. Fix it, loser.") },
+          { text: formatStylishReply("Banco de dados indisponível, nenhuma configuração encontrada. Verifique as configurações e tente novamente.") },
           { quoted: m, ad: true }
         );
       }
@@ -26,7 +26,7 @@ module.exports = async (context) => {
         if (settings.mode === value) {
           return await client.sendMessage(
             m.chat,
-            { text: formatStylishReply(`Yo, moron! 😈 Bot is already in ${value.toUpperCase()} mode! Stop wasting my time, peasant! 🖕`) },
+            { text: formatStylishReply(`O bot já está no modo *${value.toUpperCase()}*. Nenhuma alteração necessária. 😉`) },
             { quoted: m, ad: true }
           );
         }
@@ -34,7 +34,7 @@ module.exports = async (context) => {
         await updateSetting('mode', value);
         return await client.sendMessage(
           m.chat,
-          { text: formatStylishReply(`Bot mode set to ${value.toUpperCase()}! 🔥 Bow to the king, I rule now! 😈`) },
+          { text: formatStylishReply(`Modo do bot definido para *${value.toUpperCase()}*! 🔥`) },
           { quoted: m, ad: true }
         );
       }
@@ -47,8 +47,10 @@ module.exports = async (context) => {
       await client.sendMessage(
         m.chat,
         {
-          text: formatStylishReply(`Current Mode: ${settings.mode ? settings.mode.toUpperCase() : 'Undefined, you noob! 🥶'}. Pick a mode, fool! 😈`),
-          footer: "> Pσɯҽɾԃ Ⴆყ Tσxιƈ-ɱԃȥ",
+          text: formatStylishReply(
+            `Modo atual: *${settings.mode ? settings.mode.toUpperCase() : 'NÃO DEFINIDO'}*.\n│❒ Use os botões abaixo ou *${prefix}mode public/private* para alterar.`
+          ),
+          footer: "> Powered by 9bot",
           buttons,
           headerType: 1,
           viewOnce: true,
@@ -58,7 +60,7 @@ module.exports = async (context) => {
     } catch (error) {
       await client.sendMessage(
         m.chat,
-        { text: formatStylishReply("Shit broke, couldn’t update mode. Database or something’s fucked. Try later.") },
+        { text: formatStylishReply("Algo deu errado ao atualizar o modo. Tente novamente em alguns instantes.") },
         { quoted: m, ad: true }
       );
     }
