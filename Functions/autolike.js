@@ -5,33 +5,41 @@ async function autolike(client, message) {
     const { key, message: msg } = message;
     const remoteJid = key.remoteJid;
 
-    // Skip non-status messages and protocol messages
+    // Ignorar mensagens que não são status ou mensagens de protocolo
     if (remoteJid !== "status@broadcast" || !key.id || msg.protocolMessage) {
       return;
     }
 
-    // Log status processing
-    console.log(chalk.blue(`Processing status ${key.id}, Key:`, JSON.stringify(key, null, 2)));
+    // Log do processamento do status
+    console.log(chalk.blue(`Processando status ${key.id}, Key:`, JSON.stringify(key, null, 2)));
 
-    // React with ❤️
+    // Reagir com ❤️
     const reactionResult = await client.sendMessage(remoteJid, {
       react: { key, text: "❤️" },
     });
-    console.log(chalk.blue(`Reacted with ❤️ to status ${key.id}, Result:`, JSON.stringify(reactionResult, null, 2)));
+    console.log(
+      chalk.blue(
+        `Reagi com ❤️ ao status ${key.id}, Resultado:`,
+        JSON.stringify(reactionResult, null, 2)
+      )
+    );
 
-    // View status (mark as read)
+    // Visualizar status (marcar como lido)
     await client.readMessages([key]);
-    console.log(chalk.blue(`Viewed status ${key.id}`));
+    console.log(chalk.blue(`Status ${key.id} visualizado`));
   } catch (error) {
-    console.error(chalk.red(`Error in autolike for status ${message.key.id}:`, error));
-    // Fallback reaction method
+    console.error(chalk.red(`Erro no autolike para o status ${message.key.id}:`, error));
+
+    // Método alternativo de reação
     try {
       await client.sendMessage(message.key.remoteJid, {
         reactionMessage: { key: message.key, text: "❤️" },
       });
-      console.log(chalk.blue(`Fallback reaction sent to status ${message.key.id}`));
+      console.log(chalk.blue(`Reação alternativa enviada para o status ${message.key.id}`));
     } catch (fallbackError) {
-      console.error(chalk.red(`Fallback reaction failed for status ${message.key.id}:`, fallbackError));
+      console.error(
+        chalk.red(`Falha na reação alternativa para o status ${message.key.id}:`, fallbackError)
+      );
     }
   }
 }
