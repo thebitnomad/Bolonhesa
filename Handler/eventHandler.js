@@ -6,7 +6,7 @@ const Events = async (client, event, pict) => {
     try {
         const metadata = await client.groupMetadata(event.id);
         const participants = event.participants;
-        const desc = metadata.desc || "Some boring group, I guess.";
+        const desc = metadata.desc || "Algum grupo qualquer por aqui 😅.";
         const groupSettings = await getGroupSetting(event.id);
         const eventsEnabled = groupSettings?.events === true;
         const antidemote = groupSettings?.antidemote === true;
@@ -21,22 +21,22 @@ const Events = async (client, event, pict) => {
             try {
                 dpUrl = await client.profilePictureUrl(participant, "image");
             } catch {
-                dpUrl = pict; // Fallback to default pic if user has no DP
+                dpUrl = pict; // Fallback para imagem padrão se o usuário não tiver foto
             }
 
             if (eventsEnabled && event.action === "add") {
                 try {
                     const userName = participant.split("@")[0];
                     const welcomeText = 
-`╭───「 💉 𝐓𝐨𝐱𝐢𝐜-𝐌𝐃 𝐖𝐞𝐥𝐜𝐨𝐦𝐞 💉 」
-│ 😈 *Yo, @${userName}, welcome to the chaos!*  
+`╭───「 💬 𝐁𝐞𝐦-𝐯𝐢𝐧𝐝𝐨(𝐚) 💬 」
+│ 😀 *@${userName}, seja bem-vindo(a) ao grupo!*  
 │
-│ 🤖 *Bot*: 𝐓𝐨𝐱𝐢𝐜-𝐌𝐃 𝐕3
-│ 🦁 *Group*: ${metadata.subject}
-│ 📜 *Desc*: ${desc}
+│ 🤖 *Bot*: *9bot*
+│ 🦁 *Grupo*: ${metadata.subject}
+│ 📜 *Descrição*: ${desc}
 │
-│ 😼 *Try not to get roasted too hard, newbie!*
-╰───「 🔥 Powered by 𝐓𝐨𝐱𝐢𝐜-𝐌𝐃  🔥 」`;
+│ 🙌 *Chega mais, se apresenta e bora trocar ideia!* 
+╰───「 🚀 Powered by *9bot*  🚀 」`;
 
                     await client.sendMessage(event.id, {
                         image: { url: dpUrl },
@@ -44,20 +44,20 @@ const Events = async (client, event, pict) => {
                         mentions: [participant]
                     });
                 } catch {
-                    // Keep it chill, no error spam
+                    // Mantém em silêncio, sem flood de erro
                 }
             } else if (eventsEnabled && event.action === "remove") {
                 try {
                     const userName = participant.split("@")[0];
                     const leaveText = 
-`╭───「 🚪 𝐓𝐨𝐱𝐢𝐜-𝐌𝐃 𝐄𝐱𝐢𝐭 🚪 」
-│ 😎 *Later, @${userName}! Couldn’t handle the heat?*  
+`╭───「 🚪 𝐒𝐚í𝐝𝐚 𝐝𝐨 𝐆𝐫𝐮𝐩𝐨 🚪 」
+│ 👋 *@${userName} saiu do grupo.*  
 │
-│ 🤖 *Bot*: 𝐓𝐨𝐱𝐢𝐜-𝐌𝐃
-│ 🦁 *Group*: ${metadata.subject}
+│ 🤖 *Bot*: *9bot*
+│ 🦁 *Grupo*: ${metadata.subject}
 │
-│ 😜 *Don’t cry, we’ll survive without ya!*
-╰───「 🔥 Powered by 𝐓𝐨𝐱𝐢𝐜-𝐌𝐃 🔥 」`;
+│ 😊 *Valeu pela presença, porta aberta se quiser voltar um dia!* 
+╰───「 🚀 Powered by *9bot* 🚀 」`;
 
                     await client.sendMessage(event.id, {
                         image: { url: dpUrl },
@@ -65,7 +65,7 @@ const Events = async (client, event, pict) => {
                         mentions: [participant]
                     });
                 } catch {
-                    // No whining about errors
+                    // Sem drama nos erros
                 }
             }
 
@@ -79,12 +79,12 @@ const Events = async (client, event, pict) => {
                     ) {
                         await client.sendMessage(event.id, {
                             text: 
-`╭───「 🔽 𝐓𝐨𝐱𝐢𝐜-𝐌𝐃 𝐃𝐞𝐦𝐨𝐭𝐢𝐨𝐧 🔽 」
-│ 😤 *Big shot @${participant.split("@")[0]} got knocked down!*  
+`╭───「 🔽 𝐃𝐞𝐦𝐨çã𝐨 🔽 」
+│ 😅 *@${participant.split("@")[0]} virou membro comum de novo.*  
 │
-│ 🤖 *Bot*: 𝐓𝐨𝐱𝐢𝐜-𝐌𝐃 𝐕3
-│ 🦁 *Group*: ${metadata.subject}
-╰───「 🔥 Powered by 𝐓𝐨𝐱𝐢𝐜-M𝐃 🔥 」`,
+│ 🤖 *Bot*: *9bot*
+│ 🦁 *Grupo*: ${metadata.subject}
+╰───「 🚀 Powered by *9bot* 🚀 」`,
                             mentions: [participant]
                         });
                         return;
@@ -95,17 +95,17 @@ const Events = async (client, event, pict) => {
 
                     await client.sendMessage(event.id, {
                         text: 
-`╭───「 🔽 𝐓𝐨𝐱𝐢𝐜-𝐌𝐃 𝐀𝐧𝐭𝐢𝐝𝐞𝐦𝐨𝐭𝐞 🔽 」
-│ 😏 *Nice try, @${event.author.split("@")[0]}! Demoted for messing with @${participant.split("@")[0]}!*  
+`╭───「 🔽 𝐀𝐧𝐭𝐢𝐝𝐞𝐦𝐨𝐭𝐞 🔽 」
+│ 😉 *@${event.author.split("@")[0]} foi rebaixado por tentar tirar o cargo de @${participant.split("@")[0]}.*  
 │
-│ 🤖 *Bot*: 𝐓𝐨𝐱𝐢𝐜-M𝐃
-│ 🦁 *Group*: ${metadata.subject}
-│ 📜 *Rule*: Antidemote’s on, loser. Only the big dogs can demote!
-╰───「 🔥 Powered by 𝐓𝐨𝐱𝐢𝐜-M𝐃 🔥 」`,
+│ 🤖 *Bot*: *9bot*
+│ 🦁 *Grupo*: ${metadata.subject}
+│ 📜 *Regra*: Antidemote ativo — só donos e admins autorizados podem rebaixar.
+╰───「 🚀 Powered by *9bot* 🚀 」`,
                         mentions: [event.author, participant]
                     });
                 } catch {
-                    // Errors? Pfft, we don’t care
+                    // Ignora erros
                 }
             } else if (event.action === "promote" && antipromote) {
                 try {
@@ -117,12 +117,12 @@ const Events = async (client, event, pict) => {
                     ) {
                         await client.sendMessage(event.id, {
                             text: 
-`╭───「 🔼 𝐓𝐨𝐱𝐢𝐜-𝐌𝐃 𝐏𝐫𝐨𝐦𝐨𝐭𝐢𝐨𝐧 🔼 」
-│ 😎 *Big dog @${participant.split("@")[0]} just leveled up!*  
+`╭───「 🔼 𝐏𝐫𝐨𝐦𝐨çã𝐨 🔼 」
+│ 😎 *@${participant.split("@")[0]} agora é administrador(a) do grupo!*  
 │
-│ 🤖 *Bot*: 𝐓𝐨𝐱𝐢c-M𝐃
-│ 🦁 *Group*: ${metadata.subject}
-╰───「 🔥 Powered by 𝐓𝐨𝐱𝐢𝐜-M𝐃 🔥 」`,
+│ 🤖 *Bot*: *9bot*
+│ 🦁 *Grupo*: ${metadata.subject}
+╰───「 🚀 Powered by *9bot* 🚀 」`,
                             mentions: [participant]
                         });
                         return;
@@ -132,17 +132,17 @@ const Events = async (client, event, pict) => {
 
                     await client.sendMessage(event.id, {
                         text: 
-`╭───「 🔼 𝐓𝐨𝐱𝐢𝐜-M𝐃 𝐀𝐧𝐭𝐢𝐩𝐫𝐨𝐦𝐨𝐭𝐞 🔼 」
-│ 😆 *Oof, @${event.author.split("@")[0]}! Demoted for trying to boost @${participant.split("@")[0]}!*  
+`╭───「 🔼 𝐀𝐧𝐭𝐢𝐩𝐫𝐨𝐦𝐨𝐭𝐞 🔼 」
+│ 😆 *@${event.author.split("@")[0]} foi rebaixado por tentar promover @${participant.split("@")[0]} sem permissão.*  
 │
-│ 🤖 *Bot*: 𝐓𝐨𝐱𝐢c-M𝐃
-│ 🦁 *Group*: ${metadata.subject}
-│ 📜 *Rule*: @${participant.split("@")[0]} got yeeted too. Antipromote’s on, only the elite can promote!
-╰───「 🔥 Powered by T𝐨𝐱𝐢c-M𝐃 🔥 」`,
+│ 🤖 *Bot*: *9bot*
+│ 🦁 *Grupo*: ${metadata.subject}
+│ 📜 *Regra*: Antipromote ativo — só a galera autorizada pode promover.
+╰───「 🚀 Powered by *9bot* 🚀 」`,
                         mentions: [event.author, participant]
                     });
                 } catch {
-                    // Errors are for the weak
+                    // Erros são ignorados
                 }
             }
         }
@@ -150,15 +150,16 @@ const Events = async (client, event, pict) => {
         try {
             await client.sendMessage(event.id, {
                 text: 
-`╭───「 ⚠️ 𝐓𝐨𝐱𝐢c-M𝐃 𝐄𝐫𝐫𝐨𝐫 ⚠️ 」
-│ 😬 *Yikes, something broke. Blame the group vibes!*  
+`╭───「 ⚠️ 𝐄𝐫𝐫𝐨 𝐧𝐨 𝐄𝐯𝐞𝐧𝐭𝐨 ⚠️ 」
+│ 😬 *Algo deu errado ao processar o evento do grupo.*  
 │
-│ 🤖 *Bot*: 𝐓𝐨𝐱𝐢c-M𝐃 
-│ 🦁 *Group*: ${metadata.subject}
-╰───「 🔥 Powered by T𝐨𝐱𝐢c-M𝐃 🔥 」`
+│ 🤖 *Bot*: *9bot*
+│ 🦁 *Grupo*: ${metadata.subject}
+│ 🔁 *Tente novamente em alguns instantes.*
+╰───「 🚀 Powered by *9bot* 🚀 」`
             });
         } catch {
-            // If this fails, we’re just cursed
+            // Se até isso falhar, hoje não é o dia 😅
         }
     }
 };
