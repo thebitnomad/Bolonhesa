@@ -1,47 +1,71 @@
 module.exports = async (context) => {
-        const { client, m, botname, text } = context;
+    const { client, m, botname, text } = context;
 
+    const { Sticker, createSticker, StickerTypes } = require('wa-sticker-formatter');
+    const axios = require("axios");
 
-const { Sticker, createSticker, StickerTypes } = require('wa-sticker-formatter');
+    const formatStylishReply = (message) => {
+        return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n◈━━━━━━━━━━━━━━━━◈`;
+    };
 
-const axios = require("axios");
-if (!text) return m.reply("No emojis provided ? ")
-
-
-  const emojis = text.split('+');
-
-  if (emojis.length !== 2) {
-    m.reply("Specify the emojis and separate with '+'");
-    return;
-  }
-
-  const emoji1 = emojis[0].trim();
-  const emoji2 = emojis[1].trim();
-
-  try {
-    const axios = require('axios');
-    const response = await axios.get(`https://levanter.onrender.com/emix?q=${emoji1}${emoji2}`);
-
-    if (response.data.status === true) {
-    
-
-      let stickerMess = new Sticker(response.data.result, {
-        pack: botname,
-        type: StickerTypes.CROPPED,
-        categories: ["🤩", "🎉"],
-        id: "12345",
-        quality: 70,
-        background: "transparent",
-      });
-      const stickerBuffer2 = await stickerMess.toBuffer();
-      client.sendMessage(m.chat, { sticker: stickerBuffer2 }, { quoted: m });
-
-    } else {
-      m.reply("Unable to create emoji mix.");
+    // Verifica se o usuário enviou os emojis
+    if (!text) {
+        return m.reply(
+            formatStylishReply(
+                "Você precisa informar dois emojis para misturar.\nExemplo: 🙂+😎"
+            )
+        );
     }
-  } catch (error) {
-    m.reply("An error occurred while creating the emoji mix." + error );
-  }
 
+    const emojis = text.split('+');
 
-}
+    if (emojis.length !== 2) {
+        return m.reply(
+            formatStylishReply(
+                "Informe exatamente *2 emojis* separados por '+'.\nExemplo: 🙂+😎"
+            )
+        );
+    }
+
+    const emoji1 = emojis[0].trim();
+    const emoji2 = emojis[1].trim();
+
+    try {
+        const response = await axios.get(
+            `https://levanter.onrender.com/emix?q=${emoji1}${emoji2}`
+        );
+
+        if (response.data.status === true) {
+
+            let stickerMess = new Sticker(response.data.result, {
+                pack: botname,
+                type: StickerTypes.CROPPED,
+                categories: ["🤩", "🎉"],
+                id: "12345",
+                quality: 70,
+                background: "transparent",
+            });
+
+            const stickerBuffer2 = await stickerMess.toBuffer();
+
+            await client.sendMessage(
+                m.chat,
+                { sticker: stickerBuffer2 },
+                { quoted: m }
+            );
+
+        } else {
+            m.reply(
+                formatStylishReply(
+                    "Não foi possível criar o mix de emojis. Tente novamente em instantes."
+                )
+            );
+        }
+    } catch (error) {
+        m.reply(
+            formatStylishReply(
+                `Ocorreu um erro ao criar o mix de emojis.\nDetalhes: ${error}`
+            )
+        );
+    }
+};
