@@ -5,8 +5,13 @@ module.exports = async (context) => {
     await ownerMiddleware(context, async () => {
         const { m, args } = context;
 
+        const formatStylishReply = (message) => {
+            return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n┗━━━━━━━━━━━━━━━┛`;
+        };
+
         let numberToUnban;
 
+        // Verifica usuário citado, mencionado ou passado no argumento
         if (m.quoted) {
             numberToUnban = m.quoted.sender;
         } else if (m.mentionedJid && m.mentionedJid.length > 0) {
@@ -16,19 +21,26 @@ module.exports = async (context) => {
         }
 
         if (!numberToUnban) {
-            return await m.reply('❌ Please provide a valid number or quote a user.');
+            return await m.reply(
+                formatStylishReply('Por favor, forneça um número válido ou cite um usuário.')
+            );
         }
 
-       
+        // Remove sufixos do WhatsApp
         numberToUnban = numberToUnban.replace('@s.whatsapp.net', '').trim();
 
         const bannedUsers = await getBannedUsers();
 
         if (!bannedUsers.includes(numberToUnban)) {
-            return await m.reply('⚠️ This user was not banned before.');
+            return await m.reply(
+                formatStylishReply('Esse usuário não estava banido.')
+            );
         }
 
         await unbanUser(numberToUnban);
-        await m.reply(`✅ ${numberToUnban} has been unbanned.`);
+
+        await m.reply(
+            formatStylishReply(`O usuário ${numberToUnban} foi desbanido com sucesso!`)
+        );
     });
 };
