@@ -21,33 +21,33 @@ module.exports = async (context) => {
       { buttonId: `${prefix}autoread`, buttonText: { displayText: 'Autoread 👀' }, type: 1 },
       { buttonId: `${prefix}autoview`, buttonText: { displayText: 'Autoview Status 📸' }, type: 1 },
       { buttonId: `${prefix}autolike`, buttonText: { displayText: 'Autolike Status ❤️' }, type: 1 },
-      { buttonId: `${prefix}reaction`, buttonText: { displayText: 'React Emoji 😈' }, type: 1 },
-      { buttonId: `${prefix}setpackname`, buttonText: { displayText: 'Sticker Watermark 🖼️' }, type: 1 },
+      { buttonId: `${prefix}reaction`, buttonText: { displayText: 'Emoji de Reação 😈' }, type: 1 },
+      { buttonId: `${prefix}setpackname`, buttonText: { displayText: 'Marca d’água do Sticker 🖼️' }, type: 1 },
       { buttonId: `${prefix}autobio`, buttonText: { displayText: 'Autobio 📝' }, type: 1 },
       { buttonId: `${prefix}anticall`, buttonText: { displayText: 'Anticall 📞' }, type: 1 },
       { buttonId: `${prefix}antidelete`, buttonText: { displayText: 'Antidelete 🗑️' }, type: 1 },
-      { buttonId: `${prefix}presence`, buttonText: { displayText: 'Presence 🌐' }, type: 1 },
-      { buttonId: `${prefix}mode`, buttonText: { displayText: 'Mode 🔒' }, type: 1 },
+      { buttonId: `${prefix}presence`, buttonText: { displayText: 'Presença 🌐' }, type: 1 },
+      { buttonId: `${prefix}mode`, buttonText: { displayText: 'Modo 🔒' }, type: 1 },
       { buttonId: `${prefix}chatbotpm`, buttonText: { displayText: 'Chatbot PM 💬' }, type: 1 },
     ];
 
     const message = formatStylishReply(
-      `*Toxic-MD Settings* 🔥\n\n` +
+      `*Configurações do Bot* 🤖✨\n\n` +
       `Botname: ${botName}\n` +
-      `Prefix: ${settings.prefix || 'None'}\n` +
+      `Prefixo: ${settings.prefix || 'Nenhum'}\n` +
       `Antidelete: ${settings.antidelete ? '✅ ON' : '❌ OFF'}\n` +
       `Chatbot PM: ${settings.chatbotpm ? '✅ ON' : '❌ OFF'}\n` +
-      `Sudo Users: ${sudoUsers.length > 0 ? sudoUsers.join(', ') : 'None'}\n` +
-      `Banned Users: ${bannedUsers.length}\n` +
-      `Total Groups: ${groupCount}\n\n` +
-      `Tap a button to configure a setting! 😈`
+      `Sudo Users: ${sudoUsers.length > 0 ? sudoUsers.join(', ') : 'Nenhum'}\n` +
+      `Usuários Banidos: ${bannedUsers.length}\n` +
+      `Grupos Ativos: ${groupCount}\n\n` +
+      `Toque em um botão para configurar!`
     );
 
     await client.sendMessage(
       m.chat,
       {
         text: message,
-        footer: '> Pσɯҽɾԃ Ⴆყ Tσxιƈ-ɱԃȥ',
+        footer: '> Powered by *9bot*',
         buttons,
         headerType: 1,
         viewOnce: true,
