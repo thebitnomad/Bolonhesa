@@ -3,10 +3,9 @@ module.exports = async (client, m, Owner, prefix) => {
   const textL = m.text.toLowerCase();
   const quotedMessage = m.msg?.contextInfo?.quotedMessage;
 
-if (quotedMessage && textL.startsWith(prefix + "save") && !m.quoted.chat.includes("status@broadcast")) {
-    return m.reply("You did not tag a status media to save.");
+  if (quotedMessage && textL.startsWith(prefix + "save") && !m.quoted.chat.includes("status@broadcast")) {
+    return m.reply("Você não marcou um status para salvar. 😉");
   }
-
 
   if (Owner && quotedMessage && textL.startsWith(prefix + "save") && m.quoted.chat.includes("status@broadcast")) {
     if (quotedMessage.imageMessage) {
@@ -22,6 +21,4 @@ if (quotedMessage && textL.startsWith(prefix + "save") && !m.quoted.chat.include
     }
   }
 
-  
-  
-}
+};
