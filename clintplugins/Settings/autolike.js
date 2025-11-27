@@ -14,7 +14,11 @@ module.exports = async (context) => {
       if (!settings || Object.keys(settings).length === 0) {
         return await client.sendMessage(
           m.chat,
-          { text: formatStylishReply("Database is fucked, no settings found. Fix it, loser.") },
+          {
+            text: formatStylishReply(
+              "Não foi possível encontrar as configurações no banco de dados.\n│❒ Verifique as definições do bot antes de tentar novamente."
+            )
+          },
           { quoted: m, ad: true }
         );
       }
@@ -23,10 +27,15 @@ module.exports = async (context) => {
 
       if (value === 'on' || value === 'off') {
         const action = value === 'on';
+
         if (settings.autolike === action) {
           return await client.sendMessage(
             m.chat,
-            { text: formatStylishReply(`Autolike’s already ${value.toUpperCase()}, genius. Stop wasting my time.`) },
+            {
+              text: formatStylishReply(
+                `O Autolike já está definido como ${value.toUpperCase()}. 😉`
+              )
+            },
             { quoted: m, ad: true }
           );
         }
@@ -34,7 +43,14 @@ module.exports = async (context) => {
         await updateSetting('autolike', action);
         return await client.sendMessage(
           m.chat,
-          { text: formatStylishReply(`Autolike ${value.toUpperCase()} activated! 🔥 ${action ? 'Bot’s gonna like statuses like a simp.' : 'No more fake love for statuses.'}`) },
+          {
+            text: formatStylishReply(
+              `Autolike definido para ${value.toUpperCase()} com sucesso! 🔥\n` +
+              (action
+                ? "O bot vai reagir automaticamente aos status com curtidas. 💬"
+                : "As reações automáticas aos status foram desativadas. 😴")
+            )
+          },
           { quoted: m, ad: true }
         );
       }
@@ -47,8 +63,11 @@ module.exports = async (context) => {
       await client.sendMessage(
         m.chat,
         {
-          text: formatStylishReply(`Autolike’s ${settings.autolike ? 'ON 🥶' : 'OFF 😴'}, dumbass. Pick a vibe, noob! 😈`),
-          footer: "> Pσɯҽɾԃ Ⴆყ Tσxιƈ-ɱԃȥ",
+          text: formatStylishReply(
+            `Status do Autolike: ${settings.autolike ? 'ON 🥶' : 'OFF 😴'}\n` +
+            `│❒ Escolha uma opção abaixo para ativar ou desativar as reações automáticas de status.`
+          ),
+          footer: "> Powered by *9bot*",
           buttons,
           headerType: 1,
           viewOnce: true,
@@ -58,7 +77,11 @@ module.exports = async (context) => {
     } catch (error) {
       await client.sendMessage(
         m.chat,
-        { text: formatStylishReply("Shit broke, couldn’t mess with autolike. Database or something’s fucked. Try later.") },
+        {
+          text: formatStylishReply(
+            "Ocorreu um erro ao atualizar o Autolike.\n│❒ Verifique o banco de dados ou tente novamente em alguns instantes."
+          )
+        },
         { quoted: m, ad: true }
       );
     }
