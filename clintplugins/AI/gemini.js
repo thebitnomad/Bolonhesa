@@ -6,52 +6,87 @@ module.exports = async (context) => {
     return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n◈━━━━━━━━━━━━━━━━◈`;
   };
 
-  // Check if text is provided
+  // Verifica se o usuário enviou texto
   if (!text) {
     return client.sendMessage(
       m.chat,
-      { text: formatStylishReply("Yo, fam, give me something to chat about! 🗣️ Ex: .gemini What's good?") },
+      { 
+        text: 
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Envie uma mensagem para conversar com a IA.
+│❒ Exemplo: *.gemini Olá, tudo bem?*
+◈━━━━━━━━━━━━━━━━◈`
+      },
       { quoted: m, ad: true }
     );
   }
 
-  // Limit input length
+  // Limita o tamanho do texto
   if (text.length > 500) {
     return client.sendMessage(
       m.chat,
-      { text: formatStylishReply("Chill, homie! Keep it under 500 chars. 📝") },
+      { 
+        text: 
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Sua mensagem está muito longa.
+│❒ Por favor, mantenha abaixo de 500 caracteres.
+◈━━━━━━━━━━━━━━━━◈`
+      },
       { quoted: m, ad: true }
     );
   }
 
   try {
-    // Hit thev api
+    // Chama a API
     const { data } = await axios.get("https://api.zenzxz.my.id/api/ai/gemini", {
       params: { text: text, id: "string" },
       headers: { Accept: "application/json" },
       timeout: 10000,
     });
 
-    // Check if response is valid
+    // Verifica se a resposta é válida
     if (!data.success || !data.data?.response) {
       return client.sendMessage(
         m.chat,
-        { text: formatStylishReply("API’s acting shady, no response! 😢 Try again.") },
+        { 
+          text: 
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Não recebi uma resposta válida da API.
+│❒ Tente novamente em alguns instantes.
+◈━━━━━━━━━━━━━━━━◈`
+        },
         { quoted: m, ad: true }
       );
     }
 
-    // Send the response with creator attribution
+    // Envia a resposta estilizada
     await client.sendMessage(
       m.chat,
-      { text: formatStylishReply(`${data.data.response}\n\n> Pσɯҽɾԃ Ⴆყ Tσxιƈ-ɱԃȥ`) },
+      { 
+        text: 
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Resposta da IA:
+◈━━━━━━━━━━━━━━━━◈
+
+${data.data.response}
+
+◈━━━━━━━━━━━━━━━━◈
+> Powered by *Toxic-mdz*`
+      },
       { quoted: m, ad: true }
     );
+
   } catch (error) {
-    console.error("Gemini command error:", error);
+    console.error("Erro no comando Gemini:", error);
     return client.sendMessage(
       m.chat,
-      { text: formatStylishReply(`Yo, something broke: ${error.message}. Try another query! 😎`) },
+      { 
+        text: 
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Ocorreu um erro ao processar sua solicitação.
+│❒ Detalhes: ${error.message}
+◈━━━━━━━━━━━━━━━━◈`
+      },
       { quoted: m, ad: true }
     );
   }
