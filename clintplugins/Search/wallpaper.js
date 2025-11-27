@@ -7,10 +7,10 @@ module.exports = async (context) => {
   if (!text) {
     return m.reply(
       "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈\n" +
-      "│ ❒ ERROR\n" +
+      "│ ❒ ERRO\n" +
       "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈\n" +
-      "│ 🚫 Please provide a search query!\n" +
-      "│ ❒ Example: .wallpaper Anime, 5\n" +
+      "│ 🚫 Você precisa escrever o que quer buscar.\n" +
+      "│ ❒ Exemplo: .wallpaper Anime, 5\n" +
       "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈"
     );
   }
@@ -32,9 +32,9 @@ module.exports = async (context) => {
     if (results.length === 0) {
       return m.reply(
         "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈\n" +
-        "│ ❒ ERROR\n" +
+        "│ ❒ ERRO\n" +
         "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈\n" +
-        "│ ❌ No results found for \"" + query + "\".\n" +
+        `│ ❌ Não encontrei nada para "${query}".\n` +
         "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈"
       );
     }
@@ -43,10 +43,10 @@ module.exports = async (context) => {
 
     await m.reply(
       "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈\n" +
-      "│ ❒ WALLPAPER SEARCH\n" +
+      "│ ❒ BUSCA DE WALLPAPER\n" +
       "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈\n" +
-      "│ 🔍 Query: " + query + "\n" +
-      "│ ❒ Fetching " + max + " wallpaper(s)...\n" +
+      `│ 🔍 Busca: ${query}\n` +
+      `│ ❒ Carregando ${max} wallpaper(s)...\n` +
       "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈"
     );
 
@@ -55,13 +55,13 @@ module.exports = async (context) => {
 
       const caption =
         "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈\n" +
-        "│ ❒ WALLPAPER " + (i + 1) + " of " + max + "\n" +
+        `│ ❒ WALLPAPER ${i + 1} de ${max}\n` +
         "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈\n" +
-        "│ 🖼️ Title: " + (wallpaper.title || "N/A") + "\n" +
-        "│ 📏 Resolution: " + (wallpaper.resolution || "N/A") + "\n" +
-        "│ 📜 Description: " + (wallpaper.description || "N/A") + "\n" +
-        "│ 🌐 Source: " + (wallpaper.source || "N/A") + "\n" +
-        "│ 🔗 Link: " + (wallpaper.link || "N/A") + "\n" +
+        `│ 🖼️ Título: ${wallpaper.title || "N/A"}\n` +
+        `│ 📏 Resolução: ${wallpaper.resolution || "N/A"}\n` +
+        `│ 📜 Descrição: ${wallpaper.description || "N/A"}\n` +
+        `│ 🌐 Fonte: ${wallpaper.source || "N/A"}\n` +
+        `│ 🔗 Link: ${wallpaper.link || "N/A"}\n` +
         "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈";
 
       await client.sendMessage(
@@ -80,10 +80,10 @@ module.exports = async (context) => {
     console.error(err);
     m.reply(
       "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈\n" +
-      "│ ❒ ERROR\n" +
+      "│ ❒ ERRO\n" +
       "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈\n" +
-      "│ ❌ Error fetching wallpapers: " + err.message + "\n" +
-      "│ ❒ Please try again later.\n" +
+      `│ ❌ Erro ao buscar wallpapers: ${err.message}\n` +
+      "│ ❒ Tente de novo daqui a pouco.\n" +
       "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈"
     );
   }
