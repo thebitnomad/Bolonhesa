@@ -5,7 +5,7 @@ const { getSettings } = require('../../Database/config');
 module.exports = {
   name: 'fullmenu',
   aliases: ['allmenu', 'commandslist'],
-  description: 'Displays the full bot command menu by category',
+  description: 'Exibe o menu completo do bot por categoria',
   run: async (context) => {
     const { client, m, totalCommands, mode, pict } = context;
     const botname = '𝐓𝐨𝐱𝐢𝐜-𝐌𝐃'; 
@@ -14,26 +14,26 @@ module.exports = {
     const effectivePrefix = settings.prefix || ''; // Use empty string for prefixless mode
 
     const categories = [
-      { name: 'General', display: 'GEᑎEᖇᗩᒪ', emoji: '📜' },
-      { name: 'Settings', display: 'SETTINGS', emoji: '🛠️' },
-      { name: 'Owner', display: 'OWNER', emoji: '👑' },
+      { name: 'General', display: 'GERAL', emoji: '📜' },
+      { name: 'Settings', display: 'CONFIG', emoji: '🛠️' },
+      { name: 'Owner', display: 'DONO', emoji: '👑' },
       { name: 'Heroku', display: 'HEROKU', emoji: '☁️' },
-      { name: 'Wa-Privacy', display: 'PRIVACY', emoji: '🔒' },
-      { name: 'Groups', display: 'GROUPS', emoji: '👥' },
-      { name: 'AI', display: 'AI', emoji: '🧠' },
-      { name: 'Media', display: 'MEDIA', emoji: '🎬' },
-      { name: 'Editting', display: 'EDITING', emoji: '✂️' },
-      { name: 'Logo', display: 'LOGO', emoji: '🎨' },
+      { name: 'Wa-Privacy', display: 'PRIVACIDADE', emoji: '🔒' },
+      { name: 'Groups', display: 'GRUPOS', emoji: '👥' },
+      { name: 'AI', display: 'IA', emoji: '🧠' },
+      { name: 'Media', display: 'MÍDIA', emoji: '🎬' },
+      { name: 'Editting', display: 'EDIÇÃO', emoji: '✂️' },
+      { name: 'Logo', display: 'LOGOS', emoji: '🎨' },
       { name: '+18', display: '+18', emoji: '🔞' },
-      { name: 'Utils', display: 'UTILS', emoji: '🔧' }
+      { name: 'Utils', display: 'ÚTEIS', emoji: '🔧' }
     ];
 
     const getGreeting = () => {
       const currentHour = DateTime.now().setZone('Africa/Nairobi').hour;
-      if (currentHour >= 5 && currentHour < 12) return 'Good Morning';
-      if (currentHour >= 12 && currentHour < 18) return 'Good Afternoon';
-      if (currentHour >= 18 && currentHour < 22) return 'Good Evening';
-      return 'Good Night';
+      if (currentHour >= 5 && currentHour < 12) return 'Bom dia';
+      if (currentHour >= 12 && currentHour < 18) return 'Boa tarde';
+      if (currentHour >= 18 && currentHour < 22) return 'Boa noite';
+      return 'Boa madrugada';
     };
 
     const getCurrentTimeInNairobi = () => {
@@ -53,18 +53,21 @@ module.exports = {
         .join('');
     };
 
-    let menuText = `╭─❒ 「 ${botname} Command Menu ⚠ 」\n`;
-    menuText += `│ Greetings, @${m.pushName}\n`;
-    menuText += `│\n`;
-    menuText += `│ 🤖 *Bσƚ*: ${botname}\n`;
-    menuText += `│ 📋 *Tσƚαʅ Cσɱɱαɳԃʝ*: ${totalCommands}\n`;
-    menuText += `│ 🕒 *Tιɱҽ*: ${getCurrentTimeInNairobi()}\n`;
-    menuText += `│ 🔣 *Pɾҽϝιx*: ${effectivePrefix || 'None'}\n`;
-    menuText += `│ 🌐 *Mσԃҽ*: ${mode}\n`;
-    menuText += `│ 📚 *LιႦɾαɾყ*: Baileys\n`;
-    menuText += `╰─────────────\n\n`;
+    const modeStatus = mode && mode.toLowerCase() === 'public' ? 'ON' : 'OFF';
 
-    menuText += `*COMMANDS REGISTRY ☑*\n\n`;
+    let menuText = `◈━━━━━━━━━━━━━━━━◈\n`;
+    menuText += `│❒ ${getGreeting()}, @${m.pushName}!\n`;
+    menuText += `│❒ Painel completo do ${botname} (ON)\n`;
+    menuText += `│\n`;
+    menuText += `│ 🤖 Bot: ${botname}\n`;
+    menuText += `│ 📋 Comandos: ${totalCommands}\n`;
+    menuText += `│ 🕒 Horário (NBO): ${getCurrentTimeInNairobi()}\n`;
+    menuText += `│ 🔣 Prefixo: ${effectivePrefix || 'Sem prefixo'}\n`;
+    menuText += `│ 🌐 Modo: ${mode} (${modeStatus})\n`;
+    menuText += `│ 📚 Biblioteca: Baileys\n`;
+    menuText += `┗━━━━━━━━━━━━━━━┛\n\n`;
+
+    menuText += `*Registro de comandos ☑*\n\n`;
 
     let commandCount = 0;
     for (const category of categories) {
