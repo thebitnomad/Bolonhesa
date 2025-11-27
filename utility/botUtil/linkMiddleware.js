@@ -3,15 +3,16 @@ module.exports = async (context, next) => {
 
     if (!m.isGroup) {
         return m.reply(`◈━━━━━━━━━━━━━━━━◈
-│❒ This command only works in groups! 
+│❒ Este comando funciona apenas em grupos. 😊
 ◈━━━━━━━━━━━━━━━━◈`);
     }
     
     if (!isBotAdmin) {
         return m.reply(`◈━━━━━━━━━━━━━━━━◈
-│❒ I need admin rights to get the group link! 
+│❒ Preciso ser administrador do grupo para conseguir o link.  
+│❒ Por favor, me conceda permissão de admin. 🙏
 ◈━━━━━━━━━━━━━━━━◈`);
     }
 
-    await next(); // Proceed to the next function (main handler)
+    await next(); // Continua para o próximo handler
 };
