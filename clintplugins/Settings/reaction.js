@@ -8,49 +8,56 @@ module.exports = async (context) => {
 
     const settings = await getSettings();
     const prefix = settings.prefix;
-    const currentEmoji = settings.reactEmoji || 'No react emoji set, loser! 😴';
+    const currentEmoji = settings.reactEmoji || 'Nenhum emoji configurado.';
 
     if (newEmoji) {
+      // RANDOM MODE
       if (newEmoji === 'random') {
         if (currentEmoji === 'random') {
           return await m.reply(
             `◈━━━━━━━━━━━━━━━━◈\n` +
-            `│❒ Already set to random, you brain-dead fool! 😈\n` +
-            `│❒ I’m already throwing random emojis! 🥶\n` +
+            `│❒ O modo *random* já está ativado. 😊\n` +
+            `│❒ Reagindo com emojis aleatórios como sempre!\n` +
             `┗━━━━━━━━━━━━━━━┛`
           );
         }
+
         await updateSetting('reactEmoji', 'random');
-        await m.reply(
+        return await m.reply(
           `◈━━━━━━━━━━━━━━━━◈\n` +
-          `│❒ Random emoji mode ON! 🔥\n` +
-          `│❒ Statuses will get wild reactions! 😈\n` +
-          `┗━━━━━━━━━━━━━━━┛`
-        );
-      } else {
-        if (currentEmoji === newEmoji) {
-          return await m.reply(
-            `◈━━━━━━━━━━━━━━━━◈\n` +
-            `│❒ Emoji already ${newEmoji}, moron! 😈\n` +
-            `│❒ Pick something else, noob! 🖕\n` +
-            `┗━━━━━━━━━━━━━━━┛`
-          );
-        }
-        await updateSetting('reactEmoji', newEmoji);
-        await m.reply(
-          `◈━━━━━━━━━━━━━━━━◈\n` +
-          `│❒ Status react emoji set to ${newEmoji}! 🔥\n` +
-          `│❒ Flexing it like a king! 😈\n` +
+          `│❒ Modo *random* ativado! 🔥\n` +
+          `│❒ Agora cada reação será uma surpresa. 😄\n` +
           `┗━━━━━━━━━━━━━━━┛`
         );
       }
-    } else {
-      await m.reply(
+
+      // CUSTOM EMOJI
+      if (currentEmoji === newEmoji) {
+        return await m.reply(
+          `◈━━━━━━━━━━━━━━━━◈\n` +
+          `│❒ Este emoji já está configurado como padrão. 😊\n` +
+          `│❒ Caso queira trocar, escolha outro.\n` +
+          `┗━━━━━━━━━━━━━━━┛`
+        );
+      }
+
+      await updateSetting('reactEmoji', newEmoji);
+      return await m.reply(
         `◈━━━━━━━━━━━━━━━━◈\n` +
-        `│❒ Current Reaction: ${currentEmoji}\n` +
-        `│❒ Use "${prefix}reaction random" for chaos or "${prefix}reaction <emoji>" for one emoji, fool!\n` +
+        `│❒ Emoji de reação atualizado para ${newEmoji}! 🔥\n` +
+        `│❒ Agora todas as reações serão com este emoji.\n` +
         `┗━━━━━━━━━━━━━━━┛`
       );
     }
+
+    // SHOW CURRENT CONFIG
+    await m.reply(
+      `◈━━━━━━━━━━━━━━━━◈\n` +
+      `│❒ Emoji atual de reação: ${currentEmoji}\n` +
+      `│❒ Use: \n` +
+      `│❒ ➤ *${prefix}reaction random* para modo aleatório\n` +
+      `│❒ ➤ *${prefix}reaction <emoji>* para definir um emoji específico\n` +
+      `┗━━━━━━━━━━━━━━━┛`
+    );
   });
 };
