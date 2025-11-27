@@ -1,38 +1,49 @@
 const ownerMiddleware = require('../../utility/botUtil/Ownermiddleware');
 
-    
 module.exports = async (context) => {
+    await ownerMiddleware(context, async () => {
 
-await ownerMiddleware(context, async () => {
+        const { client, m, text } = context;
 
-  
-    const { client, m, text, budy, Owner } = context;
+        const formatReply = (msg) => 
+            `◈━━━━━━━━━━━━━━━━◈\n│❒ ${msg}\n◈━━━━━━━━━━━━━━━━◈`;
 
-    try {
-      
+        try {
 
-      
-      if (!text) {
-        return m.reply("No command provided. Please provide a valid shell command.");
-      }
+            if (!text) {
+                return m.reply(
+                    formatReply("Nenhum comando informado. Por favor, forneça um comando de terminal válido.")
+                );
+            }
 
-      const { exec } = require("child_process");
+            const { exec } = require("child_process");
 
-    
-      exec(text, (err, stdout, stderr) => {
-        if (err) {
-          return m.reply(`Error: ${err.message}`);
+            exec(text, (err, stdout, stderr) => {
+
+                if (err) {
+                    return m.reply(
+                        formatReply(`Erro ao executar o comando:\n${err.message}`)
+                    );
+                }
+
+                if (stderr) {
+                    return m.reply(
+                        formatReply(`Stderr:\n${stderr}`)
+                    );
+                }
+
+                if (stdout) {
+                    return m.reply(
+                        formatReply(`Resultado:\n${stdout}`)
+                    );
+                }
+            });
+
+        } catch (error) {
+            await m.reply(
+                formatReply(`Ocorreu um erro ao executar o comando:\n${error}`)
+            );
         }
-        if (stderr) {
-          return m.reply(`stderr: ${stderr}`);
-        }
-        if (stdout) {
-          return m.reply(stdout);
-        }
-      });
 
-    } catch (error) {
-      await m.reply("An error occurred while running the shell command\n" + error);
-    }
-                  })
-}
+    });
+};
