@@ -1,17 +1,60 @@
-const ownerMiddleware = require('../../utility/botUtil/Ownermiddleware'); 
+const ownerMiddleware = require('../../utility/botUtil/Ownermiddleware');
 
 module.exports = async (context) => {
-    await ownerMiddleware(context, async () => {
-        const { client, m, text, Owner } = context;
+  await ownerMiddleware(context, async () => {
+    const { client, m, text } = context;
 
-        if (!m.quoted && (!m.mentionedJid || m.mentionedJid.length === 0)) {
-            return m.reply("Tag or mention a user to unblock");
-        }
-        let users = m.mentionedJid[0] ? m.mentionedJid[0] : m.quoted ? m.quoted.sender : text.replace(/[^0-9]/g, '') + '@s.whatsapp.net';
+    const formatStylishReply = (message) => {
+      return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n◈━━━━━━━━━━━━━━━━◈`;
+    };
 
-        const parts = users.split('@')[0];
+    // Verifica se tem usuário marcado, respondido ou número no texto
+    if (
+      !m.quoted &&
+      (!m.mentionedJid || m.mentionedJid.length === 0) &&
+      !text
+    ) {
+      return m.reply(
+        formatStylishReply(
+          "Marque, responda a uma mensagem ou informe um número para bloquear."
+        )
+      );
+    }
 
-        await client.updateBlockStatus(users, 'block'); 
-        m.reply(`${parts} is blocked, eh?`); 
-    });
+    let targetJid;
+
+    if (m.mentionedJid && m.mentionedJid.length > 0) {
+      targetJid = m.mentionedJid[0];
+    } else if (m.quoted) {
+      targetJid = m.quoted.sender;
+    } else if (text) {
+      const cleanedNumber = text.replace(/[^0-9]/g, '');
+      if (!cleanedNumber) {
+        return m.reply(
+          formatStylishReply(
+            "Não consegui identificar um número válido. Tente novamente informando apenas dígitos."
+          )
+        );
+      }
+      targetJid = cleanedNumber + '@s.whatsapp.net';
+    }
+
+    if (!targetJid) {
+      return m.reply(
+        formatStylishReply(
+          "Não foi possível identificar o usuário. Verifique a marcação ou o número informado."
+        )
+      );
+    }
+
+    const numberView = targetJid.split('@')[0];
+
+    await client.updateBlockStatus(targetJid, 'block');
+
+    await m.reply(
+      formatStylishReply(
+        `O número *${numberView}* foi bloqueado com sucesso.`
+      )
+    );
+  });
 };
