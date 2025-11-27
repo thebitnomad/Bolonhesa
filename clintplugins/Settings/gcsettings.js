@@ -10,7 +10,7 @@ module.exports = async (context) => {
 
         if (!jid.endsWith('@g.us')) {
             console.log('The command was not issued in a group chat.');
-            return await m.reply('❌ This command can only be used in groups.');
+            return await m.reply('❌ Este comando só pode ser usado em grupos.');
         }
 
         console.log(`Fetching group settings for group: ${jid}`);
@@ -18,15 +18,15 @@ module.exports = async (context) => {
 
         if (!groupSettings) {
             console.log(`No settings found for group: ${jid}`);
-            return await m.reply('❌ No group settings found.');
+            return await m.reply('❌ Nenhuma configuração encontrada para este grupo.');
         }
 
         console.log(`Group settings for ${jid}: ${JSON.stringify(groupSettings)}`);
 
-        let response = `*Group Settings for ${jid}*\n`;
+        let response = `📄 *Configurações do Grupo*\n\n`;
         response += `🔘 *Antilink*: ${groupSettings.antilink ? '✅ ON' : '❌ OFF'}\n`;
         response += `🔘 *Antidelete*: ${groupSettings.antidelete ? '✅ ON' : '❌ OFF'}\n`;
-        response += `🔘 *Events*: ${groupSettings.events ? '✅ ON' : '❌ OFF'}\n`;
+        response += `🔘 *Eventos*: ${groupSettings.events ? '✅ ON' : '❌ OFF'}\n`;
         response += `🔘 *Antitag*: ${groupSettings.antitag ? '✅ ON' : '❌ OFF'}\n`;
         response += `🔘 *GCPresence*: ${groupSettings.gcpresence ? '✅ ON' : '❌ OFF'}\n`;
         response += `🔘 *Antiforeign*: ${groupSettings.antiforeign ? '✅ ON' : '❌ OFF'}\n`;
