@@ -1,68 +1,113 @@
 const fetch = require('node-fetch');
 
 /**
- * Generates a video using Sora AI based on the provided prompt.
+ * Gera um vídeo usando Sora AI a partir de um prompt de texto.
  * @module sora
  */
 module.exports = {
   name: 'sora',
   aliases: ['soraai', 'genvideo'],
-  description: 'Generates a video using Sora AI with your text prompt',
+  description: 'Gera um vídeo com a Sora AI usando o seu prompt de texto',
   run: async (context) => {
     const { client, m, prefix, botname } = context;
 
+    const formatStylishReply = (message) => {
+      return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n◈━━━━━━━━━━━━━━━━◈`;
+    };
+
     try {
       /**
-       * Ensures a prompt is provided.
+       * Garante que um prompt foi informado.
        */
-      const prompt = m.body.replace(new RegExp(`^${prefix}(sora|soraai|genvideo)\\s*`, 'i'), '').trim();
+      const prompt = m.body
+        .replace(new RegExp(`^${prefix}(sora|soraai|genvideo)\\s*`, 'i'), '')
+        .trim();
+
       if (!prompt) {
-        return client.sendMessage(m.chat, {
-          text: `◈━━━━━━━━━━━━━━━━◈\n│❒ Yo, @${m.sender.split('@')[0]}! 😤 You forgot the prompt, dumbass!\n│❒ Example: ${prefix}sora A blue cat dancing in space\n┗━━━━━━━━━━━━━━━┛`,
-          mentions: [m.sender]
-        }, { quoted: m });
+        return client.sendMessage(
+          m.chat,
+          {
+            text:
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Olá, @${m.sender.split('@')[0]}!
+│❒ Você esqueceu de enviar o prompt.
+│❒ Exemplo: ${prefix}sora Um gato azul dançando no espaço
+◈━━━━━━━━━━━━━━━━◈`,
+            mentions: [m.sender]
+          },
+          { quoted: m }
+        );
       }
 
       /**
-       * Sends a "generating" loading message.
+       * Envia mensagem de carregamento.
        */
-      const loadingMsg = await client.sendMessage(m.chat, {
-        text: `◈━━━━━━━━━━━━━━━━◈\n│❒ Generating your Sora video...\n│❒ *"${prompt}"*\n│❒ Hold tight, this might take a sec! ⏳\n┗━━━━━━━━━━━━━━━┛`
-      }, { quoted: m });
+      const loadingMsg = await client.sendMessage(
+        m.chat,
+        {
+          text:
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Gerando seu vídeo com a Sora AI...
+│❒ Prompt: *"${prompt}"*
+│❒ Isso pode levar alguns instantes. ⏳
+◈━━━━━━━━━━━━━━━━◈`
+        },
+        { quoted: m }
+      );
 
       /**
-       * Calls the new Sora AI API.
+       * Chama a API da Sora AI.
        */
-      const apiUrl = `https://anabot.my.id/api/ai/sora?prompt=${encodeURIComponent(prompt)}&apikey=freeApikey`;
+      const apiUrl = `https://anabot.my.id/api/ai/sora?prompt=${encodeURIComponent(
+        prompt
+      )}&apikey=freeApikey`;
+
       const response = await fetch(apiUrl);
       const data = await response.json();
 
       if (!data.success || !data.data?.result?.url) {
-        throw new Error(data.message || 'Failed to generate video');
+        throw new Error(data.message || 'Não foi possível gerar o vídeo.');
       }
 
       const videoUrl = data.data.result.url;
 
       /**
-       * Sends the generated video.
+       * Envia o vídeo gerado.
        */
-      await client.sendMessage(m.chat, {
-        video: { url: videoUrl },
-        caption: `◈━━━━━━━━━━━━━━━━◈\n│❒ *Sora AI Video Generated!*\n│❒ Prompt: _${prompt}_\n│❒ Powered by *${botname}*\n┗━━━━━━━━━━━━━━━┛`,
-        gifPlayback: false
-      }, { quoted: m });
+      await client.sendMessage(
+        m.chat,
+        {
+          video: { url: videoUrl },
+          caption:
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Vídeo gerado pela *Sora AI*.
+│❒ Prompt: _${prompt}_
+◈━━━━━━━━━━━━━━━━◈
+Powered by *${botname}*`,
+          gifPlayback: false
+        },
+        { quoted: m }
+      );
 
       /**
-       * Deletes the loading message.
+       * Apaga a mensagem de carregamento.
        */
       await client.sendMessage(m.chat, { delete: loadingMsg.key });
 
     } catch (error) {
       console.error('Sora command error:', error);
-      await client.sendMessage(m.chat, {
-        text: `◈━━━━━━━━━━━━━━━━◈\n│❒ Shit broke, @${m.sender.split('@')[0]}! 😤 Couldn't generate the video.\n│❒ Error: ${error.message}\n┗━━━━━━━━━━━━━━━┛`,
-        mentions: [m.sender]
-      }, { quoted: m });
+      await client.sendMessage(
+        m.chat,
+        {
+          text:
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Não foi possível gerar o vídeo no momento.
+│❒ Erro: ${error.message}
+◈━━━━━━━━━━━━━━━━◈`,
+          mentions: [m.sender]
+        },
+        { quoted: m }
+      );
     }
   }
 };
