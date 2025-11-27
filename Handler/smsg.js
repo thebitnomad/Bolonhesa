@@ -133,7 +133,7 @@ function smsg(conn, m, store) {
         id: m.id,
       },
       message: {
-        conversation: "Toxic",
+        conversation: "9bot",
       },
       contextInfo: {
         mentionedJid: [m.sender],
@@ -148,7 +148,7 @@ function smsg(conn, m, store) {
         text: text,
         contextInfo: {
           externalAdReply: {
-            title: `Toxic-MD`,
+            title: `9BOT`,
             body: m.pushName,
             previewType: "PHOTO",
             thumbnailUrl: "https://i.ibb.co/7JcYBD5Y/cbb9f804644ae8c4.jpg",
