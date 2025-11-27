@@ -3,7 +3,7 @@ module.exports = async (context) => {
 
   try {
     if (!text) {
-      return m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Yo, genius, give me a city or town name! Don’t waste my time.`);
+      return m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Informe o nome da cidade ou do bairro para consultar o clima.\n◈━━━━━━━━━━━━━━━━◈`);
     }
 
     const response = await fetch(`http://api.openweathermap.org/data/2.5/weather?q=${text}&units=metric&appid=1ad47ec6172f19dfaf89eb3307f74785`);
@@ -12,7 +12,7 @@ module.exports = async (context) => {
     console.log(`✅ Fetched weather data for ${text}`);
 
     if (data.cod !== 200) {
-      return m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ What the hell? Can’t find ${text}. Pick a real place, idiot.`);
+      return m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Não encontrei ${text}.\n│❒ Tente um nome de local válido.\n◈━━━━━━━━━━━━━━━━◈`);
     }
 
     const cityName = data.name;
@@ -29,28 +29,28 @@ module.exports = async (context) => {
     const sunset = new Date(data.sys.sunset * 1000);
 
     await m.reply(`◈━━━━━━━━━━━━━━━━◈
-│❒ Weather in *${cityName}* 🌎
+│❒ Clima em *${cityName}* 🌎
 ├──────────────┤
-│❒ 🌡️ Temp: ${temperature}°C
+│❒ 🌡️ Temperatura: ${temperature}°C
 ├──────────────┤
-│❒ 🥵 Feels Like: ${feelsLike}°C
+│❒ 🥵 Sensação: ${feelsLike}°C
 ├──────────────┤
-│❒ 📝 Conditions: ${description}
+│❒ 📝 Condições: ${description}
 ├──────────────┤
-│❒ 💧 Humidity: ${humidity}%
+│❒ 💧 Umidade: ${humidity}%
 ├──────────────┤
-│❒ 🌀 Wind: ${windSpeed} m/s
+│❒ 🌀 Vento: ${windSpeed} m/s
 ├──────────────┤
-│❒ 🌧️ Rain (1h): ${rainVolume} mm
+│❒ 🌧️ Chuva (1h): ${rainVolume} mm
 ├──────────────┤
-│❒ ☁️ Clouds: ${cloudiness}%
+│❒ ☁️ Nuvens: ${cloudiness}%
 ├──────────────┤
-│❒ 🌄 Sunrise: ${sunrise.toLocaleTimeString()}
+│❒ 🌄 Nascer do sol: ${sunrise.toLocaleTimeString('pt-BR')}
 ├──────────────┤
-│❒ 🌅 Sunset: ${sunset.toLocaleTimeString()}
+│❒ 🌅 Pôr do sol: ${sunset.toLocaleTimeString('pt-BR')}
 ◈━━━━━━━━━━━━━━━━◈`);
   } catch (e) {
     console.error(`❌ Error fetching weather for ${text}: ${e.message}`);
-    await m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Ugh, something broke, or ${text} ain’t a real place. Try again, moron.`);
+    await m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Algo deu errado ou ${text} não foi reconhecido.\n│❒ Tente novamente com outro nome.\n◈━━━━━━━━━━━━━━━━◈`);
   }
 };

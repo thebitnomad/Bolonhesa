@@ -46,7 +46,7 @@ _⌬_
     } catch (error) {
       console.error(`Ping command error: ${error}`);
       await client.sendMessage(m.chat, {
-        text: `◎━━━━━━━━━━━━━━━━◎\n│❒ Ping's fucked! My circuits are overheating from your stupidity.\n◎━━━━━━━━━━━━━━━━◎`
+        text: `◎━━━━━━━━━━━━━━━━◎\n│❒ Não foi possível medir o ping agora.\n│❒ Tente novamente em instantes.\n◎━━━━━━━━━━━━━━━━◎`
       }, { quoted: m });
     }
   }

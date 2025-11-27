@@ -5,17 +5,17 @@ module.exports = async (context) => {
     const { client, m, prefix, pict, botname } = context;
 
     if (!botname) {
-        console.error(`Botname not set, you useless fuck.`);
-        return m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Bot's fucked. No botname in context. Yell at your dev, dipshit.\n◈━━━━━━━━━━━━━━━━◈`);
+        console.error(`Botname not set in context.`);
+        return m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Ops! Nome do bot não configurado. Avise o suporte para ajustar.\n◈━━━━━━━━━━━━━━━━◈`);
     }
 
     if (!pict) {
-        console.error(`Pict not set, you brain-dead moron.`);
-        return m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ No image to send, you idiot. Fix your shitty context.\n◈━━━━━━━━━━━━━━━━◈`);
+        console.error(`Pict not set in context.`);
+        return m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Sem imagem para enviar agora. Reenvie o comando ou fale com o suporte.\n◈━━━━━━━━━━━━━━━━◈`);
     }
 
     try {
-        const caption = `◈━━━━━━━━━━━━━━━━◈\n│❒ Yo ${m.pushName}, *${botname}* is alive and ready to fuck shit up! 🖕\n│❒ \n│❒ Type *${prefix}menu* to see what I can do, you pathetic loser.\n◈━━━━━━━━━━━━━━━━◈\n│❒ Powered by *xh_clinton*, 'cause you're too dumb to code`;
+        const caption = `◈━━━━━━━━━━━━━━━━◈\n│❒ Olá, ${m.pushName}! *${botname}* está ON e pronto para ajudar. 😄\n│❒ \n│❒ Envie *${prefix}menu* para ver o que posso fazer por você.\n◈━━━━━━━━━━━━━━━━◈\n│❒ Energizado por *xh_clinton*`;
 
         // Handle pict (image) input
         let imageOptions;
@@ -27,7 +27,7 @@ module.exports = async (context) => {
                 imageOptions = { url: tempImagePath };
             } catch (err) {
                 console.error(`[ALIVE-ERROR] Failed to save temp image: ${err.stack}`);
-                throw new Error(`Couldn’t process your shitty image buffer, dipshit: ${err.message}`);
+                throw new Error(`Não foi possível processar o buffer da imagem: ${err.message}`);
             }
         } else if (typeof pict === 'string') {
             console.log(`[ALIVE-DEBUG] pict is a string: ${pict}`);
@@ -38,7 +38,7 @@ module.exports = async (context) => {
                 throw new Error(`Invalid pict path or URL: ${pict}`);
             }
         } else {
-            throw new Error(`pict is some weird-ass type: ${typeof pict}`);
+            throw new Error(`Tipo de pict inesperado: ${typeof pict}`);
         }
 
         // Send the image with toxic caption
@@ -74,7 +74,7 @@ module.exports = async (context) => {
                         audio: { url: audioPath },
                         ptt: true,
                         mimetype: 'audio/mpeg',
-                        fileName: 'fuck-you.mp3'
+                        fileName: 'alive-note.mp3'
                     }, { quoted: m });
                     audioFound = true;
                     console.log(`[ALIVE-DEBUG] Sent audio from: ${audioPath}`);
@@ -88,12 +88,12 @@ module.exports = async (context) => {
         }
 
         if (!audioFound) {
-            console.error('❌ Audio file not found at any path, you incompetent dev');
-            await m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ FUCK! ${m.pushName}, couldn't find the voice note.\n│❒ Check xh_clinton/test.mp3, you worthless piece of shit.\n◈━━━━━━━━━━━━━━━━◈`);
+            console.error('❌ Audio file not found at any path');
+            await m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ ${m.pushName}, não encontrei o áudio de boas-vindas.\n│❒ Verifique o arquivo xh_clinton/test.mp3.\n◈━━━━━━━━━━━━━━━━◈`);
         }
 
     } catch (error) {
-        console.error(`[ALIVE-ERROR] ALIVE COMMAND CRASHED LIKE YOUR LIFE: ${error.stack}`);
-        await m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ SHIT BROKE, ${m.pushName}!\n│❒ Error: ${error.message}\n│❒ Try again when you grow a brain, loser.\n◈━━━━━━━━━━━━━━━━◈`);
+        console.error(`[ALIVE-ERROR] ${error.stack}`);
+        await m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Algo deu errado, ${m.pushName}.\n│❒ Detalhes: ${error.message}\n│❒ Tente novamente em instantes.\n◈━━━━━━━━━━━━━━━━◈`);
     }
 };

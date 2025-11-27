@@ -15,11 +15,11 @@ module.exports = async (context) => {
   };
 
   if (text) {
-    return client.sendMessage(m.chat, { text: `◈━━━━━━━━━━━━━━━━◈\n│❒ Yo, ${m.pushName}, what’s with the extra bullshit? Just say ${prefix}credits, you moron.` }, { quoted: m });
+    return client.sendMessage(m.chat, { text: `◈━━━━━━━━━━━━━━━━◈\n│❒ Opa, ${m.pushName}! Basta usar ${prefix}credits para ver os agradecimentos.\n◈━━━━━━━━━━━━━━━━◈` }, { quoted: m });
   }
 
   try {
-    const replyText = `◈━━━━━━━━━━━━━━━━◈\n│❒ *Credits, Bitches*\n\nAll hail *𝐱𝐡_𝐜𝐥𝐢𝐧𝐭𝐨𝐧*, the badass who built this bot from the ground up. Nobody else gets credit—fuck ‘em. This is my empire, and I run this shit solo.\n\nBow down to *𝐱𝐡_𝐜𝐥𝐢𝐧𝐭𝐨𝐧* 🫡`;
+    const replyText = `◈━━━━━━━━━━━━━━━━◈\n│❒ *Créditos Oficiais*\n\nAgradecimentos especiais a *𝐱𝐡_𝐜𝐥𝐢𝐧𝐭𝐨𝐧* pela construção deste bot do zero.\n│❒ Comunidade e colaboradores mantêm tudo ON!\n\nObrigado por fazer parte dessa jornada. 🫡`;
 
     await client.sendMessage(m.chat, {
       text: replyText,
@@ -32,6 +32,6 @@ module.exports = async (context) => {
     }, { quoted: m });
   } catch (error) {
     console.error('Error in credits command:', error);
-    await client.sendMessage(m.chat, { text: `◈━━━━━━━━━━━━━━━━◈\n│❒ Shit went sideways, can’t show credits. Try again later, loser.` }, { quoted: m });
+    await client.sendMessage(m.chat, { text: `◈━━━━━━━━━━━━━━━━◈\n│❒ Algo deu errado ao mostrar os créditos.\n│❒ Tente novamente em instantes.\n◈━━━━━━━━━━━━━━━━◈` }, { quoted: m });
   }
 };

@@ -15,7 +15,7 @@ return (isUpperCase ? text.toUpperCase() : text.toLowerCase())
 };
 
 if (text) {
-return client.sendMessage(m.chat, { text: `◈━━━━━━━━━━━━━━━━◈\n│❒ Yo, ${m.pushName}, what’s with the extra garbage? Just say !repo, you idiot.` }, { quoted: m });
+return client.sendMessage(m.chat, { text: `◈━━━━━━━━━━━━━━━━◈\n│❒ Olá, ${m.pushName}! Use apenas !repo para ver as informações.\n◈━━━━━━━━━━━━━━━━◈` }, { quoted: m });
 }
 
 try {
@@ -36,17 +36,17 @@ const repoInfo = {
   htmlUrl: repoData.html_url  
 };  
 
-const createdDate = new Date(repoInfo.createdAt).toLocaleDateString('en-GB');  
-const lastUpdateDate = new Date(repoInfo.lastUpdate).toLocaleDateString('en-GB');  
+const createdDate = new Date(repoInfo.createdAt).toLocaleDateString('pt-BR');
+const lastUpdateDate = new Date(repoInfo.lastUpdate).toLocaleDateString('pt-BR');
 
-const replyText = `◈━━━━━━━━━━━━━━━━◈\n│❒ *${botname} Repo*\n\n` +  
-                 `🌟 *Sƚαɾʂ*: ${repoInfo.stars} (y’all better star)\n` +  
-                 `🔗 *Fσɾƙʂ*: ${repoInfo.forks} (do fork)\n` +  
-                 `📅 *Cɾҽαƚҽԃ*: ${createdDate} (born to rule)\n` +  
-                 `🕒 *Lαʂƚ Uρԃαƚҽԃ*: ${lastUpdateDate} (still fresh)\n` +  
-                 `👤 *Oɯɳҽɾ*: ${repoInfo.owner} (that’s me)\n` +  
-                 `🔍 *Vιʂιƚ*: ${repoInfo.htmlUrl} (check the repo)\n\n` +  
-                 `│❒ Wanna know the genius behind this? Hit the button below!`;  
+const replyText = `◈━━━━━━━━━━━━━━━━◈\n│❒ *Repositório do ${botname}*\n\n` +
+                 `🌟 *Stars*: ${repoInfo.stars} (apoie com uma estrela)\n` +
+                 `🔗 *Forks*: ${repoInfo.forks} (faça seu fork)\n` +
+                 `📅 *Criado em*: ${createdDate}\n` +
+                 `🕒 *Atualizado em*: ${lastUpdateDate}\n` +
+                 `👤 *Owner*: ${repoInfo.owner}\n` +
+                 `🔍 *Visite*: ${repoInfo.htmlUrl}\n\n` +
+                 `│❒ Quer falar com quem mantém tudo ON? Toque no botão abaixo!`;
 
 await client.sendMessage(m.chat, {  
   text: replyText,  
@@ -60,7 +60,7 @@ await client.sendMessage(m.chat, {
     externalAdReply: {  
       showAdAttribution: false,  
       title: `${botname}`,  
-      body: `Yo! Don’t fuck this up.`,  
+      body: `Oi! Aproveite o conteúdo.`,
       sourceUrl: `https://github.com/xhclintohn/Toxic-MD`,  
       mediaType: 1,  
       renderLargerThumbnail: true  
@@ -70,6 +70,6 @@ await client.sendMessage(m.chat, {
 
 } catch (error) {
 console.error('Error in repo command:', error);
-await client.sendMessage(m.chat, { text: `◈━━━━━━━━━━━━━━━━◈\n│❒ Couldn’t grab repo info, something’s fucked up. Check it yourself: https://github.com/xhclintohn/Toxic-MD` }, { quoted: m });
+await client.sendMessage(m.chat, { text: `◈━━━━━━━━━━━━━━━━◈\n│❒ Não consegui buscar as informações do repositório agora.\n│❒ Confira manualmente: https://github.com/xhclintohn/Toxic-MD\n◈━━━━━━━━━━━━━━━━◈` }, { quoted: m });
 }
 };

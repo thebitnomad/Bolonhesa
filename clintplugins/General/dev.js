@@ -10,7 +10,7 @@ module.exports = {
     try {
       const settings = await getSettings();
       if (!settings) {
-        await client.sendMessage(m.chat, { text: `◈━━━━━━━━━━━━━━━━◈\n│❒ Error: Couldn't load settings.` }, { quoted: m });
+        await client.sendMessage(m.chat, { text: `◈━━━━━━━━━━━━━━━━◈\n│❒ Não foi possível carregar as configurações.\n│❒ Tente novamente em instantes.\n◈━━━━━━━━━━━━━━━━◈` }, { quoted: m });
         return;
       }
 
@@ -36,7 +36,7 @@ module.exports = {
     } catch (error) {
       console.error('Error sending developer contact:', error);
       await client.sendMessage(m.chat, {
-        text: `Oops! Something went wrong. Try again later.`
+        text: `◈━━━━━━━━━━━━━━━━◈\n│❒ Opa! Algo deu errado ao enviar o contato.\n│❒ Tente novamente daqui a pouco.\n◈━━━━━━━━━━━━━━━━◈`
       }, { quoted: m });
     }
   }

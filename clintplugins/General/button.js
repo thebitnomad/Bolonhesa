@@ -9,26 +9,26 @@ module.exports = {
 
     try {
       await client.sendMessage(m.chat, {
-        text: 'Choose an option from the list:',
+        text: '◈━━━━━━━━━━━━━━━━◈\n│❒ Escolha uma opção na lista abaixo.\n│❒ Tudo pronto para ajudar!\n◈━━━━━━━━━━━━━━━━◈',
         footer: 'Toxic-MD Bot',
         sections: [
           {
-            title: 'General Commands',
+            title: 'Comandos Gerais',
             rows: [
-              { title: '📌 Help', rowId: '.help', description: 'Get bot commands' },
-              { title: '🏓 Ping', rowId: '.ping', description: 'Check bot speed' },
-              { title: 'ℹ Info', rowId: '.info', description: 'View bot details' }
+              { title: '📌 Ajuda', rowId: '.help', description: 'Ver comandos do bot' },
+              { title: '🏓 Ping', rowId: '.ping', description: 'Testar velocidade' },
+              { title: 'ℹ Info', rowId: '.info', description: 'Ver detalhes do bot' }
             ]
           },
           {
-            title: 'Fun Commands',
+            title: 'Comandos Divertidos',
             rows: [
-              { title: '🎲 Random Fact', rowId: '.fact', description: 'Get a fun fact' },
-              { title: '😂 Joke', rowId: '.joke', description: 'Hear a joke' }
+              { title: '🎲 Curiosidade', rowId: '.fact', description: 'Receber um fato divertido' },
+              { title: '😂 Piada', rowId: '.joke', description: 'Ouvir uma piada' }
             ]
           }
         ],
-        buttonText: 'Open Menu',
+        buttonText: 'Abrir Menu',
         headerType: 1,
         viewOnce: true
       }, { quoted: m });
