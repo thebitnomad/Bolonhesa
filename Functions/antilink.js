@@ -56,7 +56,7 @@ module.exports = async (client, m) => {
         await client.sendMessage(m.chat, {
             text:
                 `◈━━❰ *Antilink* ❱━━◈\n` +
-                `│ 🙅 @${m.sender.split("@")[0]}, link aqui não, né? 😂\n` +
+                `│ 🙅 @${m.sender.split("@")[0]}, link aqui não, né? 😅\n` +
                 `│ 🧹 Seu link foi limpo do rolê.\n` +
                 (antilinkMode === "remove"
                     ? `│ 🚪 Modo hardcore ativado: você foi removido por mandar link no grupo.\n`
