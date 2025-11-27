@@ -14,7 +14,7 @@ module.exports = async (context) => {
       if (!settings || Object.keys(settings).length === 0) {
         return await client.sendMessage(
           m.chat,
-          { text: formatStylishReply("Database is fucked, no settings found. Fix it, loser.") },
+          { text: formatStylishReply("Não encontrei nenhuma configuração no banco de dados. Dê uma olhada nisso depois. 😉") },
           { quoted: m, ad: true }
         );
       }
@@ -26,7 +26,7 @@ module.exports = async (context) => {
         if (settings.presence === value) {
           return await client.sendMessage(
             m.chat,
-            { text: formatStylishReply(`Presence is already ${value.toUpperCase()}, genius. Stop wasting my time.`) },
+            { text: formatStylishReply(`A presença já está definida como ${value.toUpperCase()}. Nada para mudar por aqui. 😄`) },
             { quoted: m, ad: true }
           );
         }
@@ -34,23 +34,25 @@ module.exports = async (context) => {
         await updateSetting('presence', value);
         return await client.sendMessage(
           m.chat,
-          { text: formatStylishReply(`Presence set to ${value.toUpperCase()}. Bot’s flexing that status now!`) },
+          { text: formatStylishReply(`Presença atualizada para ${value.toUpperCase()}! Bot ajustado com sucesso. 🔧`) },
           { quoted: m, ad: true }
         );
       }
 
       const buttons = [
-        { buttonId: `${prefix}presence online`, buttonText: { displayText: "ONLINE 🟢" }, type: 1 },
-        { buttonId: `${prefix}presence offline`, buttonText: { displayText: "OFFLINE ⚫" }, type: 1 },
-        { buttonId: `${prefix}presence recording`, buttonText: { displayText: "RECORDING 🎙️" }, type: 1 },
-        { buttonId: `${prefix}presence typing`, buttonText: { displayText: "TYPING ⌨️" }, type: 1 },
+        { buttonId: `${prefix}presence online`,     buttonText: { displayText: "ONLINE 🟢" },    type: 1 },
+        { buttonId: `${prefix}presence offline`,    buttonText: { displayText: "OFFLINE ⚫" },   type: 1 },
+        { buttonId: `${prefix}presence recording`,  buttonText: { displayText: "RECORDING 🎙️" }, type: 1 },
+        { buttonId: `${prefix}presence typing`,     buttonText: { displayText: "TYPING ⌨️" },    type: 1 },
       ];
 
       await client.sendMessage(
         m.chat,
         {
-          text: formatStylishReply(`Presence is ${settings.presence ? settings.presence.toUpperCase() : 'NONE'}. Pick a vibe, fam! 🔥`),
-          footer: "> Pσɯҽɾԃ Ⴆყ Tσxιƈ-ɱԃȥ",
+          text: formatStylishReply(
+            `Presença atual: ${settings.presence ? settings.presence.toUpperCase() : 'NENHUMA DEFINIDA'}.\nEscolha um modo que combine com o momento. 🔥`
+          ),
+          footer: "> Powered by Toxic-MD",
           buttons,
           headerType: 1,
           viewOnce: true,
@@ -60,7 +62,7 @@ module.exports = async (context) => {
     } catch (error) {
       await client.sendMessage(
         m.chat,
-        { text: formatStylishReply("Shit broke, couldn’t update presence. Database or something’s fucked. Try later.") },
+        { text: formatStylishReply("Tive um problema ao atualizar a presença. Tente novamente mais tarde, por favor. 🙏") },
         { quoted: m, ad: true }
       );
     }
