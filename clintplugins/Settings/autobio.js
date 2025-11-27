@@ -14,7 +14,11 @@ module.exports = async (context) => {
       if (!settings || Object.keys(settings).length === 0) {
         return await client.sendMessage(
           m.chat,
-          { text: formatStylishReply("Database is fucked, no settings found. Fix it, loser.") },
+          {
+            text: formatStylishReply(
+              "Não foi possível encontrar as configurações no banco de dados.\n│❒ Verifique as definições do bot antes de tentar novamente."
+            )
+          },
           { quoted: m, ad: true }
         );
       }
@@ -23,10 +27,15 @@ module.exports = async (context) => {
 
       if (value === 'on' || value === 'off') {
         const action = value === 'on';
+
         if (settings.autobio === action) {
           return await client.sendMessage(
             m.chat,
-            { text: formatStylishReply(`Autobio’s already ${value.toUpperCase()}, you brain-dead fool! Stop wasting my time. 😈`) },
+            {
+              text: formatStylishReply(
+                `O Autobio já está definido como ${value.toUpperCase()}. 😉`
+              )
+            },
             { quoted: m, ad: true }
           );
         }
@@ -34,7 +43,14 @@ module.exports = async (context) => {
         await updateSetting('autobio', action);
         return await client.sendMessage(
           m.chat,
-          { text: formatStylishReply(`Autobio ${value.toUpperCase()} activated! 🔥 ${action ? 'Bot’s flexing status updates every 10 seconds, bow down! 🦁' : 'No more status flexing, you’re not worth it. 😴'}`) },
+          {
+            text: formatStylishReply(
+              `Autobio definido para ${value.toUpperCase()} com sucesso! 🔥\n` +
+              (action
+                ? "O status do bot será atualizado automaticamente a cada 10 segundos. 🦁"
+                : "O status automático foi desativado. 😴")
+            )
+          },
           { quoted: m, ad: true }
         );
       }
@@ -47,8 +63,11 @@ module.exports = async (context) => {
       await client.sendMessage(
         m.chat,
         {
-          text: formatStylishReply(`Autobio’s ${settings.autobio ? 'ON 🦁' : 'OFF 😴'}, dumbass. Pick a vibe, noob! 😈`),
-          footer: "> Pσɯҽɾԃ Ⴆყ Tσxιƈ-ɱԃȥ",
+          text: formatStylishReply(
+            `Status do Autobio: ${settings.autobio ? 'ON 🦁' : 'OFF 😴'}\n` +
+            `│❒ Escolha uma opção abaixo para ativar ou desativar o status automático.`
+          ),
+          footer: "> Powered by *9bot*",
           buttons,
           headerType: 1,
           viewOnce: true,
@@ -58,7 +77,11 @@ module.exports = async (context) => {
     } catch (error) {
       await client.sendMessage(
         m.chat,
-        { text: formatStylishReply("Shit broke, couldn’t mess with autobio. Database or something’s fucked. Try later.") },
+        {
+          text: formatStylishReply(
+            "Ocorreu um erro ao atualizar o Autobio.\n│❒ Verifique o banco de dados ou tente novamente em alguns instantes."
+          )
+        },
         { quoted: m, ad: true }
       );
     }
