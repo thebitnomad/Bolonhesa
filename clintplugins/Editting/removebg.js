@@ -3,7 +3,7 @@ const FormData = require('form-data');
 const fs = require('fs');
 const path = require('path');
 
-// Upload function to send image to qu.ax and get a URL
+// Função de upload: envia a imagem para qu.ax e retorna a URL
 async function uploadImage(buffer) {
     const tempFilePath = path.join(__dirname, `temp_${Date.now()}.jpg`);
     fs.writeFileSync(tempFilePath, buffer);
@@ -30,79 +30,134 @@ async function uploadImage(buffer) {
 module.exports = {
     name: 'removebg',
     aliases: ['nobg', 'rmbg', 'transparent'],
-    description: 'Removes background from images using AI',
+    description: 'Remove o fundo de imagens usando IA',
     run: async (context) => {
         const { client, m, mime } = context;
 
-        // Determine whether the image is from quoted or current message
+        // Define se a imagem vem da mensagem respondida ou da própria mensagem
         const quoted = m.quoted ? m.quoted : m;
         const quotedMime = quoted.mimetype || mime || '';
 
         if (!/image/.test(quotedMime)) {
-            return client.sendMessage(m.chat, {
-                text: `◈━━━━━━━━━━━━━━━━◈\n│❒ Yo, @${m.sender.split('@')[0]}! 😤 Please reply to an image!\n│❒ Example: Reply to an image with .removebg\n┗━━━━━━━━━━━━━━━┛`,
-                mentions: [m.sender]
-            }, { quoted: m });
+            return client.sendMessage(
+                m.chat,
+                {
+                    text:
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Olá, @${m.sender.split('@')[0]}!
+│❒ Por favor, responda a uma *imagem* para remover o fundo.
+│❒ Exemplo: responda a uma imagem com *.removebg*
+◈━━━━━━━━━━━━━━━━◈`,
+                    mentions: [m.sender]
+                },
+                { quoted: m }
+            );
         }
 
-        // Send loading message
-        const loadingMsg = await client.sendMessage(m.chat, {
-            text: '◈━━━━━━━━━━━━━━━━◈\n│❒ Removing background from image... 🎨\n│❒ This may take a moment ⏳\n┗━━━━━━━━━━━━━━━┛'
-        }, { quoted: m });
+        // Mensagem de carregamento
+        const loadingMsg = await client.sendMessage(
+            m.chat,
+            {
+                text:
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Removendo o fundo da imagem... 🎨
+│❒ Isso pode levar alguns instantes ⏳
+◈━━━━━━━━━━━━━━━━◈`
+            },
+            { quoted: m }
+        );
 
         try {
-            // Step 1: Download image
+            // Etapa 1: baixar a imagem
             const media = await quoted.download();
 
             if (!media) {
                 await client.sendMessage(m.chat, { delete: loadingMsg.key });
-                return client.sendMessage(m.chat, {
-                    text: '◈━━━━━━━━━━━━━━━━◈\n│❒ Failed to download the image!\n│❒ Please try again with a different image\n┗━━━━━━━━━━━━━━━┛'
-                }, { quoted: m });
+                return client.sendMessage(
+                    m.chat,
+                    {
+                        text:
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Não foi possível baixar a imagem.
+│❒ Tente novamente com outra imagem.
+◈━━━━━━━━━━━━━━━━◈`
+                    },
+                    { quoted: m }
+                );
             }
 
-            // Step 2: Size limit check
+            // Etapa 2: checar limite de tamanho (10MB)
             if (media.length > 10 * 1024 * 1024) {
                 await client.sendMessage(m.chat, { delete: loadingMsg.key });
-                return client.sendMessage(m.chat, {
-                    text: '◈━━━━━━━━━━━━━━━━◈\n│❒ Image is too large!\n│❒ Maximum size: 10MB\n┗━━━━━━━━━━━━━━━┛'
-                }, { quoted: m });
+                return client.sendMessage(
+                    m.chat,
+                    {
+                        text:
+`◈━━━━━━━━━━━━━━━━◈
+│❒ A imagem é muito grande.
+│❒ Tamanho máximo permitido: *10MB*.
+◈━━━━━━━━━━━━━━━━◈`
+                    },
+                    { quoted: m }
+                );
             }
 
-            // Step 3: Upload image to get a public URL
-            await client.sendMessage(m.chat, {
-                text: '◈━━━━━━━━━━━━━━━━◈\n│❒ Uploading image for processing... 📤\n┗━━━━━━━━━━━━━━━┛'
-            }, { quoted: m });
+            // Etapa 3: upload da imagem para obter URL pública
+            await client.sendMessage(
+                m.chat,
+                {
+                    text:
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Enviando a imagem para processamento... 📤
+◈━━━━━━━━━━━━━━━━◈`
+                },
+                { quoted: m }
+            );
 
             const { url: imageUrl } = await uploadImage(media);
 
-            // Step 4: Call the remove background API
-            await client.sendMessage(m.chat, {
-                text: '◈━━━━━━━━━━━━━━━━◈\n│❒ Processing image with AI... 🤖\n│❒ Removing background...\n┗━━━━━━━━━━━━━━━┛'
-            }, { quoted: m });
+            // Etapa 4: chamar a API de remoção de fundo
+            await client.sendMessage(
+                m.chat,
+                {
+                    text:
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Processando a imagem com IA... 🤖
+│❒ Removendo o fundo...
+◈━━━━━━━━━━━━━━━━◈`
+                },
+                { quoted: m }
+            );
 
             const encodedUrl = encodeURIComponent(imageUrl);
             const removeBgApiUrl = `https://api.ootaizumi.web.id/tools/removebg?imageUrl=${encodedUrl}`;
             
             const response = await axios.get(removeBgApiUrl, {
                 headers: { 
-                    'accept': 'application/json',
+                    accept: 'application/json',
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
                 },
-                timeout: 60000 // 60 second timeout for processing
+                timeout: 60000 // 60 segundos de timeout
             });
 
-            // Validate API response
+            // Valida resposta da API
             if (!response.data.status || !response.data.result) {
                 throw new Error('Background removal API failed to process the image');
             }
 
             const transparentImageUrl = response.data.result;
 
-            // Step 5: Download the transparent image
-            await client.sendMessage(m.chat, {
-                text: '◈━━━━━━━━━━━━━━━━◈\n│❒ Downloading result... 📥\n┗━━━━━━━━━━━━━━━┛'
-            }, { quoted: m });
+            // Etapa 5: baixar a imagem com fundo removido
+            await client.sendMessage(
+                m.chat,
+                {
+                    text:
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Baixando o resultado... 📥
+◈━━━━━━━━━━━━━━━━◈`
+                },
+                { quoted: m }
+            );
 
             const transparentResponse = await axios.get(transparentImageUrl, {
                 responseType: 'arraybuffer',
@@ -111,19 +166,24 @@ module.exports = {
 
             const transparentImage = Buffer.from(transparentResponse.data);
 
-            // Step 6: Delete loading message and send result
+            // Etapa 6: apagar mensagem de carregamento e enviar resultado
             await client.sendMessage(m.chat, { delete: loadingMsg.key });
 
             await client.sendMessage(
                 m.chat,
                 { 
                     image: transparentImage, 
-                    caption: '◈━━━━━━━━━━━━━━━━◈\n│❒ Background Removed! ✨\n│❒ Image is now transparent\n│❒ Perfect for stickers! 🎨\n┗━━━━━━━━━━━━━━━┛' 
+                    caption:
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Fundo removido com sucesso! ✨
+│❒ A imagem agora está transparente.
+│❒ Perfeita para criar figurinhas. 🎨
+◈━━━━━━━━━━━━━━━━◈`
                 },
                 { quoted: m }
             );
 
-            // Also send as document for better quality if it's PNG
+            // Também envia como documento PNG para melhor qualidade, se for o caso
             if (transparentResponse.headers['content-type']?.includes('png')) {
                 await client.sendMessage(
                     m.chat,
@@ -131,7 +191,11 @@ module.exports = {
                         document: transparentImage,
                         mimetype: 'image/png',
                         fileName: `transparent_bg_${Date.now()}.png`,
-                        caption: '◈━━━━━━━━━━━━━━━━◈\n│❒ PNG Version (Better Quality)\n│❒ Use this for stickers! 🎨\n┗━━━━━━━━━━━━━━━┛'
+                        caption:
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Versão PNG (alta qualidade)
+│❒ Ideal para uso em figurinhas. 🎨
+◈━━━━━━━━━━━━━━━━◈`
                     },
                     { quoted: m }
                 );
@@ -140,32 +204,45 @@ module.exports = {
         } catch (err) {
             console.error('RemoveBG error:', err);
             
-            // Delete loading message on error
+            // Apaga mensagem de carregamento em caso de erro
             try {
                 await client.sendMessage(m.chat, { delete: loadingMsg.key });
             } catch (e) {
-                // Ignore delete errors
+                // Ignora erro ao apagar
             }
 
-            let errorMessage = 'An unexpected error occurred';
-            
+            let errorMessage = 'Ocorreu um erro inesperado.';
+
             if (err.message.includes('timeout')) {
-                errorMessage = 'Processing timed out. The image might be too complex or the server is busy.';
+                errorMessage = 'O processamento excedeu o tempo limite. A imagem pode ser muito complexa ou o servidor está ocupado.';
             } else if (err.message.includes('Network Error')) {
-                errorMessage = 'Network error. Please check your connection and try again.';
+                errorMessage = 'Erro de rede. Verifique sua conexão e tente novamente.';
             } else if (err.message.includes('Upload error')) {
-                errorMessage = 'Failed to upload image for processing.';
+                errorMessage = 'Falha ao enviar a imagem para processamento.';
             } else if (err.message.includes('Background removal API failed')) {
-                errorMessage = 'The AI failed to remove the background from this image.';
+                errorMessage = 'A IA não conseguiu remover o fundo desta imagem.';
             } else if (err.message.includes('ENOTFOUND')) {
-                errorMessage = 'Cannot connect to the background removal service.';
+                errorMessage = 'Não foi possível conectar ao serviço de remoção de fundo.';
             } else {
                 errorMessage = err.message;
             }
 
-            await client.sendMessage(m.chat, {
-                text: `◈━━━━━━━━━━━━━━━━◈\n│❒ Background Removal Failed! 😤\n│❒ Error: ${errorMessage}\n│❒ \n│❒ Tips:\n│❒ • Use clear, high-contrast images\n│❒ • Ensure subject is well-defined\n│❒ • Try with different image\n┗━━━━━━━━━━━━━━━┛`
-            }, { quoted: m });
+            await client.sendMessage(
+                m.chat,
+                {
+                    text:
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Não foi possível remover o fundo da imagem. 😔
+│❒ Erro: ${errorMessage}
+│❒ 
+│❒ Dicas:
+│❒ • Use imagens com bom contraste entre fundo e objeto.
+│❒ • Evite fundos muito poluídos ou complexos.
+│❒ • Tente com outra imagem, se possível.
+◈━━━━━━━━━━━━━━━━◈`
+                },
+                { quoted: m }
+            );
         }
     }
 };
