@@ -2,35 +2,52 @@ const ownerMiddleware = require('../../utility/botUtil/Ownermiddleware');
 
 module.exports = async (context) => {
   await ownerMiddleware(context, async () => {
-    const { client, m, text, Owner } = context;
+    const { client, m } = context;
 
-  try {
+    try {
+      const allGroups = await client.groupFetchAllParticipating();
+      const groups = Object.entries(allGroups).map(entry => entry[1]);
+      const groupIds = groups.map(v => v.id);
 
-      let getGroupzs = await client.groupFetchAllParticipating();
-      let groupzs = Object.entries(getGroupzs)
-          .slice(0)
-          .map((entry) => entry[1]);
-      let anaa = groupzs.map((v) => v.id);
-      let jackhuh = `Bot groups:-\n\n`
-      await m.reply(`Bot is in ${anaa.length} groups, fetching and sending their jids!`)
-      const promises = anaa.map((i) => {
+      await m.reply(
+        "◈━━━━━━━━━━━━━━━━◈\n" +
+        `│❒ O bot está em ${groupIds.length} grupos.\n` +
+        "│❒ Buscando informações e listando todos os JIDs...\n" +
+        "◈━━━━━━━━━━━━━━━━◈"
+      );
+
+      let resultText = "◈━━━━━━━━━━━━━━━━◈\n" +
+                       "│❒ LISTA DE GRUPOS DO BOT\n" +
+                       "◈━━━━━━━━━━━━━━━━◈\n\n";
+
+      const promises = groupIds.map(groupId => {
         return new Promise((resolve) => {
-          client.groupMetadata(i).then((metadat) => {
-            setTimeout(() => {
-              jackhuh += `Subject:- ${metadat.subject}\n`
-              jackhuh += `Members: ${metadat.participants.length}\n`
-              jackhuh += `Jid:- ${i}\n\n`
-              resolve()
-            }, 500);
-          })
-        })
-      })
-      await Promise.all(promises)
-      m.reply(jackhuh);
+          client.groupMetadata(groupId)
+            .then(metadata => {
+              setTimeout(() => {
+                resultText += `🔹 *Nome:* ${metadata.subject}\n`;
+                resultText += `👥 *Membros:* ${metadata.participants.length}\n`;
+                resultText += `🆔 *JID:* ${groupId}\n`;
+                resultText += "◈━━━━━━━━━━━━━━━━◈\n\n";
+                resolve();
+              }, 500);
+            })
+            .catch(() => resolve()); // ignora erro de um grupo específico, continua nos demais
+        });
+      });
 
-  } catch (e) {
-    m.reply("Error occured while accessing bot groups.\n\n" + e)
-  }
+      await Promise.all(promises);
+
+      await m.reply(resultText || "◈━━━━━━━━━━━━━━━━◈\n│❒ Não foi possível obter os grupos do bot.\n◈━━━━━━━━━━━━━━━━◈");
+
+    } catch (e) {
+      await m.reply(
+        "◈━━━━━━━━━━━━━━━━◈\n" +
+        "│❒ Ocorreu um erro ao acessar os grupos do bot.\n" +
+        `│❒ Detalhes: ${e.message || e}\n` +
+        "◈━━━━━━━━━━━━━━━━◈"
+      );
+    }
 
   });
-}
+};
