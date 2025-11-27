@@ -2,56 +2,71 @@ module.exports = async (context) => {
   const { client, m, text } = context;
   const axios = require("axios");
 
+  const formatReply = (msg) => {
+    return (
+      "◈━━━━━━━━━━━━━━━━◈\n" +
+      `│❒ ${msg}\n` +
+      "◈━━━━━━━━━━━━━━━━◈"
+    );
+  };
+
   if (!text) {
-    m.reply(
+    return m.reply(
       "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈\n" +
-      "│ ❒ ERROR\n" +
+      "│ ❒ GOOGLE SEARCH • ERROR\n" +
       "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈\n" +
-      "│ 🚫 Please provide a search term!\n" +
-      "│ ❒ Example: .google What is treason\n" +
+      "│ 🚫 Por favor, informe um termo para pesquisa.\n" +
+      "│ ❒ Exemplo: .google 9bot\n" +
       "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈"
     );
-    return;
   }
 
   try {
-    let { data } = await axios.get(
-      `https://www.googleapis.com/customsearch/v1?q=${text}&key=AIzaSyDMbI3nvmQUrfjoCJYLS69Lej1hSXQjnWI&cx=baf9bdb0c631236e5`
+    const { data } = await axios.get(
+      `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(
+        text
+      )}&key=AIzaSyDMbI3nvmQUrfjoCJYLS69Lej1hSXQjnWI&cx=baf9bdb0c631236e5`
     );
 
-    if (data.items.length == 0) {
-      m.reply(
+    if (!data.items || data.items.length === 0) {
+      return m.reply(
         "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈\n" +
-        "│ ❒ ERROR\n" +
+        "│ ❒ GOOGLE SEARCH\n" +
         "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈\n" +
-        "│ ❌ Unable to find any results\n" +
+        `│ ❌ Não encontrei resultados para: "${text}".\n` +
+        "│ ❒ Tente refinar a pesquisa ou usar outros termos.\n" +
         "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈"
       );
-      return;
     }
 
+    const maxResults = Math.min(data.items.length, 5); // limita para não floodar
     let tex = "";
     tex += "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈\n";
     tex += "│ ❒ GOOGLE SEARCH\n";
     tex += "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈\n";
-    tex += "│ 🔍 Search Term: " + text + "\n";
+    tex += `│ 🔍 Termo: ${text}\n`;
+    tex += "│ ❒ Mostrando até " + maxResults + " resultado(s).\n";
     tex += "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈\n";
 
-    for (let i = 0; i < data.items.length; i++) {
-      tex += "│ ❒ Result " + (i + 1) + "\n";
-      tex += "│ 🪧 Title: " + data.items[i].title + "\n";
-      tex += "│ 📝 Description: " + data.items[i].snippet + "\n";
-      tex += "│ 🌐 Link: " + data.items[i].link + "\n";
+    for (let i = 0; i < maxResults; i++) {
+      const item = data.items[i];
+      tex += `│ ❒ Resultado ${i + 1}\n`;
+      tex += `│ 🪧 Título: ${item.title || "N/A"}\n`;
+      tex += `│ 📝 Descrição: ${item.snippet || "N/A"}\n`;
+      tex += `│ 🌐 Link: ${item.link || "N/A"}\n`;
       tex += "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈\n";
     }
 
-    m.reply(tex);
+    await m.reply(tex);
   } catch (e) {
-    m.reply(
+    console.error("Google Search Error:", e.message);
+    return m.reply(
       "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈\n" +
-      "│ ❒ ERROR\n" +
+      "│ ❒ GOOGLE SEARCH • ERROR\n" +
       "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈\n" +
-      "│ ❌ An error occurred: " + e.message + "\n" +
+      "│ ❌ Ocorreu um erro ao tentar buscar no Google.\n" +
+      `│ ❒ Detalhe: ${e.message}\n` +
+      "│ ❒ Tente novamente em alguns instantes.\n" +
       "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈"
     );
   }
