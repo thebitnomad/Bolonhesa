@@ -8,18 +8,33 @@ module.exports = async (context) => {
     const jid = m.chat;
 
     if (!jid.endsWith('@g.us')) {
-      return await m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Yo, dumbass, this command’s for groups only. Get lost.`);
+      return await m.reply(
+        `◈━━━━━━━━━━━━━━━━◈\n` +
+        `│❒ Este comando só pode ser usado em grupos.\n` +
+        `│❒ Use-o dentro de um grupo para funcionar corretamente.\n` +
+        `┗━━━━━━━━━━━━━━━┛`
+      );
     }
 
     try {
       const settings = await getSettings();
       if (!settings) {
-        return await m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Database is fucked, no settings found. Fix it, loser.`);
+        return await m.reply(
+          `◈━━━━━━━━━━━━━━━━◈\n` +
+          `│❒ Não foi possível carregar as configurações gerais do bot.\n` +
+          `│❒ Verifique o banco de dados antes de tentar novamente.\n` +
+          `┗━━━━━━━━━━━━━━━┛`
+        );
       }
 
       let groupSettings = await getGroupSetting(jid);
       if (!groupSettings) {
-        return await m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ No group settings found. Database’s acting up, try again.`);
+        return await m.reply(
+          `◈━━━━━━━━━━━━━━━━◈\n` +
+          `│❒ Não há configurações salvas para este grupo.\n` +
+          `│❒ Tente novamente mais tarde ou revise o banco de dados.\n` +
+          `┗━━━━━━━━━━━━━━━┛`
+        );
       }
 
       let isEnabled = groupSettings?.antiforeign === true;
@@ -31,23 +46,50 @@ module.exports = async (context) => {
 
       if (value === 'on' || value === 'off') {
         if (!isBotAdmin) {
-          return await m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Make me an admin first, you clown. Can’t touch antiforeign without juice.`);
+          return await m.reply(
+            `◈━━━━━━━━━━━━━━━━◈\n` +
+            `│❒ Eu preciso ser administrador do grupo para alterar o antiforeign.\n` +
+            `│❒ Dê permissão de admin para o bot e tente novamente.\n` +
+            `┗━━━━━━━━━━━━━━━┛`
+          );
         }
 
         const action = value === 'on';
 
         if (isEnabled === action) {
-          return await m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Antiforeign’s already ${value.toUpperCase()}, genius. Stop wasting my time.`);
+          return await m.reply(
+            `◈━━━━━━━━━━━━━━━━◈\n` +
+            `│❒ O antiforeign já está definido como ${value.toUpperCase()} neste grupo.\n` +
+            `│❒ Nenhuma alteração foi necessária.\n` +
+            `┗━━━━━━━━━━━━━━━┛`
+          );
         }
 
         await updateGroupSetting(jid, 'antiforeign', action);
-        await m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Antiforeign’s now ${value.toUpperCase()}. Foreigners better watch out or get yeeted!`);
+        await m.reply(
+          `◈━━━━━━━━━━━━━━━━◈\n` +
+          `│❒ Antiforeign definido para ${value.toUpperCase()} com sucesso.\n` +
+          `│❒ Novos participantes estrangeiros serão filtrados conforme a regra atual.\n` +
+          `┗━━━━━━━━━━━━━━━┛`
+        );
       } else {
-        await m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Antiforeign’s ${isEnabled ? 'ON' : 'OFF'} in this group, dipshit.\n\nUse ${prefix}antiforeign on or ${prefix}antiforeign off to change it.`);
+        await m.reply(
+          `◈━━━━━━━━━━━━━━━━◈\n` +
+          `│❒ Status do antiforeign neste grupo: ${isEnabled ? 'ON' : 'OFF'}.\n` +
+          `│❒ Para alterar, use:\n` +
+          `│   • ${prefix}antiforeign on\n` +
+          `│   • ${prefix}antiforeign off\n` +
+          `┗━━━━━━━━━━━━━━━┛`
+        );
       }
     } catch (error) {
       console.error('[Antiforeign] Error in command:', error);
-      await m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Shit broke, couldn’t mess with antiforeign. Database or something’s fucked. Try later.`);
+      await m.reply(
+        `◈━━━━━━━━━━━━━━━━◈\n` +
+        `│❒ Ocorreu um erro ao tentar atualizar o antiforeign.\n` +
+        `│❒ Verifique o banco de dados ou tente novamente mais tarde.\n` +
+        `┗━━━━━━━━━━━━━━━┛`
+      );
     }
   });
 };
