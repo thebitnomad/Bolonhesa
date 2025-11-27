@@ -8,45 +8,54 @@ module.exports = async (context) => {
 
     const settings = await getSettings();
 
+    // Remover prefixo (prefixo "null")
     if (newPrefix === 'null') {
       if (!settings.prefix) {
         return await m.reply(
           `◈━━━━━━━━━━━━━━━━◈\n` +
-          `│❒ Already prefixless, you clueless twit! 😈\n` +
-          `│❒ Stop wasting my time! 🖕\n` +
+          `│❒ O bot já está sem prefixo no momento. 😉\n` +
+          `│❒ Nada para mudar por aqui.\n` +
           `┗━━━━━━━━━━━━━━━┛`
         );
       }
+
       await updateSetting('prefix', '');
-      await m.reply(
+      return await m.reply(
         `◈━━━━━━━━━━━━━━━━◈\n` +
-        `│❒ Prefix obliterated! 🔥\n` +
-        `│❒ I’m prefixless now, bow down! 😈\n` +
-        `┗━━━━━━━━━━━━━━━┛`
-      );
-    } else if (newPrefix) {
-      if (settings.prefix === newPrefix) {
-        return await m.reply(
-          `◈━━━━━━━━━━━━━━━━◈\n` +
-          `│❒ Prefix is already ${newPrefix}, moron! 😈\n` +
-          `│❒ Try something new, fool! 🥶\n` +
-          `┗━━━━━━━━━━━━━━━┛`
-        );
-      }
-      await updateSetting('prefix', newPrefix);
-      await m.reply(
-        `◈━━━━━━━━━━━━━━━━◈\n` +
-        `│❒ New prefix set to ${newPrefix}! 🔥\n` +
-        `│❒ Obey the new order, king! 😈\n` +
-        `┗━━━━━━━━━━━━━━━┛`
-      );
-    } else {
-      await m.reply(
-        `◈━━━━━━━━━━━━━━━━◈\n` +
-        `│❒ Current Prefix: ${settings.prefix || 'No prefix, peasant! 🥶'}\n` +
-        `│❒ Use "${settings.prefix || '.'}prefix null" to go prefixless or "${settings.prefix || '.'}prefix <symbol>" to set one, noob!\n` +
+        `│❒ Prefixo removido com sucesso! 🔥\n` +
+        `│❒ Agora o bot funciona sem prefixo.\n` +
         `┗━━━━━━━━━━━━━━━┛`
       );
     }
+
+    // Definir novo prefixo
+    if (newPrefix) {
+      if (settings.prefix === newPrefix) {
+        return await m.reply(
+          `◈━━━━━━━━━━━━━━━━◈\n` +
+          `│❒ O prefixo já é "${newPrefix}". 😊\n` +
+          `│❒ Se quiser, escolha um símbolo diferente.\n` +
+          `┗━━━━━━━━━━━━━━━┛`
+        );
+      }
+
+      await updateSetting('prefix', newPrefix);
+      return await m.reply(
+        `◈━━━━━━━━━━━━━━━━◈\n` +
+        `│❒ Novo prefixo definido como: "${newPrefix}" 🔥\n` +
+        `│❒ Use esse símbolo antes dos comandos a partir de agora.\n` +
+        `┗━━━━━━━━━━━━━━━┛`
+      );
+    }
+
+    // Exibir prefixo atual e instruções
+    const currentPrefix = settings.prefix || '';
+    await m.reply(
+      `◈━━━━━━━━━━━━━━━━◈\n` +
+      `│❒ Prefixo atual: ${currentPrefix ? `"${currentPrefix}"` : 'sem prefixo definido.'}\n` +
+      `│❒ Use "${currentPrefix || '.'}prefix null" para remover o prefixo,\n` +
+      `│❒ ou "${currentPrefix || '.'}prefix <símbolo>" para definir um novo.\n` +
+      `┗━━━━━━━━━━━━━━━┛`
+    );
   });
 };
