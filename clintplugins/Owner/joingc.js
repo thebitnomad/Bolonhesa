@@ -4,41 +4,51 @@ module.exports = async (context) => {
     await ownerMiddleware(context, async () => {
         const { client, m, text, args, Owner, botname } = context;
 
-        // Basic context checks with line-styled toxic replies
+        // Verificações básicas de contexto
         if (!botname) {
             console.error(`Join-Error: botname missing in context.`);
             return m.reply(
-                `◈━━━━━━━━━━━━━━━━◈\n│❒ Bot’s fucked. No botname in context. Yell at your dev, dumbass.\n◈━━━━━━━━━━━━━━━━◈`
+                `◈━━━━━━━━━━━━━━━━◈\n` +
+                `│❒ Bot sem identificação. (botname ausente no contexto)\n` +
+                `│❒ Por favor, revise as configurações.\n` +
+                `◈━━━━━━━━━━━━━━━━◈`
             );
         }
 
         if (!Owner) {
             console.error(`Join-Error: Owner missing in context.`);
             return m.reply(
-                `◈━━━━━━━━━━━━━━━━◈\n│❒ Bot’s broken. No owner in context. Go cry to the dev.\n◈━━━━━━━━━━━━━━━━◈`
+                `◈━━━━━━━━━━━━━━━━◈\n` +
+                `│❒ Informação do proprietário ausente.\n` +
+                `│❒ Verifique a configuração do dono do bot.\n` +
+                `◈━━━━━━━━━━━━━━━━◈`
             );
         }
 
-        // Accept link from: command arg, replied message, or raw text anywhere
-        let raw = (text && text.trim()) || (m.quoted && ((m.quoted.text) || (m.quoted && m.quoted.caption))) || "";
+        // Aceita link do texto, mensagem respondida ou comando
+        let raw =
+            (text && text.trim()) ||
+            (m.quoted && (m.quoted.text || m.quoted.caption)) ||
+            "";
         raw = String(raw || "").trim();
 
         if (!raw) {
             return m.reply(
-                `◈━━━━━━━━━━━━━━━━◈\n│❒ Provide a real group invite link or reply to one. Example: *${args && args[0] ? args[0] : '.join https://chat.whatsapp.com/abcdef...'}*\n◈━━━━━━━━━━━━━━━━◈`
+                `◈━━━━━━━━━━━━━━━━◈\n` +
+                `│❒ Envie um link de convite válido ou responda a um.\n` +
+                `│❒ Exemplo: *${args && args[0] ? args[0] : '.join https://chat.whatsapp.com/abcdef...'}*\n` +
+                `◈━━━━━━━━━━━━━━━━◈`
             );
         }
 
-        // Extract invite code robustly (supports full URL or plain code)
+        // Extrai o código do convite
         const urlRegex = /(?:https?:\/\/)?chat\.whatsapp\.com\/([A-Za-z0-9_-]+)/i;
         const match = raw.match(urlRegex);
         let inviteCode = match ? match[1] : null;
 
-        // If no URL, maybe user sent only the code
+        // Caso o usuário envie apenas o código
         if (!inviteCode) {
-            // take first token (in case user typed ".join <code>")
             const token = raw.split(/\s+/)[0];
-            // simple validation: must be alphanumeric-ish and length > 10 (len varies)
             if (/^[A-Za-z0-9_-]{8,}$/.test(token)) {
                 inviteCode = token;
             }
@@ -46,28 +56,32 @@ module.exports = async (context) => {
 
         if (!inviteCode) {
             return m.reply(
-                `◈━━━━━━━━━━━━━━━━◈\n│❒ That ain't a valid link or invite code. Don’t waste my time.\n◈━━━━━━━━━━━━━━━━◈`
+                `◈━━━━━━━━━━━━━━━━◈\n` +
+                `│❒ Não foi possível identificar um link ou código válido.\n` +
+                `◈━━━━━━━━━━━━━━━━◈`
             );
         }
 
-        inviteCode = inviteCode.replace(/\?.*$/, '').trim(); // strip query params if any
+        inviteCode = inviteCode.replace(/\?.*$/, '').trim(); // Remove query params
 
         try {
-            // Get info first so we can show subject in success message
+            // Obtém informações do grupo
             const info = await client.groupGetInviteInfo(inviteCode);
-            const subject = info?.subject || info?.groupMetadata?.subject || "Unknown Group";
+            const subject = info?.subject || info?.groupMetadata?.subject || "Grupo desconhecido";
 
-            // Try to accept invite
+            // Aceitar convite
             await client.groupAcceptInvite(inviteCode);
 
             return m.reply(
-                `◈━━━━━━━━━━━━━━━━◈\n│❒ ✅ Joined: *${subject}*\n│❒ Don’t spam, or I’ll ghost you. — ${botname}\n◈━━━━━━━━━━━━━━━━◈`
+                `◈━━━━━━━━━━━━━━━━◈\n` +
+                `│❒ ✅ Entrei no grupo: *${subject}*\n` +
+                `│❒ ${botname} agora está ativo no grupo.\n` +
+                `◈━━━━━━━━━━━━━━━━◈`
             );
+
         } catch (error) {
-            // Log for debugging
             console.error(`[JOIN-ERROR] invite=${inviteCode}`, error && (error.stack || error));
 
-            // Try to normalize the error status code from various shapes
             const status =
                 (error && error.output && error.output.statusCode) ||
                 error?.statusCode ||
@@ -76,42 +90,70 @@ module.exports = async (context) => {
                 (error?.response && error.response.status) ||
                 null;
 
-            // Map common cases (keeping your original messages but a bit polished)
+            // Tratamento por status
             if (status === 400 || status === 404) {
                 return m.reply(
-                    `◈━━━━━━━━━━━━━━━━◈\n│❒ ❌ Group does not exist or the link is invalid. Stop sending me trash links.\n◈━━━━━━━━━━━━━━━━◈`
-                );
-            }
-            if (status === 401) {
-                return m.reply(
-                    `◈━━━━━━━━━━━━━━━━◈\n│❒ 🚫 I was previously removed from that group. I can’t rejoin using this link.\n◈━━━━━━━━━━━━━━━━◈`
-                );
-            }
-            if (status === 409) {
-                return m.reply(
-                    `◈━━━━━━━━━━━━━━━━◈\n│❒ 🤨 I’m already in that group, genius. You trying to confuse me?\n◈━━━━━━━━━━━━━━━━◈`
-                );
-            }
-            if (status === 410) {
-                return m.reply(
-                    `◈━━━━━━━━━━━━━━━━◈\n│❒ 🔄 That invite link was reset. Get a fresh one and try again.\n◈━━━━━━━━━━━━━━━━◈`
-                );
-            }
-            if (status === 403) {
-                return m.reply(
-                    `◈━━━━━━━━━━━━━━━━◈\n│❒ 🔒 I don’t have permission to join that group. Maybe it’s private.\n◈━━━━━━━━━━━━━━━━◈`
-                );
-            }
-            if (status === 500) {
-                return m.reply(
-                    `◈━━━━━━━━━━━━━━━━◈\n│❒ 📛 That group is full or server error. Try later or check the link.\n◈━━━━━━━━━━━━━━━━◈`
+                    `◈━━━━━━━━━━━━━━━━◈\n` +
+                    `│❒ ❌ O grupo não existe ou o link é inválido.\n` +
+                    `◈━━━━━━━━━━━━━━━━◈`
                 );
             }
 
-            // If nothing matched, try to present a helpful message including raw error text
-            const shortMsg = (error && (error.message || (typeof error === 'string' ? error : 'Unknown error'))) || 'Unknown error';
+            if (status === 401) {
+                return m.reply(
+                    `◈━━━━━━━━━━━━━━━━◈\n` +
+                    `│❒ 🚫 Já fui removido desse grupo anteriormente.\n` +
+                    `│❒ Não posso entrar novamente com esse link.\n` +
+                    `◈━━━━━━━━━━━━━━━━◈`
+                );
+            }
+
+            if (status === 409) {
+                return m.reply(
+                    `◈━━━━━━━━━━━━━━━━◈\n` +
+                    `│❒ 🤨 Eu já estou neste grupo.\n` +
+                    `◈━━━━━━━━━━━━━━━━◈`
+                );
+            }
+
+            if (status === 410) {
+                return m.reply(
+                    `◈━━━━━━━━━━━━━━━━◈\n` +
+                    `│❒ 🔄 Este convite foi redefinido ou expirou.\n` +
+                    `│❒ Solicite um novo link de convite.\n` +
+                    `◈━━━━━━━━━━━━━━━━◈`
+                );
+            }
+
+            if (status === 403) {
+                return m.reply(
+                    `◈━━━━━━━━━━━━━━━━◈\n` +
+                    `│❒ 🔒 Não tenho permissão para entrar neste grupo.\n` +
+                    `◈━━━━━━━━━━━━━━━━◈`
+                );
+            }
+
+            if (status === 500) {
+                return m.reply(
+                    `◈━━━━━━━━━━━━━━━━◈\n` +
+                    `│❒ 📛 O grupo está cheio ou ocorreu um erro no servidor.\n` +
+                    `│❒ Tente novamente mais tarde.\n` +
+                    `◈━━━━━━━━━━━━━━━━◈`
+                );
+            }
+
+            // Erro genérico
+            const shortMsg =
+                (error &&
+                    (error.message ||
+                        (typeof error === "string" ? error : "Erro desconhecido"))) ||
+                "Erro desconhecido";
+
             return m.reply(
-                `◈━━━━━━━━━━━━━━━━◈\n│❒ 💀 Failed to join: ${shortMsg}\n│❒ Check the link or try again. If it persists, check logs.\n◈━━━━━━━━━━━━━━━━◈`
+                `◈━━━━━━━━━━━━━━━━◈\n` +
+                `│❒ 💀 Não foi possível entrar no grupo.\n` +
+                `│❒ Detalhes: ${shortMsg}\n` +
+                `◈━━━━━━━━━━━━━━━━◈`
             );
         }
     });
