@@ -1,29 +1,59 @@
 module.exports = async (context) => {
     const { m } = context;
 
-const {c, cpp, node, python, java} = require('compile-run');
+    const { c, cpp, node, python, java } = require('compile-run');
+
+    const formatStylishReply = (msg) => {
+        return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${msg}\n◈━━━━━━━━━━━━━━━━◈`;
+    };
 
     if (m.quoted && m.quoted.text) {
         const code = m.quoted.text;
 
-async function runCode() {
-  try {
-    let result = await java.runSource(code);
-    console.log(result);
-    m.reply(result.stdout);
-    m.reply(result.stderr);
-  } catch (err) {
-    console.log(err);
-    m.reply(err.stderr);
-  }
-}
+        async function runCode() {
+            try {
+                let result = await java.runSource(code);
+                console.log(result);
 
-runCode();
+                if (result.stdout) {
+                    m.reply(
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Saída do programa (Java):
+◈━━━━━━━━━━━━━━━━◈
 
-} else { 
+${result.stdout}`
+                    );
+                }
 
-m.reply('Quote a valid and short java code to compile')
+                if (result.stderr) {
+                    m.reply(
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Erros do compilador:
+◈━━━━━━━━━━━━━━━━◈
 
-}
+${result.stderr}`
+                    );
+                }
 
-}
+            } catch (err) {
+                console.log(err);
+                m.reply(
+                    formatStylishReply(
+                        err.stderr || 'Ocorreu um erro ao compilar o código Java.'
+                    )
+                );
+            }
+        }
+
+        runCode();
+
+    } else {
+
+        m.reply(
+            formatStylishReply(
+                'Responda uma mensagem contendo um código Java curto e válido para compilar.'
+            )
+        );
+
+    }
+};
