@@ -7,11 +7,12 @@ module.exports = async (context) => {
     const value = args[0]?.toLowerCase();
     const jid = m.chat;
 
+    // Apenas grupos
     if (!jid.endsWith('@g.us')) {
       return await m.reply(
         `◈━━━━━━━━━━━━━━━━◈\n` +
-        `│❒ Nice try, idiot! 😈\n` +
-        `│❒ This command is for groups only, you moron!\n` +
+        `│❒ Este comando só pode ser usado em grupos.\n` +
+        `│❒ Tente novamente dentro de um grupo. 😄\n` +
         `┗━━━━━━━━━━━━━━━┛`
       );
     }
@@ -25,27 +26,30 @@ module.exports = async (context) => {
     if (value === 'on' || value === 'off') {
       const action = value === 'on';
 
+      // Já está nesse estado
       if (isEnabled === action) {
         return await m.reply(
           `◈━━━━━━━━━━━━━━━━◈\n` +
-          `│❒ Antipromote is already ${value.toUpperCase()}, you clueless moron! 🥶\n` +
-          `│❒ Stop spamming my commands! 🖕\n` +
+          `│❒ O Antipromote já está definido como ${value.toUpperCase()} neste grupo.\n` +
+          `│❒ Nenhuma alteração foi necessária. 😉\n` +
           `┗━━━━━━━━━━━━━━━┛`
         );
       }
 
+      // Atualiza configuração
       await updateGroupSetting(jid, 'antipromote', action ? 'true' : 'false');
       await m.reply(
         `◈━━━━━━━━━━━━━━━━◈\n` +
-        `│❒ Antipromote ${value.toUpperCase()}! 🔥\n` +
-        `│❒ Promotions are under my control, king! 😈\n` +
+        `│❒ Antipromote definido para ${value.toUpperCase()}! 🔥\n` +
+        `│❒ A promoção de administradores agora será monitorada pelo bot.\n` +
         `┗━━━━━━━━━━━━━━━┛`
       );
     } else {
+      // Mostra status atual + instrução de uso
       await m.reply(
         `◈━━━━━━━━━━━━━━━━◈\n` +
-        `│❒ Antipromote Status: ${isEnabled ? 'ON 🥶' : 'OFF 😴'}\n` +
-        `│❒ Use "${prefix}antipromote on" or "${prefix}antipromote off", fool!\n` +
+        `│❒ Status do Antipromote: ${isEnabled ? 'ON 🥶' : 'OFF 😴'}\n` +
+        `│❒ Use: "${prefix}antipromote on" ou "${prefix}antipromote off" para alterar.\n` +
         `┗━━━━━━━━━━━━━━━┛`
       );
     }
