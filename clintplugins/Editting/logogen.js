@@ -3,14 +3,26 @@ const axios = require('axios');
 module.exports = async (context) => {
   const { client, m, text } = context;
 
+  const formatStylishReply = (msg) => {
+    return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${msg}\n◈━━━━━━━━━━━━━━━━◈`;
+  };
+
   if (!text) {
-    return m.reply("Enter title, idea, and slogan.\nFormat: _logogen Title|Idea|Slogan_\n\n*Example:* _logogen ToxicTech|AI-Powered Services|Innovation Meets Simplicity_");
+    return m.reply(
+      formatStylishReply(
+        "Informe *título*, *ideia* e *slogan*.\nFormato: _logogen Título|Ideia|Slogan_\n\nExemplo:\n_logogen 9bot|Assistente para grupos no WhatsApp|Automação simples e poderosa_"
+      )
+    );
   }
 
   const [title, idea, slogan] = text.split("|");
 
   if (!title || !idea || !slogan) {
-    return m.reply("Incorrect format.\nUse: _logogen Title|Idea|Slogan_");
+    return m.reply(
+      formatStylishReply(
+        "Formato incorreto.\nUse: _logogen Título|Ideia|Slogan_\nExemplo: _logogen 9bot|Bot para comunidades cripto|Automação, notícias e comandos em um só lugar_"
+      )
+    );
   }
 
   try {
@@ -28,20 +40,38 @@ module.exports = async (context) => {
       width: 400,
     };
 
-    const { data } = await axios.post("https://www.sologo.ai/v1/api/logo/logo_generate", payload);
+    const { data } = await axios.post(
+      "https://www.sologo.ai/v1/api/logo/logo_generate",
+      payload
+    );
 
     if (!data.data.logoList || data.data.logoList.length === 0) {
-      return m.reply("Failed to generate logo. Please try again.");
+      return m.reply(
+        formatStylishReply(
+          "Não foi possível gerar o logo. Tente novamente em alguns instantes."
+        )
+      );
     }
 
     for (const logo of data.data.logoList) {
-      await client.sendMessage(m.chat, {
-        image: { url: logo.logo_thumb },
-        caption: `_Generated Logo for "${title}"_`
-      }, { quoted: m });
+      await client.sendMessage(
+        m.chat,
+        {
+          image: { url: logo.logo_thumb },
+          caption:
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Logo gerado para: *${title.trim()}*
+◈━━━━━━━━━━━━━━━━◈`
+        },
+        { quoted: m }
+      );
     }
   } catch (err) {
     console.error("Logo generation error:", err);
-    await m.reply("An error occurred while creating the logo.");
+    await m.reply(
+      formatStylishReply(
+        "Ocorreu um erro ao gerar o logo. Tente novamente em alguns instantes."
+      )
+    );
   }
 };
