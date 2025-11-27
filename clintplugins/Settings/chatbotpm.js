@@ -47,7 +47,7 @@ module.exports = async (context) => {
             text: formatStylishReply(
               `Chatbot PM está atualmente ${settings.chatbotpm ? 'ATIVADO ✅' : 'DESATIVADO ❌'}.\n│❒ Use ${prefix}chatbotpm on / off para alterar.`
             ),
-            footer: '> Pσɯҽɾԃ Ⴆყ Tσxιƈ-ɱԃȥ',
+            footer: '> Powered by *9bot*',
             buttons,
             headerType: 1,
             viewOnce: true
