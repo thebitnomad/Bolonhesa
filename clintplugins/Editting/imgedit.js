@@ -6,26 +6,45 @@ const FormData = require("form-data");
 module.exports = async (context) => {
   const { client, m, text } = context;
 
+  const formatStylishReply = (message) => {
+    return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n◈━━━━━━━━━━━━━━━━◈`;
+  };
+
   try {
-    // Ensure the user quoted an image and added a prompt
-    if (!m.quoted) return m.reply("📸 Quote an image you want to edit!");
-    if (!text) return m.reply("📝 Please provide your edit prompt — e.g. `.imgedit add a neon glow`");
+    // Verifica se o usuário respondeu uma imagem e enviou um prompt
+    if (!m.quoted) {
+      return m.reply(
+        formatStylishReply("Responda a uma imagem que você deseja editar.")
+      );
+    }
+
+    if (!text) {
+      return m.reply(
+        formatStylishReply(
+          "Por favor, envie um prompt de edição.\nExemplo: *.imgedit adicionar brilho neon*"
+        )
+      );
+    }
 
     const q = m.quoted ? m.quoted : m;
     const mime = (q.msg || q).mimetype || "";
 
     if (!mime.startsWith("image/")) {
-      return m.reply("⚠️ Please quote or send a valid image file.");
+      return m.reply(
+        formatStylishReply(
+          "O conteúdo respondido não é uma imagem. Envie ou responda a uma imagem válida."
+        )
+      );
     }
 
-    // Download the quoted image
+    // Download da imagem respondida
     const mediaBuffer = await q.download();
 
-    // Save temporarily
+    // Salva temporariamente
     const tempFilePath = path.join(__dirname, `temp_${Date.now()}.jpg`);
     fs.writeFileSync(tempFilePath, mediaBuffer);
 
-    // Upload to qu.ax
+    // Upload para qu.ax
     const form = new FormData();
     form.append("files[]", fs.createReadStream(tempFilePath));
 
@@ -37,32 +56,51 @@ module.exports = async (context) => {
       maxBodyLength: Infinity,
     });
 
-    // Remove temp file
+    // Remove arquivo temporário
     if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
 
-    // Get uploaded image link
+    // Link da imagem enviada
     const uploaded = uploadResponse.data?.files?.[0]?.url;
-    if (!uploaded) return m.reply("❌ Failed to upload image.");
+    if (!uploaded) {
+      return m.reply(
+        formatStylishReply("Não foi possível enviar a imagem para edição.")
+      );
+    }
 
-    await m.reply("🎨 Editing your image, please wait...");
+    await m.reply(
+      formatStylishReply(
+        "Editando sua imagem de acordo com o prompt...\nAguarde alguns instantes. 🎨"
+      )
+    );
 
-    // Build the API URL
-    const apiUrl = `https://api-faa.my.id/faa/editfoto?url=${encodeURIComponent(uploaded)}&prompt=${encodeURIComponent(text)}`;
+    // Monta URL da API de edição
+    const apiUrl = `https://api-faa.my.id/faa/editfoto?url=${encodeURIComponent(
+      uploaded
+    )}&prompt=${encodeURIComponent(text)}`;
 
-    // Fetch edited image
+    // Busca a imagem editada
     const editResponse = await axios.get(apiUrl, { responseType: "arraybuffer" });
 
-    // Send the edited image
+    // Envia a imagem editada
     await client.sendMessage(
       m.chat,
       {
         image: Buffer.from(editResponse.data),
-        caption: `🧠 *Image Edited Successfully!*\n🎯 Prompt: ${text}\n\n> Pσɯҽɾԃ Ⴆყ Tσxιƈ-ɱԃȥ`,
+        caption:
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Imagem editada com sucesso! 🎨
+│❒ Prompt usado: ${text}
+◈━━━━━━━━━━━━━━━━◈
+Powered by *9bot*`,
       },
       { quoted: m }
     );
   } catch (error) {
-    console.error("Image edit command error:", error);
-    await m.reply(`❌ Failed to edit image: ${error.message}`);
+    console.error("Erro no comando de edição de imagem:", error);
+    await m.reply(
+      formatStylishReply(
+        `Não foi possível editar a imagem no momento.\nDetalhes: ${error.message}`
+      )
+    );
   }
 };
