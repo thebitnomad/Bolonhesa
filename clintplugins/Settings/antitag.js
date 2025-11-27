@@ -8,7 +8,12 @@ module.exports = async (context) => {
         const jid = m.chat;
 
         if (!jid.endsWith('@g.us')) {
-            return await m.reply('❌ This command can only be used in groups.');
+            return await m.reply(
+                `◈━━━━━━━━━━━━━━━━◈
+│❒ Este comando só pode ser usado em *grupos*.
+│❒ Tente de novo em um grupo. 😄
+┗━━━━━━━━━━━━━━━┛`
+            );
         }
 
         const settings = await getSettings();
@@ -23,20 +28,42 @@ module.exports = async (context) => {
         const isBotAdmin = userAdmins.includes(Myself);
 
         if (value === 'on' && !isBotAdmin) {
-            return await m.reply('❌ I need admin privileges to enable Antitag.');
+            return await m.reply(
+                `◈━━━━━━━━━━━━━━━━◈
+│❒ Não consigo ativar o *Antitag* ainda.
+│❒ Me coloque como *admin do grupo* primeiro. 😉
+┗━━━━━━━━━━━━━━━┛`
+            );
         }
 
         if (value === 'on' || value === 'off') {
             const action = value === 'on';
 
             if (isEnabled === action) {
-                return await m.reply(`✅ Antitag is already ${value.toUpperCase()}.`);
+                return await m.reply(
+                    `◈━━━━━━━━━━━━━━━━◈
+│❒ O Antitag já está em modo *${value.toUpperCase()}* neste grupo.
+│❒ Nada foi alterado. ✅
+┗━━━━━━━━━━━━━━━┛`
+                );
             }
 
             await updateGroupSetting(jid, 'antitag', action ? 'true' : 'false');
-            await m.reply(`✅ Antitag has been turned ${value.toUpperCase()} for this group.`);
+            await m.reply(
+                `◈━━━━━━━━━━━━━━━━◈
+│❒ Antitag foi definido para *${value.toUpperCase()}* neste grupo. ✅
+│❒ Menções em massa agora estão sob controle. 😼
+┗━━━━━━━━━━━━━━━┛`
+            );
         } else {
-            await m.reply(`📄 Current Antitag setting for this group: ${isEnabled ? 'ON' : 'OFF'}\n\n _Use ${prefix}antitag on or ${prefix}antitag off to change it._`);
+            await m.reply(
+                `◈━━━━━━━━━━━━━━━━◈
+│❒ Status atual do Antitag neste grupo: *${isEnabled ? 'ON 🟢' : 'OFF ⚪'}*
+│❒ Para alterar, use:
+│   • ${prefix}antitag on
+│   • ${prefix}antitag off
+┗━━━━━━━━━━━━━━━┛`
+            );
         }
     });
 };
