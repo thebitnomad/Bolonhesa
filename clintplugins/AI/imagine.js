@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 module.exports = {
     name: 'imagine',
     aliases: ['aiimage', 'dream', 'generate'],
-    description: 'Generates AI images from text prompts',
+    description: 'Gera imagens com IA a partir de prompts de texto',
     run: async (context) => {
         const { client, m, prefix, botname } = context;
 
@@ -12,96 +12,122 @@ module.exports = {
         };
 
         /**
-         * Extract prompt from message
+         * Extrai o prompt da mensagem
          */
-        const prompt = m.body.replace(new RegExp(`^${prefix}(imagine|aiimage|dream|generate)\\s*`, 'i'), '').trim();
+        const prompt = m.body
+            .replace(new RegExp(`^${prefix}(imagine|aiimage|dream|generate)\\s*`, 'i'), '')
+            .trim();
         
         if (!prompt) {
-            return client.sendMessage(m.chat, {
-                text: `◈━━━━━━━━━━━━━━━━◈\n│❒ Yo, @${m.sender.split('@')[0]}! 😤 You forgot the prompt!\n│❒ Example: ${prefix}imagine a cat playing football\n│❒ Or: ${prefix}dream a fantasy landscape\n◈━━━━━━━━━━━━━━━━◈`,
-                mentions: [m.sender]
-            }, { quoted: m });
+            return client.sendMessage(
+                m.chat,
+                {
+                    text:
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Olá, @${m.sender.split('@')[0]}!
+│❒ Você esqueceu de enviar o prompt.
+│❒ Exemplo: ${prefix}imagine um gato jogando futebol
+│❒ Ou: ${prefix}dream uma paisagem fantástica
+◈━━━━━━━━━━━━━━━━◈`,
+                    mentions: [m.sender]
+                },
+                { quoted: m }
+            );
         }
 
         try {
             /**
-             * Send loading message
+             * Envia mensagem de carregamento
              */
-            const loadingMsg = await client.sendMessage(m.chat, {
-                text: formatStylishReply(`Generating AI image... 🎨\nPrompt: "${prompt}"\nThis may take a moment ⏳`)
-            }, { quoted: m });
+            const loadingMsg = await client.sendMessage(
+                m.chat,
+                {
+                    text: formatStylishReply(
+                        `Gerando imagem com IA... 🎨\nPrompt: "${prompt}"\nAguarde alguns instantes ⏳`
+                    )
+                },
+                { quoted: m }
+            );
 
             /**
-             * Call the new AI image API
+             * Chama a API de geração de imagem
              */
             const encodedPrompt = encodeURIComponent(prompt);
             const apiUrl = `https://anabot.my.id/api/ai/dreamImage?prompt=${encodedPrompt}&models=Fantasy&apikey=freeApikey`;
             
-            const response = await fetch(apiUrl, { 
-                timeout: 60000 // 60 seconds for AI generation
-            });
+            const response = await fetch(apiUrl, { timeout: 60000 });
 
             if (!response.ok) {
-                throw new Error(`API returned status: ${response.status}`);
+                throw new Error(`API retornou status: ${response.status}`);
             }
 
             const data = await response.json();
 
             /**
-             * Validate API response
+             * Valida resposta da API
              */
             if (!data.success || !data.data?.result) {
-                throw new Error('AI failed to generate image');
+                throw new Error('A IA não conseguiu gerar a imagem.');
             }
 
             const imageUrl = data.data.result;
 
-            // Delete loading message
-            await client.sendMessage(m.chat, { 
-                delete: loadingMsg.key 
-            });
+            // Remove a mensagem de carregamento
+            await client.sendMessage(m.chat, { delete: loadingMsg.key });
 
             /**
-             * Send the generated image
+             * Envia a imagem gerada
              */
             await client.sendMessage(
                 m.chat,
                 {
                     image: { url: imageUrl },
-                    caption: formatStylishReply(`AI Image Generated! ✨\nPrompt: ${prompt}\nPowered by ${botname}`)
+                    caption:
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Imagem gerada com IA! ✨
+│❒ Prompt: ${prompt}
+◈━━━━━━━━━━━━━━━━◈
+Powered by *9bot*`
                 },
                 { quoted: m }
             );
 
         } catch (error) {
             console.error('Imagine command error:', error);
-            
-            // Try to delete loading message
-            try {
-                await client.sendMessage(m.chat, { 
-                    delete: loadingMsg.key 
-                });
-            } catch (e) {
-                // Ignore delete errors
-            }
 
-            let errorMessage = 'An unexpected error occurred';
-            
+            // Tenta apagar mensagem de loading
+            try { await client.sendMessage(m.chat, { delete: loadingMsg.key }); } catch {}
+
+            let errorMessage = 'Um erro inesperado ocorreu.';
+
             if (error.message.includes('status')) {
-                errorMessage = 'AI service is not responding properly.';
+                errorMessage = 'O serviço de IA não está respondendo corretamente.';
             } else if (error.message.includes('Network') || error.message.includes('fetch')) {
-                errorMessage = 'Network error. Please check your connection.';
+                errorMessage = 'Erro de rede. Verifique sua conexão.';
             } else if (error.message.includes('timeout')) {
-                errorMessage = 'AI generation timed out. Try a simpler prompt.';
-            } else if (error.message.includes('AI failed')) {
-                errorMessage = 'The AI could not generate an image from your prompt.';
+                errorMessage = 'A geração demorou demais. Tente um prompt mais simples.';
+            } else if (error.message.includes('IA não conseguiu')) {
+                errorMessage = 'A IA não conseguiu gerar uma imagem com esse prompt.';
             } else {
                 errorMessage = error.message;
             }
 
-            await client.sendMessage(m.chat, {
-                text: formatStylishReply(`Image Generation Failed! 😤\nError: ${errorMessage}\n\nTips:\n• Use descriptive prompts\n• Avoid complex scenes\n• Try different keywords`)
-            }, { quoted: m });
+            await client.sendMessage(
+                m.chat,
+                {
+                    text:
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Falha ao gerar imagem! 😔
+│❒ Erro: ${errorMessage}
+
+│❒ Dicas:
+│❒ • Use descrições claras
+│❒ • Evite cenas complexas
+│❒ • Teste palavras-chave diferentes
+◈━━━━━━━━━━━━━━━━◈`
+                },
+                { quoted: m }
+            );
         }
     }
 };
