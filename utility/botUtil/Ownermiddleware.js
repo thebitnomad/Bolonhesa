@@ -3,13 +3,11 @@ const Ownermiddleware = async (context, next) => {
 
     if (!Owner) {
         return m.reply(`◈━━━━━━━━━━━━━━━━◈
-│❒ You dare attempt to use Owner command? 
-
-│❒ Your mere existence is an insult to my code. 
-
-│❒ Crawl back into the abyss where mediocrity thrives before I personally wipe you from this reality fool. 💀👿
+│❒ Este comando é exclusivo para o *Owner* do bot.  
+│❒ Parece que você não possui permissão para utilizá-lo no momento.  
+│❒ Caso precise de algo, posso ajudar com outros comandos disponíveis. 😊
 ◈━━━━━━━━━━━━━━━━◈
-> ρσɯҽɾԃ Ⴆყ Tσxιƈ ɱԃȥ `);
+> Powered by *9bot*`);
     }
 
     await next();
