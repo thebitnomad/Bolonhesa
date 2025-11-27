@@ -1,10 +1,15 @@
 module.exports = async (context) => {
   const { client, m, text, botname } = context;
 
-const fetch = require('node-fetch');
+  const fetch = require('node-fetch');
 
-  let cap = `Converted By ${botname}`;
+  const formatStylishReply = (message) => {
+    return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n◈━━━━━━━━━━━━━━━━◈`;
+  };
 
+  let cap = `◈━━━━━━━━━━━━━━━━◈\n│❒ Convertido por *${botname}*\n◈━━━━━━━━━━━━━━━━◈`;
+
+  // Verifica se o usuário respondeu uma mensagem de texto
   if (m.quoted && m.quoted.text) {
     const forq = m.quoted.text;
 
@@ -20,15 +25,31 @@ const fetch = require('node-fetch');
         }),
       });
 
-      if (!response.ok) return m.reply('API failed to fetch a valid response.')
+      if (!response.ok) {
+        return m.reply(
+          formatStylishReply('A API não retornou uma resposta válida.')
+        );
+      }
 
       let per = await response.buffer();
 
-      await client.sendMessage(m.chat, { image: per, caption: cap }, { quoted: m });
+      await client.sendMessage(
+        m.chat,
+        { image: per, caption: cap },
+        { quoted: m }
+      );
+
     } catch (error) {
-      m.reply("An error occured\n" + error)
+      m.reply(
+        formatStylishReply(
+          `Ocorreu um erro ao converter o código.\nDetalhes: ${error}`
+        )
+      );
     }
+
   } else {
-    m.reply('Quote a code message');
+    m.reply(
+      formatStylishReply('Responda uma mensagem que contenha código para converter.')
+    );
   }
-}
+};
