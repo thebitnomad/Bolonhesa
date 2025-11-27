@@ -14,7 +14,7 @@ module.exports = async (context) => {
       if (!settings || Object.keys(settings).length === 0) {
         return await client.sendMessage(
           m.chat,
-          { text: formatStylishReply("Database is fucked, no settings found. Fix it, loser.") },
+          { text: formatStylishReply("Nenhuma configuração encontrada no banco de dados. Verifique as definições do bot.") },
           { quoted: m, ad: true }
         );
       }
@@ -27,7 +27,7 @@ module.exports = async (context) => {
         if (isEnabled === action) {
           return await client.sendMessage(
             m.chat,
-            { text: formatStylishReply(`Yo, genius! 😈 Anticall is already ${value.toUpperCase()}! Stop wasting my time, moron. 🖕`) },
+            { text: formatStylishReply(`Anticall já está definido como ${value.toUpperCase()}. 😉`) },
             { quoted: m, ad: true }
           );
         }
@@ -35,7 +35,7 @@ module.exports = async (context) => {
         await updateSetting('anticall', action);
         return await client.sendMessage(
           m.chat,
-          { text: formatStylishReply(`Anticall ${value.toUpperCase()} ! 🔥 Callers will get wrecked! 💀`) },
+          { text: formatStylishReply(`Anticall definido para ${value.toUpperCase()} com sucesso. 📞`) },
           { quoted: m, ad: true }
         );
       }
@@ -48,8 +48,8 @@ module.exports = async (context) => {
       await client.sendMessage(
         m.chat,
         {
-          text: formatStylishReply(`Anticall Status: ${isEnabled ? 'ON 🥶' : 'OFF 😴'}. Pick a vibe, noob! 😈`),
-          footer: "> Pσɯҽɾԃ Ⴆყ Tσxιƈ-ɱԃȥ",
+          text: formatStylishReply(`Status do Anticall: ${isEnabled ? 'ON 🥶' : 'OFF 😴'}. Escolha uma opção:`),
+          footer: "> Powered by *9bot*",
           buttons,
           headerType: 1,
           viewOnce: true,
@@ -59,7 +59,7 @@ module.exports = async (context) => {
     } catch (error) {
       await client.sendMessage(
         m.chat,
-        { text: formatStylishReply("Shit broke, couldn’t update anticall. Database or something’s fucked. Try later.") },
+        { text: formatStylishReply("Ocorreu um erro ao atualizar o Anticall. Tente novamente mais tarde.") },
         { quoted: m, ad: true }
       );
     }
