@@ -2,45 +2,67 @@ module.exports = async (context) => {
   const { client, m, text } = context;
   const axios = require("axios");
 
-  if (!text) return m.reply("🚫 Please provide a movie name or TV show");
+  const formatReply = (msg) => {
+    return (
+      "◈━━━━━━━━━━━━━━━━◈\n" +
+      `│❒ ${msg}\n` +
+      "◈━━━━━━━━━━━━━━━━◈"
+    );
+  };
+
+  if (!text) {
+    return m.reply(
+      formatReply("Por favor, informe o nome de um filme ou série para buscar. 🎬")
+    );
+  }
 
   try {
-    let fids = await axios.get(`http://www.omdbapi.com/?apikey=742b2d09&t=${text}&plot=full`);
-    let imdbt = "";
+    const res = await axios.get(
+      `http://www.omdbapi.com/?apikey=742b2d09&t=${encodeURIComponent(text)}&plot=full`
+    );
+    const data = res.data;
 
-    imdbt += "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈\n";
-    imdbt += "│ ❒ TOXIC-MD MOVIE SEARCH\n";
-    imdbt += "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈\n";
-    imdbt += "│ 🎬 Title       : " + fids.data.Title + "\n";
-    imdbt += "│ 📅 Year        : " + fids.data.Year + "\n";
-    imdbt += "│ ⭐ Rated       : " + fids.data.Rated + "\n";
-    imdbt += "│ 📆 Released    : " + fids.data.Released + "\n";
-    imdbt += "│ ⏳ Runtime     : " + fids.data.Runtime + "\n";
-    imdbt += "│ 🌀 Genre       : " + fids.data.Genre + "\n";
-    imdbt += "│ 👨‍💼 Director   : " + fids.data.Director + "\n";
-    imdbt += "│ ✍️ Writer      : " + fids.data.Writer + "\n";
-    imdbt += "│ 👥 Actors      : " + fids.data.Actors + "\n";
-    imdbt += "│ 📜 Plot        : " + fids.data.Plot + "\n";
-    imdbt += "│ 🌐 Language    : " + fids.data.Language + "\n";
-    imdbt += "│ 🌍 Country     : " + fids.data.Country + "\n";
-    imdbt += "│ 🏆 Awards      : " + fids.data.Awards + "\n";
-    imdbt += "│ 💰 BoxOffice   : " + fids.data.BoxOffice + "\n";
-    imdbt += "│ 🏭 Production  : " + fids.data.Production + "\n";
-    imdbt += "│ 🌟 imdbRating  : " + fids.data.imdbRating + "\n";
-    imdbt += "│ 🗳️ imdbVotes   : " + fids.data.imdbVotes + "\n";
-    imdbt += "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈";
+    if (!data || data.Response === "False") {
+      return m.reply(
+        formatReply(`Nenhum resultado encontrado para: "${text}". Tente outro título. 🔍`)
+      );
+    }
+
+    const caption =
+      "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈\n" +
+      "│ ❒ 9BOT • MOVIE SEARCH 🎬\n" +
+      "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈\n" +
+      `│ 🎞 Título       : ${data.Title || "N/A"}\n` +
+      `│ 📅 Ano          : ${data.Year || "N/A"}\n` +
+      `│ ⭐ Classificação : ${data.Rated || "N/A"}\n` +
+      `│ 📆 Lançado      : ${data.Released || "N/A"}\n` +
+      `│ ⏳ Duração      : ${data.Runtime || "N/A"}\n` +
+      `│ 🌀 Gênero       : ${data.Genre || "N/A"}\n` +
+      `│ 🎬 Diretor      : ${data.Director || "N/A"}\n` +
+      `│ ✍️ Roteirista   : ${data.Writer || "N/A"}\n` +
+      `│ 👥 Atores       : ${data.Actors || "N/A"}\n` +
+      `│ 📜 Sinopse      : ${data.Plot || "N/A"}\n` +
+      `│ 🌐 Idioma       : ${data.Language || "N/A"}\n` +
+      `│ 🌍 País         : ${data.Country || "N/A"}\n` +
+      `│ 🏆 Prêmios      : ${data.Awards || "N/A"}\n` +
+      `│ 💰 Bilheteria   : ${data.BoxOffice || "N/A"}\n` +
+      `│ 🏭 Produção     : ${data.Production || "N/A"}\n` +
+      `│ ⭐ Nota IMDb     : ${data.imdbRating || "N/A"}\n` +
+      `│ 🗳️ Votos IMDb    : ${data.imdbVotes || "N/A"}\n` +
+      "◈━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◈";
 
     await client.sendMessage(
       m.chat,
       {
-        image: {
-          url: fids.data.Poster,
-        },
-        caption: imdbt,
+        image: { url: data.Poster },
+        caption,
       },
       { quoted: m }
     );
-  } catch (e) {
-    m.reply("❌ I cannot find that movie\n\n" + e);
+  } catch (error) {
+    console.error("Movie search error:", error);
+    return m.reply(
+      formatReply("Não consegui encontrar esse título agora. Tente novamente mais tarde. ❌")
+    );
   }
 };
