@@ -1,24 +1,24 @@
 module.exports = async (context) => {
 
-const ownerMiddleware = require('../../utility/botUtil/Ownermiddleware');
+    const ownerMiddleware = require('../../utility/botUtil/Ownermiddleware');
 
     await ownerMiddleware(context, async () => {
 
-    const { client, m, text} = context;
+        const { client, m, text } = context;
 
-if (!text) {
-      m.reply("Provide a setting to be updated. Example:\ngroupadd all");
-      return;
-    }
+        if (!text) {
+            m.reply("Por favor, informe a opção que deseja atualizar.\nExemplo:\ngroupadd all");
+            return;
+        }
 
+        const availablepriv = ['all', 'contacts', 'contact_blacklist', 'none'];
 
-const availablepriv = ['all', 'contacts', 'contact_blacklist', 'none'];
+        if (!availablepriv.includes(text)) {
+            return m.reply(`Escolha uma opção válida: ${availablepriv.join('/')}`);
+        }
 
-if (!availablepriv.includes(text)) return m.reply(`Choose a setting from this list: ${availablepriv.join('/')}`);
-
-await client.updateGroupsAddPrivacy(text)
-        await m.reply(`Group Add privacy settings updated to *${text}*`);
-
-})
+        await client.updateGroupsAddPrivacy(text);
+        await m.reply(`Configuração de privacidade para “quem pode te adicionar em grupos” atualizada para *${text}*.`);
+    });
 
 }
