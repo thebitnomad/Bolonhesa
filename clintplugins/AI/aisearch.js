@@ -2,7 +2,12 @@ module.exports = async (context) => {
     const { client, m, text, botname, fetchJson } = context;
 
     if (!text) {
-        return m.reply("Provide some text or query. This AI will search and summarize results from Google.");
+        return m.reply(
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Você precisa informar um texto ou uma consulta.
+│❒ Esta IA irá pesquisar no Google e gerar um resumo.
+◈━━━━━━━━━━━━━━━━◈`
+        );
     }
 
     try {
@@ -10,11 +15,31 @@ module.exports = async (context) => {
 
         if (data && data.result) {
             const res = data.result;
-            await m.reply(res);
+            await m.reply(
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Resultado da sua pesquisa:
+◈━━━━━━━━━━━━━━━━◈
+
+${res}
+
+◈━━━━━━━━━━━━━━━━◈
+Powered by *${botname}*`
+            );
         } else {
-            m.reply("Invalid response from the API.");
+            m.reply(
+`◈━━━━━━━━━━━━━━━━◈
+│❒ A resposta da API não é válida.
+│❒ Tente novamente em instantes.
+◈━━━━━━━━━━━━━━━━◈`
+            );
         }
     } catch (error) {
-        m.reply("An error occurred while connecting to the API. Please try again.\n" + error);
+        m.reply(
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Ocorreu um erro ao conectar com a API.
+│❒ Tente novamente mais tarde.
+│❒ Detalhes: ${error}
+◈━━━━━━━━━━━━━━━━◈`
+        );
     }
 };
