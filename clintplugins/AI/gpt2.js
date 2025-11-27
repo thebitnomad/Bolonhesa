@@ -1,22 +1,44 @@
 module.exports = async (context) => {
     const { client, m, text, fetchJson } = context;
 
+    const formatStylishReply = (msg) => {
+        return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${msg}\n◈━━━━━━━━━━━━━━━━◈`;
+    };
+
     if (!text) {
-        return m.reply("What's your question?");
+        return m.reply(
+            formatStylishReply("Qual é a sua pergunta?")
+        );
     }
 
     try {
-        const data = await fetchJson(`https://apis.davidcyriltech.my.id/ai/gpt3?text=${encodeURIComponent(text)}`);
+        const data = await fetchJson(
+            `https://apis.davidcyriltech.my.id/ai/gpt3?text=${encodeURIComponent(text)}`
+        );
 
         if (data.success) {
             const res = data.result;
-            await m.reply(res);
+
+            await m.reply(
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Resposta da IA:
+◈━━━━━━━━━━━━━━━━◈
+
+${res}
+
+◈━━━━━━━━━━━━━━━━◈`
+            );
+
         } else {
-            await m.reply("Failed to get a response from the API.");
+            await m.reply(
+                formatStylishReply("Não foi possível obter uma resposta da API.")
+            );
         }
 
     } catch (e) {
         console.log(e);
-        m.reply("An error occurred while processing your request.");
+        m.reply(
+            formatStylishReply("Ocorreu um erro ao processar sua solicitação.")
+        );
     }
 };
