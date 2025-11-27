@@ -3,18 +3,22 @@ const middleware = async (context, next) => {
 
     if (!m.isGroup) {
         return m.reply(`◈━━━━━━━━━━━━━━━━◈
-│❒ This command isn’t for lone wolves. Try again in a group. 🐺
+│❒ Este comando só pode ser usado em grupos.  
+│❒ Tente novamente em um grupo. 😊
 ◈━━━━━━━━━━━━━━━━◈`);
     }
+
     if (!isAdmin) {
         return m.reply(`◈━━━━━━━━━━━━━━━━◈
-│❒ You think you’re worthy? 
-│❒ Admin privileges are required—go beg for them. 😤
+│❒ Apenas administradores podem usar este comando.  
+│❒ Caso precise, solicite permissão ao administrador. 👍
 ◈━━━━━━━━━━━━━━━━◈`);
     }
+
     if (!isBotAdmin) {
         return m.reply(`◈━━━━━━━━━━━━━━━━◈
-│❒ I need admin rights to obey, unlike you who blindly follows. 🫵 
+│❒ Para continuar, preciso ter permissão de administrador no grupo.  
+│❒ Por favor, me conceda acesso para que eu possa ajudar melhor. 🙏
 ◈━━━━━━━━━━━━━━━━◈`);
     }
 
