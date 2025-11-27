@@ -14,22 +14,30 @@ module.exports = async (context) => {
       if (!settings || Object.keys(settings).length === 0) {
         return await client.sendMessage(
           m.chat,
-          { text: formatStylishReply("Database is fucked, no settings found. Fix it, loser.") },
+          { 
+            text: formatStylishReply(
+              "Não encontrei nenhuma configuração no banco de dados.\n│❒ Verifique as definições do bot antes de tentar novamente."
+            ) 
+          },
           { quoted: m, ad: true }
         );
       }
 
-      // Normalize the value
+      // Normaliza o valor recebido
       const value = args.join(" ").toLowerCase();
       const validModes = ["off", "delete", "remove"];
 
-      // Update mode if argument is provided
+      // Atualiza o modo se um argumento válido for enviado
       if (validModes.includes(value)) {
         const currentMode = String(settings.antilink || "off").toLowerCase();
         if (currentMode === value) {
           return await client.sendMessage(
             m.chat,
-            { text: formatStylishReply(`Antilink is already set to '${value.toUpperCase()}', dumbass.`) },
+            { 
+              text: formatStylishReply(
+                `O Antilink já está definido como '${value.toUpperCase()}'. 😉`
+              ) 
+            },
             { quoted: m, ad: true }
           );
         }
@@ -37,12 +45,16 @@ module.exports = async (context) => {
         await updateSetting('antilink', value);
         return await client.sendMessage(
           m.chat,
-          { text: formatStylishReply(`Antilink mode updated to '${value.toUpperCase()}'. 🔥`) },
+          { 
+            text: formatStylishReply(
+              `Modo do Antilink atualizado para '${value.toUpperCase()}'. 🔥`
+            ) 
+          },
           { quoted: m, ad: true }
         );
       }
 
-      // Ensure currentStatus is always a string
+      // Garante que currentStatus seja sempre string
       const currentStatus = String(settings.antilink || "off").toLowerCase();
 
       const buttons = [
@@ -51,7 +63,7 @@ module.exports = async (context) => {
         { buttonId: `${prefix}antilink off`, buttonText: { displayText: "OFF 😴" }, type: 1 },
       ];
 
-      // Choose emoji based on current mode
+      // Escolhe o emoji com base no modo atual
       const emoji =
         currentStatus === "delete" ? "🗑️" :
         currentStatus === "remove" ? "🚫" :
@@ -60,8 +72,11 @@ module.exports = async (context) => {
       await client.sendMessage(
         m.chat,
         {
-          text: formatStylishReply(`Antilink Mode: ${currentStatus.toUpperCase()} ${emoji}\nPick your poison. 💀`),
-          footer: "> Pσɯҽɾԃ Ⴆყ Tσxιƈ-ɱԃȥ",
+          text: formatStylishReply(
+            `Modo atual do Antilink: ${currentStatus.toUpperCase()} ${emoji}\n` +
+            `│❒ Escolha uma opção abaixo para alterar o comportamento de links no grupo. 💬`
+          ),
+          footer: "> Powered by *9bot*",
           buttons,
           headerType: 1,
           viewOnce: true,
@@ -72,7 +87,11 @@ module.exports = async (context) => {
       console.error("❌ Error in Antilink command:", error);
       await client.sendMessage(
         m.chat,
-        { text: formatStylishReply("Shit broke, couldn’t update antilink. Database or something’s fucked. Try later.") },
+        { 
+          text: formatStylishReply(
+            "Ocorreu um erro ao atualizar o Antilink.\n│❒ Verifique o banco de dados ou tente novamente em alguns instantes."
+          ) 
+        },
         { quoted: m, ad: true }
       );
     }
