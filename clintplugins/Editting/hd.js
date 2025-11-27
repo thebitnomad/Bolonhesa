@@ -3,7 +3,7 @@ const FormData = require('form-data');
 const fs = require('fs');
 const path = require('path');
 
-// Upload function to send image to qu.ax and get a URL
+// Função para fazer upload da imagem para qu.ax e retornar a URL
 async function uploadImage(buffer) {
     const tempFilePath = path.join(__dirname, `temp_${Date.now()}.jpg`);
     fs.writeFileSync(tempFilePath, buffer);
@@ -30,67 +30,103 @@ async function uploadImage(buffer) {
 module.exports = {
     name: 'hd',
     aliases: ['enhance', 'upscale'],
-    description: 'Enhances image quality to HD using AI upscaling',
+    description: 'Melhora a qualidade da imagem para HD usando IA (upscaling)',
     run: async (context) => {
         const { client, m, mime } = context;
 
-        // Determine whether the image is from quoted or current message
+        const formatStylishReply = (message) => {
+            return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n◈━━━━━━━━━━━━━━━━◈`;
+        };
+
+        // Verifica se a imagem vem da mensagem respondida ou da própria mensagem
         const quoted = m.quoted ? m.quoted : m;
         const quotedMime = quoted.mimetype || mime || '';
 
         if (!/image/.test(quotedMime)) {
-            return client.sendMessage(m.chat, {
-                text: '◈━━━━━━━━━━━━━━━━◈\n│❒ Please reply to or send an image with this command!\n│❒ Example: Reply to an image with .hd\n┗━━━━━━━━━━━━━━━┛'
-            }, { quoted: m });
+            return client.sendMessage(
+                m.chat,
+                {
+                    text:
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Envie ou responda a uma *imagem* junto com este comando.
+│❒ Exemplo: responda a uma imagem com *.hd*
+◈━━━━━━━━━━━━━━━━◈`
+                },
+                { quoted: m }
+            );
         }
 
-        // Send loading message
-        const loadingMsg = await client.sendMessage(m.chat, {
-            text: '◈━━━━━━━━━━━━━━━━◈\n│❒ Enhancing your image to HD...\n│❒ This may take a moment ⏳\n┗━━━━━━━━━━━━━━━┛'
-        }, { quoted: m });
+        // Mensagem de carregamento
+        let loadingMsg = await client.sendMessage(
+            m.chat,
+            {
+                text:
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Melhorando a sua imagem para HD...
+│❒ Isso pode levar alguns instantes ⏳
+◈━━━━━━━━━━━━━━━━◈`
+            },
+            { quoted: m }
+        );
 
         try {
-            // Step 1: Download image
+            // 1) Baixar a imagem
             const media = await quoted.download();
 
             if (!media) {
                 await client.sendMessage(m.chat, { delete: loadingMsg.key });
-                return client.sendMessage(m.chat, {
-                    text: '◈━━━━━━━━━━━━━━━━◈\n│❒ Failed to download the image!\n│❒ Please try again with a different image\n┗━━━━━━━━━━━━━━━┛'
-                }, { quoted: m });
+                return client.sendMessage(
+                    m.chat,
+                    {
+                        text:
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Não foi possível baixar a imagem.
+│❒ Tente novamente com outra imagem.
+◈━━━━━━━━━━━━━━━━◈`
+                    },
+                    { quoted: m }
+                );
             }
 
-            // Step 2: Size limit check
+            // 2) Verificar limite de tamanho (10MB)
             if (media.length > 10 * 1024 * 1024) {
                 await client.sendMessage(m.chat, { delete: loadingMsg.key });
-                return client.sendMessage(m.chat, {
-                    text: '◈━━━━━━━━━━━━━━━━◈\n│❒ Image is too large!\n│❒ Maximum size: 10MB\n┗━━━━━━━━━━━━━━━┛'
-                }, { quoted: m });
+                return client.sendMessage(
+                    m.chat,
+                    {
+                        text:
+`◈━━━━━━━━━━━━━━━━◈
+│❒ A imagem é muito grande.
+│❒ Tamanho máximo permitido: *10 MB*.
+◈━━━━━━━━━━━━━━━━◈`
+                    },
+                    { quoted: m }
+                );
             }
 
-            // Step 3: Upload image to get a public URL
+            // 3) Upload da imagem para obter URL pública
             const { url: imageUrl } = await uploadImage(media);
 
-            // Step 4: Call the new upscale API
+            // 4) Chamar a API de upscaling
             const encodedUrl = encodeURIComponent(imageUrl);
             const upscaleApiUrl = `https://api.zenzxz.my.id/api/tools/upscale?url=${encodedUrl}`;
             
             const response = await axios.get(upscaleApiUrl, {
                 headers: { 
-                    'accept': 'application/json',
+                    accept: 'application/json',
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
                 },
-                timeout: 60000 // 60 second timeout for processing
+                timeout: 60000
             });
 
-            // Validate API response
+            // Validar resposta da API
             if (!response.data.success || !response.data.data?.url) {
                 throw new Error('Upscale API failed to process the image');
             }
 
             const enhancedImageUrl = response.data.data.url;
 
-            // Step 5: Download the enhanced image
+            // 5) Baixar a imagem melhorada
             const enhancedResponse = await axios.get(enhancedImageUrl, {
                 responseType: 'arraybuffer',
                 timeout: 30000
@@ -98,14 +134,18 @@ module.exports = {
 
             const enhancedImage = Buffer.from(enhancedResponse.data);
 
-            // Step 6: Delete loading message and send enhanced image
+            // 6) Apagar mensagem de carregamento e enviar imagem melhorada
             await client.sendMessage(m.chat, { delete: loadingMsg.key });
 
             await client.sendMessage(
                 m.chat,
                 { 
                     image: enhancedImage, 
-                    caption: '◈━━━━━━━━━━━━━━━━◈\n│❒ Image Enhanced to HD! 🎨\n│❒ Quality improved successfully\n┗━━━━━━━━━━━━━━━┛' 
+                    caption:
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Imagem melhorada para HD! 🎨
+│❒ Qualidade aprimorada com sucesso.
+◈━━━━━━━━━━━━━━━━◈`
                 },
                 { quoted: m }
             );
@@ -113,30 +153,38 @@ module.exports = {
         } catch (err) {
             console.error('HD enhancement error:', err);
             
-            // Delete loading message on error
+            // Tenta apagar a mensagem de carregamento em caso de erro
             try {
                 await client.sendMessage(m.chat, { delete: loadingMsg.key });
             } catch (e) {
-                // Ignore delete errors
+                // Ignora erros ao apagar
             }
 
-            let errorMessage = 'An unexpected error occurred';
-            
+            let errorMessage = 'Ocorreu um erro inesperado.';
+
             if (err.message.includes('timeout')) {
-                errorMessage = 'Processing timed out. The image might be too large or the server is busy.';
+                errorMessage = 'O processamento excedeu o tempo limite. A imagem pode ser muito grande ou o servidor está ocupado.';
             } else if (err.message.includes('Network Error')) {
-                errorMessage = 'Network error. Please check your connection and try again.';
+                errorMessage = 'Erro de rede. Verifique sua conexão e tente novamente.';
             } else if (err.message.includes('Upload error')) {
-                errorMessage = 'Failed to upload image for processing.';
+                errorMessage = 'Falha ao enviar a imagem para processamento.';
             } else if (err.message.includes('Upscale API failed')) {
-                errorMessage = 'The enhancement service failed to process your image.';
+                errorMessage = 'O serviço de aprimoramento não conseguiu processar a sua imagem.';
             } else {
                 errorMessage = err.message;
             }
 
-            await client.sendMessage(m.chat, {
-                text: `◈━━━━━━━━━━━━━━━━◈\n│❒ Enhancement Failed! 😤\n│❒ Error: ${errorMessage}\n┗━━━━━━━━━━━━━━━┛`
-            }, { quoted: m });
+            await client.sendMessage(
+                m.chat,
+                {
+                    text:
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Não foi possível melhorar a imagem para HD.
+│❒ Erro: ${errorMessage}
+◈━━━━━━━━━━━━━━━━◈`
+                },
+                { quoted: m }
+            );
         }
     }
 };
