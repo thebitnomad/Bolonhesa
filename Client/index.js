@@ -40,6 +40,7 @@ authenticationn();
 
 const path = require('path');
 
+// Session folder is already in the repo - no need for session ID
 const sessionName = path.join(__dirname, '..', 'Session');
 
 const groupEvents = require("../Handler/eventHandler");
@@ -63,6 +64,7 @@ async function startToxic() {
   const { autobio, mode, anticall } = settingss;
   const { version } = await fetchLatestWaWebVersion();
 
+  // Use the Session folder directly (credentials saved by backend)
   const { saveCreds, state } = await useMultiFileAuthState(sessionName);
 
   const client = toxicConnect({
