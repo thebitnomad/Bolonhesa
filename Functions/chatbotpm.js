@@ -45,11 +45,11 @@ module.exports = async (client, m, store, chatbotpmSetting) => {
             const apiUrl = `https://api.privatezia.biz.id/api/ai/GPT-4?query=${encodedText}`;
             const response = await fetch(apiUrl, { timeout: 10000 });
             if (!response.ok) {
-                throw new Error(`API request failed with status ${response.status}`);
+                throw new Error(`Requisição da API falhou com status ${response.status}`);
             }
             const data = await response.json();
             if (!data.status || !data.response) { 
-                throw new Error("Invalid API response: missing status or response");
+                throw new Error("Resposta da API inválida: faltando status ou response");
             }
             await client.sendMessage(
                 m.key.remoteJid,
@@ -57,14 +57,20 @@ module.exports = async (client, m, store, chatbotpmSetting) => {
                 { quoted: m }
             );
         } catch (e) {
-            console.error(`Toxic-MD ChatbotPM Error:`, e);
+            console.error(`Erro no ChatbotPM do Toxic-MD:`, e);
             await client.sendMessage(
                 m.key.remoteJid,
-                { text: `◈━━━━━━━━━━━━━━━━◈\n│❒ Oops, something went wrong with the chatbot, you dumbass! 😈 Try again later!\n┗━━━━━━━━━━━━━━━┛` },
+                { 
+                    text: 
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Opa, algo deu errado com o chatbot 😵‍💫
+│❒ Tenta de novo daqui a pouco, beleza?
+┗━━━━━━━━━━━━━━━┛` 
+                },
                 { quoted: m }
             );
         }
     } catch (e) {
-        console.error("Toxic-MD ChatbotPM Error:", e);
+        console.error("Erro no ChatbotPM do Toxic-MD:", e);
     }
 };
