@@ -2,49 +2,71 @@ const ownerMiddleware = require('../../utility/botUtil/Ownermiddleware');
 const { getSettings, banUser, getBannedUsers, getSudoUsers } = require('../../Database/config');
 
 module.exports = async (context) => {
-    await ownerMiddleware(context, async () => {
-        const { m, args } = context;
+  await ownerMiddleware(context, async () => {
+    const { m, args } = context;
 
-        let settings = await getSettings();
-        if (!settings) {
-            return await m.reply('❌ Settings not found.');
-        }
+    const formatStylishReply = (message) => {
+      return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n┗━━━━━━━━━━━━━━━┛`;
+    };
 
-        const sudoUsers = await getSudoUsers();
-        
+    let settings = await getSettings();
+    if (!settings) {
+      return await m.reply(
+        formatStylishReply(
+          'Não foi possível encontrar as configurações do bot.\n│❒ Verifique o banco de dados antes de usar este comando. 😉'
+        )
+      );
+    }
 
-        let numberToBan;
+    const sudoUsers = await getSudoUsers();
 
-        if (m.quoted) {
-            numberToBan = m.quoted.sender;
-        } else if (m.mentionedJid && m.mentionedJid.length > 0) {
-            numberToBan = m.mentionedJid[0];
-        } else {
-            numberToBan = args[0];
-        }
+    let numberToBan;
 
-        if (!numberToBan) {
-            return await m.reply('❌ Please provide a valid number or quote a user.');
-        }
+    if (m.quoted) {
+      numberToBan = m.quoted.sender;
+    } else if (m.mentionedJid && m.mentionedJid.length > 0) {
+      numberToBan = m.mentionedJid[0];
+    } else {
+      numberToBan = args[0];
+    }
 
-      
-        if (numberToBan.includes('@s.whatsapp.net')) {
-            numberToBan = numberToBan.split('@')[0];
-        }
+    if (!numberToBan) {
+      return await m.reply(
+        formatStylishReply(
+          'Informe um número válido ou responda a mensagem da pessoa que deseja banir.'
+        )
+      );
+    }
 
-        
+    // Normaliza se vier com @s.whatsapp.net
+    if (numberToBan.includes('@s.whatsapp.net')) {
+      numberToBan = numberToBan.split('@')[0];
+    }
 
-        if (sudoUsers.includes(numberToBan)) {
-            return await m.reply('❌ You cannot ban a Sudo User.');
-        }
+    // Impede ban de sudo
+    if (sudoUsers.includes(numberToBan)) {
+      return await m.reply(
+        formatStylishReply(
+          'Este número pertence a um usuário Sudo.\n│❒ Não é possível bani-lo. 🛑'
+        )
+      );
+    }
 
-        const bannedUsers = await getBannedUsers();
+    const bannedUsers = await getBannedUsers();
 
-        if (bannedUsers.includes(numberToBan)) {
-            return await m.reply('⚠️ This user is already banned.');
-        }
+    if (bannedUsers.includes(numberToBan)) {
+      return await m.reply(
+        formatStylishReply(
+          'Este usuário já está banido.\n│❒ Nada para atualizar aqui. ⚠️'
+        )
+      );
+    }
 
-        await banUser(numberToBan);
-        await m.reply(`✅ ${numberToBan} has been banned.`);
-    });
+    await banUser(numberToBan);
+    await m.reply(
+      formatStylishReply(
+        `O número *${numberToBan}* foi banido com sucesso. ✅`
+      )
+    );
+  });
 };
