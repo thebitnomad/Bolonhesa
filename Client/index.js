@@ -40,7 +40,7 @@ authenticationn();
 
 const path = require('path');
 
-// Session folder is already in the repo - no need for session ID
+// Pasta de sessão já está no repositório - não há necessidade de ID de sessão
 const sessionName = path.join(__dirname, '..', 'Session');
 
 const groupEvents = require("../Handler/eventHandler");
@@ -54,8 +54,8 @@ async function startToxic() {
   if (!settingss) {
     console.log(
       `◈━━━━━━━━━━━━━━━━◈\n` +
-      `│❒ TOXIC-MD FAILED TO CONNECT 😵\n` +
-      `│❒ Settings not found, check your database! 🖕\n` +
+      `│❒ 9BOT NÃO CONSEGUIU CONECTAR 😵\n` +
+      `│❒ Configurações não encontradas, verifique seu banco de dados.\n` +
       `┗━━━━━━━━━━━━━━━┛`
     );
     return;
@@ -64,7 +64,7 @@ async function startToxic() {
   const { autobio, mode, anticall } = settingss;
   const { version } = await fetchLatestWaWebVersion();
 
-  // Use the Session folder directly (credentials saved by backend)
+  // Usa a pasta Session diretamente (credenciais salvas pelo backend)
   const { saveCreds, state } = await useMultiFileAuthState(sessionName);
 
   const client = toxicConnect({
@@ -115,7 +115,7 @@ async function startToxic() {
     setInterval(() => {
       const date = new Date();
       client.updateProfileStatus(
-        `${botname} 𝐢𝐬 𝐚𝐜𝐭𝐢𝐯𝐞 𝟐𝟒/𝟕\n\n${date.toLocaleString('en-US', { timeZone: 'Africa/Nairobi' })} 𝐈𝐭'𝐬 𝐚 ${date.toLocaleString('en-US', { weekday: 'long', timeZone: 'Africa/Nairobi' })}.`
+        `${botname} está ativo 24/7\n\n${date.toLocaleString('en-US', { timeZone: 'Africa/Nairobi' })} — hoje é ${date.toLocaleString('en-US', { weekday: 'long', timeZone: 'Africa/Nairobi' })}.`
       );
     }, 10 * 1000);
   }
@@ -142,7 +142,7 @@ async function startToxic() {
         id: callId
       },
       message: {
-        conversation: "Toxic Verified By WhatsApp"
+        conversation: "9bot verificado pelo WhatsApp"
       },
       contextInfo: {
         mentionedJid: [callerJid],
@@ -153,7 +153,7 @@ async function startToxic() {
 
     await client.rejectCall(callId, callerJid);
     await client.sendMessage(callerJid, { 
-      text: "> You Have been banned for calling without permission ⚠️!" 
+      text: "> Você foi banido por ligar sem permissão. ⚠️" 
     }, { quoted: fakeQuoted });
 
     const bannedUsers = await getBannedUsers();
@@ -178,11 +178,11 @@ async function startToxic() {
     const Myself = client.decodeJid(client.user.id);
 
     if (typeof antidelete !== 'function') {
-      console.error('Toxic-MD Error: antidelete is not a function');
+      console.error('Erro 9BOT: antidelete não é uma função');
       return;
     }
     if (typeof antilink !== 'function') {
-      console.error('Toxic-MD Error: antilink is not a function');
+      console.error('Erro 9BOT: antilink não é uma função');
       return;
     }
 
@@ -250,7 +250,7 @@ async function startToxic() {
       try {
         require("./toxic")(client, m, { type: "notify" }, store);
       } catch (error) {
-        console.error('Error processing list selection:', error);
+        console.error('Erro ao processar seleção da lista:', error);
       }
     }
   });
@@ -258,7 +258,7 @@ async function startToxic() {
   const unhandledRejections = new Map();
   process.on("unhandledRejection", (reason, promise) => {
     unhandledRejections.set(promise, reason);
-    console.error('Unhandled Rejection:', reason);
+    console.error('Rejeição não tratada:', reason);
   });
   process.on("rejectionHandled", (promise) => {
     unhandledRejections.delete(promise);
@@ -366,7 +366,7 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
 
-app.listen(port, () => console.log(`Server listening on port http://localhost:${port}`));
+app.listen(port, () => console.log(`Servidor ouvindo em: http://localhost:${port}`));
 
 startToxic();
 
@@ -375,7 +375,7 @@ module.exports = startToxic;
 let file = require.resolve(__filename);
 fs.watchFile(file, () => {
   fs.unwatchFile(file);
-  console.log(chalk.redBright(`Update ${__filename}`));
+  console.log(chalk.redBright(`Arquivo atualizado: ${__filename}`));
   delete require.cache[file];
   require(file);
 });
