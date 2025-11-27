@@ -31,7 +31,7 @@ module.exports = toxic = async (client, m, chatUpdate, store) => {
         const bannedUsers = await getBannedUsers();
         let settings = await getSettings();
         if (!settings) {
-            console.error("Toxic-MD: Settings not found, cannot proceed!");
+            console.error("9bot: Configurações não encontradas, não é possível continuar!");
             return;
         }
 
@@ -58,7 +58,7 @@ module.exports = toxic = async (client, m, chatUpdate, store) => {
                 body = params.id || body;
                 console.log('Native flow button clicked:', body);
             } catch (e) {
-                console.error('Error parsing native flow response:', e);
+                console.error('Erro ao analisar resposta native flow:', e);
             }
         }
 
@@ -83,7 +83,7 @@ module.exports = toxic = async (client, m, chatUpdate, store) => {
         const cmd = commands[resolvedCommandName];
 
         const args = body.trim().split(/ +/).slice(1);
-        const pushname = m.pushName || "No Name";
+        const pushname = m.pushName || "Sem nome";
         const botNumber = await client.decodeJid(client.user.id);
         const itsMe = m.sender == botNumber;
         let text = (q = args.join(" "));
@@ -93,14 +93,14 @@ module.exports = toxic = async (client, m, chatUpdate, store) => {
         try {
             m.isGroup = m.chat.endsWith("g.us");
             m.metadata = m.isGroup ? await client.groupMetadata(m.chat).catch(e => {
-                console.error("Toxic-MD: Group metadata fetch error:", e);
+                console.error("9bot: Erro ao buscar metadados do grupo:", e);
                 return {};
             }) : {};
             const participants = m.metadata?.participants || [];
             m.isAdmin = Boolean(participants.find(p => p.admin !== null && p.jid === m.sender));
             m.isBotAdmin = Boolean(participants.find(p => p.admin !== null && p.jid === botNumber));
         } catch (error) {
-            console.error("Toxic-MD: Error fetching group metadata:", error);
+            console.error("9bot: Erro ao obter informações do grupo:", error);
             m.metadata = {};
             m.isAdmin = false;
             m.isBotAdmin = false;
@@ -130,7 +130,7 @@ module.exports = toxic = async (client, m, chatUpdate, store) => {
 
         const fakeQuoted = {
             key: { participant: '0@s.whatsapp.net', remoteJid: '0@s.whatsapp.net', id: m.id },
-            message: { conversation: "Toxic Verified By WhatsApp" },
+            message: { conversation: "9bot Verified By WhatsApp" },
             contextInfo: { mentionedJid: [m.sender], forwardingScore: 999, isForwarded: true }
         };
 
@@ -143,33 +143,36 @@ module.exports = toxic = async (client, m, chatUpdate, store) => {
             getGroupAdmins: () => participants.filter(p => p.admin !== null).map(p => p.jid), pict, Tag
         };
 
-    
+        // Eval / exec para Owner
         if ((body.startsWith('>') || body.startsWith('$')) && Owner) {
             try {
                 await ownerMiddleware(context, async () => {
                     const trimmedText = body.slice(1).trim();
-                    if (!trimmedText) return m.reply("W eval?🟢!");
+                    if (!trimmedText) return m.reply("Envie um código para eu avaliar. 🟢");
 
                     try {
                         let evaled = await eval(trimmedText);
                         if (typeof evaled !== 'string') evaled = require('util').inspect(evaled);
                         await m.reply(evaled);
                     } catch (err) {
-                        await m.reply("Error during eval execution:\n" + String(err));
+                        await m.reply("Erro ao executar o eval:\n" + String(err));
                     }
                 });
-                return; // prevent command handler from continuing
+                return; // impede o handler de continuar
             } catch (e) {
-                console.error('Eval middleware error:', e);
+                console.error('Erro no middleware de eval:', e);
             }
         }
 
-        // Continue normal flow if not eval
+        // Fluxo normal se não for eval
         if (cmd) {
             const senderNumber = m.sender.replace(/@s\.whatsapp\.net$/, '');
             if (bannedUsers.includes(senderNumber)) {
                 await client.sendMessage(m.chat, {
-                    text: `◈━━━━━━━━━━━━━━━━◈\n│❒ Banned, huh? You're too pathetic to use my commands. Get lost! 💀`
+                    text: `◈━━━━━━━━━━━━━━━━◈
+│❒ Você está banido e não pode usar os comandos no momento.
+│❒ Se achar que isso é um engano, entre em contato com o administrador do bot.
+◈━━━━━━━━━━━━━━━━◈`
                 }, { quoted: fakeQuoted });
                 return;
             }
@@ -187,7 +190,7 @@ module.exports = toxic = async (client, m, chatUpdate, store) => {
         if (cmd) await commands[resolvedCommandName](context);
 
     } catch (err) {
-        console.error('Toxic-MD Error:', util.format(err));
+        console.error('9bot Error:', util.format(err));
     }
 
     process.on('uncaughtException', function (err) {
@@ -199,6 +202,6 @@ module.exports = toxic = async (client, m, chatUpdate, store) => {
         if (e.includes("Connection Closed")) return;
         if (e.includes("Timed Out")) return;
         if (e.includes("Value not found")) return;
-        console.error('Toxic-MD Caught exception:', err);
+        console.error('9bot Caught exception:', err);
     });
 };
