@@ -2,12 +2,12 @@ const fs = require('fs').promises;
 const path = require('path');
 const { queue } = require('async');
 
-// Queue to process one at a time for safety
+// Fila para processar um comando por vez (segurança e estabilidade)
 const commandQueue = queue(async (task, callback) => {
     try {
         await task.run(task.context);
     } catch (error) {
-        console.error(`Picture error: ${error.message}`);
+        console.error(`Sticker-to-image error: ${error.message}`);
     }
     callback();
 }, 1);
@@ -15,31 +15,56 @@ const commandQueue = queue(async (task, callback) => {
 module.exports = async (context) => {
     const { client, m, mime } = context;
 
+    const formatStylishReply = (msg) => {
+        return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${msg}\n◈━━━━━━━━━━━━━━━━◈`;
+    };
+
     commandQueue.push({
         context,
         run: async ({ client, m, mime }) => {
             try {
-                // Must reply to a sticker
+                // O usuário deve responder a um sticker
                 if (!m.quoted) {
-                    return m.reply('◈━━━━━━━━━━━━━━━━◈\n❒ Please reply to a *sticker* to convert it into an image.\n◈━━━━━━━━━━━━━━━━◈');
+                    return m.reply(
+                        formatStylishReply(
+                            "Responda a um *sticker* para convertê-lo em imagem."
+                        )
+                    );
                 }
 
-                const quotedMime = m.quoted.mimetype || '';
+                const quotedMime = m.quoted.mimetype || "";
                 if (!/webp/.test(quotedMime)) {
-                    return m.reply('◈━━━━━━━━━━━━━━━━◈\n❒ The replied message is not a sticker!\n◈━━━━━━━━━━━━━━━━◈');
+                    return m.reply(
+                        formatStylishReply(
+                            "A mensagem respondida não é um sticker válido."
+                        )
+                    );
                 }
 
-                await m.reply('◈━━━━━━━━━━━━━━━━◈\n❒ Converting sticker to image, please wait...\n◈━━━━━━━━━━━━━━━━◈');
+                await m.reply(
+                    formatStylishReply(
+                        "Convertendo o sticker para imagem...\nAguarde alguns instantes."
+                    )
+                );
 
-                // Temporary file paths
-                const tempSticker = path.join(__dirname, `temp-sticker-${Date.now()}.webp`);
-                const outputImage = path.join(__dirname, `converted-${Date.now()}.jpg`);
+                // Caminhos temporários
+                const tempSticker = path.join(
+                    __dirname,
+                    `temp-sticker-${Date.now()}.webp`
+                );
+                const outputImage = path.join(
+                    __dirname,
+                    `converted-${Date.now()}.jpg`
+                );
 
-                // Download the sticker first
-                const media = await client.downloadAndSaveMediaMessage(m.quoted, tempSticker);
+                // Baixa o sticker
+                const media = await client.downloadAndSaveMediaMessage(
+                    m.quoted,
+                    tempSticker
+                );
 
-                // Use ffmpeg to convert webp to jpg (Baileys environment usually supports this)
-                const { exec } = require('child_process');
+                // Converte usando ffmpeg
+                const { exec } = require("child_process");
                 await new Promise((resolve, reject) => {
                     exec(`ffmpeg -i "${media}" "${outputImage}" -y`, (err) => {
                         if (err) reject(err);
@@ -47,17 +72,35 @@ module.exports = async (context) => {
                     });
                 });
 
-                // Send converted image back
+                // Lê a imagem convertida
                 const imageBuffer = await fs.readFile(outputImage);
-                await client.sendMessage(m.chat, { image: imageBuffer, caption: '✅ Sticker converted to image!' }, { quoted: m });
 
-                // Clean up temp files
+                // Envia a imagem para o usuário
+                await client.sendMessage(
+                    m.chat,
+                    {
+                        image: imageBuffer,
+                        caption:
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Sticker convertido para imagem com sucesso! 
+◈━━━━━━━━━━━━━━━━◈`,
+                    },
+                    { quoted: m }
+                );
+
+                // Remove arquivos temporários
                 await fs.unlink(tempSticker).catch(() => {});
                 await fs.unlink(outputImage).catch(() => {});
+
             } catch (error) {
                 console.error(`Picture error: ${error.message}`);
-                await m.reply('◈━━━━━━━━━━━━━━━━◈\n❒ An error occurred while converting the sticker. Please try again.\n◈━━━━━━━━━━━━━━━━◈');
+
+                await m.reply(
+                    formatStylishReply(
+                        "Ocorreu um erro durante a conversão do sticker. Tente novamente."
+                    )
+                );
             }
-        }
+        },
     });
 };
