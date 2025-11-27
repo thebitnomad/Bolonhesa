@@ -4,7 +4,7 @@ const { Sticker, createSticker, StickerTypes } = require('wa-sticker-formatter')
 module.exports = {
     name: 'brat',
     aliases: ['bratsticker', 'brattext'],
-    description: 'Creates brat style text stickers',
+    description: 'Cria figurinhas de texto no estilo brat',
     run: async (context) => {
         const { client, m, prefix } = context;
 
@@ -13,83 +13,114 @@ module.exports = {
         };
 
         /**
-         * Extract text from message
+         * Extrai o texto da mensagem
          */
-        const text = m.body.replace(new RegExp(`^${prefix}(brat|bratsticker|brattext)\\s*`, 'i'), '').trim();
+        const text = m.body
+            .replace(new RegExp(`^${prefix}(brat|bratsticker|brattext)\\s*`, 'i'), '')
+            .trim();
         
         if (!text) {
-            return client.sendMessage(m.chat, {
-                text: `◈━━━━━━━━━━━━━━━━◈\n│❒ Yo, @${m.sender.split('@')[0]}! 😤 You forgot the text!\n│❒ Example: ${prefix}brat Hello there\n◈━━━━━━━━━━━━━━━━◈`,
-                mentions: [m.sender]
-            }, { quoted: m });
+            return client.sendMessage(
+                m.chat,
+                {
+                    text:
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Olá, @${m.sender.split('@')[0]}!
+│❒ Você esqueceu de enviar o texto.
+│❒ Exemplo: ${prefix}brat Olá, tudo bem?
+◈━━━━━━━━━━━━━━━━◈`,
+                    mentions: [m.sender]
+                },
+                { quoted: m }
+            );
         }
+
+        let loadingMsg;
 
         try {
             /**
-             * Send loading message
+             * Mensagem de carregamento
              */
-            const loadingMsg = await client.sendMessage(m.chat, {
-                text: formatStylishReply(`Creating brat sticker... 🎨\nText: "${text}"`)
-            }, { quoted: m });
+            loadingMsg = await client.sendMessage(
+                m.chat,
+                {
+                    text: formatStylishReply(
+                        `Criando figurinha estilo brat... 🎨\nTexto: "${text}"`
+                    )
+                },
+                { quoted: m }
+            );
 
             /**
-             * Fetch from the API your friend used - it seems more reliable
+             * Chama a API usada para gerar o texto no estilo brat
              */
-            const apiUrl = `https://api.nekolabs.web.id/canvas/brat/v1?text=${encodeURIComponent(text)}`;
+            const apiUrl = `https://api.nekolabs.web.id/canvas/brat/v1?text=${encodeURIComponent(
+                text
+            )}`;
             const response = await fetch(apiUrl);
             
             if (!response.ok) {
-                throw new Error(`API returned status: ${response.status}`);
+                throw new Error(`A API retornou o status: ${response.status}`);
             }
 
-            // Get image as buffer
+            // Pega a imagem como buffer
             const buffer = Buffer.from(await response.arrayBuffer());
 
-            // Delete loading message
-            await client.sendMessage(m.chat, { 
-                delete: loadingMsg.key 
-            });
+            // Remove a mensagem de carregamento
+            if (loadingMsg?.key) {
+                await client.sendMessage(m.chat, { delete: loadingMsg.key });
+            }
 
             /**
-             * Create proper sticker with metadata using wa-sticker-formatter
+             * Cria a figurinha com metadados usando wa-sticker-formatter
              */
             const sticker = new Sticker(buffer, {
-                pack: 'Brat Sticker Pack',      // Sticker pack name
-                author: 'Toxic Bot',            // Author name
-                type: StickerTypes.FULL,        // Sticker type
-                categories: ['😎', '💬'],       // Categories
-                quality: 50,                    // Quality
-                background: 'transparent'       // Background
+                pack: 'Brat Sticker Pack', // Nome do pack
+                author: '9bot',            // Autor
+                type: StickerTypes.FULL,
+                categories: ['😎', '💬'],
+                quality: 50,
+                background: 'transparent'
             });
 
-            // Send the sticker
-            await client.sendMessage(m.chat, await sticker.toMessage(), { quoted: m });
+            // Envia a figurinha
+            await client.sendMessage(
+                m.chat,
+                await sticker.toMessage(),
+                { quoted: m }
+            );
 
         } catch (error) {
             console.error('Brat command error:', error);
-            
-            // Try to delete loading message
+
+            // Tenta apagar a mensagem de carregamento, se existir
             try {
-                await client.sendMessage(m.chat, { 
-                    delete: loadingMsg.key 
-                });
+                if (loadingMsg?.key) {
+                    await client.sendMessage(m.chat, { delete: loadingMsg.key });
+                }
             } catch (e) {
-                // Ignore delete errors
+                // Ignora erros ao apagar
             }
 
-            let errorMessage = 'Failed to create sticker';
-            
+            let errorMessage = 'Não foi possível criar a figurinha.';
+
             if (error.message.includes('status')) {
-                errorMessage = 'Brat API is not responding. Try again later.';
+                errorMessage = 'A API de brat não está respondendo corretamente. Tente novamente mais tarde.';
             } else if (error.message.includes('Network')) {
-                errorMessage = 'Network error. Check your connection.';
+                errorMessage = 'Erro de rede. Verifique sua conexão e tente novamente.';
             } else {
                 errorMessage = error.message;
             }
 
-            await client.sendMessage(m.chat, {
-                text: formatStylishReply(`Brat Creation Failed! 😤\nError: ${errorMessage}`)
-            }, { quoted: m });
+            await client.sendMessage(
+                m.chat,
+                {
+                    text: formatStylishReply(
+                        `Falha ao criar figurinha brat. 😔\nErro: ${errorMessage}`
+                    )
+                },
+                { quoted: m }
+            );
         }
     }
 };
