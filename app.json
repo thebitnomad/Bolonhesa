@@ -16,7 +16,7 @@
   "env": {
     "SESSION": {
       "description": "🔑 Required – Your WhatsApp session ID (generated after linking the bot).",
-      "required": true
+      "required": false
     },
     "HEROKU_APP_NAME": {
       "description": "Optional – The Heroku app name (needed for updating the bot).",
