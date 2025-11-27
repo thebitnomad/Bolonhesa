@@ -3,11 +3,13 @@ module.exports = async (context) => {
 
     const Obf = require("javascript-obfuscator");
 
-    
+    const formatStylishReply = (msg) => {
+        return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${msg}\n◈━━━━━━━━━━━━━━━━◈`;
+    };
+
     if (m.quoted && m.quoted.text) {
         const forq = m.quoted.text;
 
-       
         const obfuscationResult = Obf.obfuscate(forq, {
             compact: true,
             controlFlowFlattening: true,
@@ -20,8 +22,21 @@ module.exports = async (context) => {
         });
 
         console.log("Successfully encrypted the code");
-        m.reply(obfuscationResult.getObfuscatedCode());
+
+        m.reply(
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Código ofuscado com sucesso:
+◈━━━━━━━━━━━━━━━━◈
+
+${obfuscationResult.getObfuscatedCode()}
+
+◈━━━━━━━━━━━━━━━━◈
+Powered by 9bot.com.br`
+        );
+
     } else {
-        m.reply("Tag a valid JavaScript code to encrypt!");
+        m.reply(
+            formatStylishReply('Responda uma mensagem contendo um código JavaScript válido para ofuscar.')
+        );
     }
 };
