@@ -14,7 +14,11 @@ module.exports = async (context) => {
       if (!settings || Object.keys(settings).length === 0) {
         return await client.sendMessage(
           m.chat,
-          { text: formatStylishReply('Database is down, no settings found. Fix it, loser. 😴') },
+          {
+            text: formatStylishReply(
+              'Não foi possível encontrar as configurações no banco de dados.\n│❒ Verifique as definições do bot antes de tentar novamente. 😴'
+            )
+          },
           { quoted: m, ad: true }
         );
       }
@@ -24,10 +28,15 @@ module.exports = async (context) => {
 
       if (validOptions.includes(value)) {
         const newState = value === 'on';
+
         if (settings.autoview === newState) {
           return await client.sendMessage(
             m.chat,
-            { text: formatStylishReply(`Autoview is already ${value.toUpperCase()}, you brainless fool! 😈 Stop wasting my time! 🖕`) },
+            {
+              text: formatStylishReply(
+                `O Autoview já está em ${value.toUpperCase()} neste momento. 😉`
+              )
+            },
             { quoted: m, ad: true }
           );
         }
@@ -35,7 +44,14 @@ module.exports = async (context) => {
         await updateSetting('autoview', newState);
         return await client.sendMessage(
           m.chat,
-          { text: formatStylishReply(`Autoview ${value.toUpperCase()}! 🔥 ${newState ? 'I’ll view every status like a king! 😈' : 'I’m done with your boring statuses. 😴'}`) },
+          {
+            text: formatStylishReply(
+              `Autoview definido para *${value.toUpperCase()}* com sucesso! 🔥\n` +
+              (newState
+                ? 'Vou visualizar automaticamente os status, tudo sob controle. 😈'
+                : 'Visualização automática de status desativada. 😴')
+            )
+          },
           { quoted: m, ad: true }
         );
       }
@@ -48,8 +64,11 @@ module.exports = async (context) => {
       await client.sendMessage(
         m.chat,
         {
-          text: formatStylishReply(`Autoview Status: ${settings.autoview ? 'ON ✅ (Watching all statuses)' : 'OFF ❌ (Ignoring statuses)'}\n\nPick an option, noob! 😈`),
-          footer: '> Pσɯҽɾԃ Ⴆყ Tσxιƈ-ɱԃȥ',
+          text: formatStylishReply(
+            `Status atual do Autoview: ${settings.autoview ? 'ON ✅ (visualizando todos os status)' : 'OFF ❌ (ignorando status)'}\n` +
+            `│❒ Escolha uma opção abaixo para alterar o comportamento do bot. 😄`
+          ),
+          footer: '> Powered by *9bot*',
           buttons,
           headerType: 1,
           viewOnce: true,
@@ -59,7 +78,11 @@ module.exports = async (context) => {
     } catch (error) {
       await client.sendMessage(
         m.chat,
-        { text: formatStylishReply('Something broke, couldn’t update Autoview. Database is probably drunk. Try later. 😴') },
+        {
+          text: formatStylishReply(
+            'Ocorreu um erro ao atualizar o Autoview.\n│❒ Verifique o banco de dados ou tente novamente em alguns instantes. 😴'
+          )
+        },
         { quoted: m, ad: true }
       );
     }
