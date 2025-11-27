@@ -1,20 +1,46 @@
 module.exports = async (context) => {
     const { client, m, text } = context;
 
+    const ai = require('unlimited-ai');
 
-const ai = require('unlimited-ai');
-if (!text) return m.reply("provide text");
+    const formatStylishReply = (msg) => {
+        return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${msg}\n◈━━━━━━━━━━━━━━━━◈`;
+    };
 
- (async () => { 
+    if (!text) {
+        return m.reply(
+            formatStylishReply("Por favor, envie um texto para a IA responder.")
+        );
+    }
 
-const model = 'gpt-4'; 
+    (async () => { 
+        const model = 'gpt-4';
 
+        const messages = [
+            { role: 'user', content: text },
+            { 
+                role: 'system', 
+                content: 'Você é um assistente no WhatsApp. Seu nome é Dreaded. Você responde aos comandos dos usuários.' 
+            }
+        ];
 
-const messages = [ { role: 'user', content: text }, { role: 'system', content: 'You are an assistant in WhatsApp. You are called Dreaded. You respond to user commands.' } ]; 
+        try {
+            const response = await ai.generate(model, messages);
 
-await m.reply(await ai.generate(model, messages)); 
+            await m.reply(
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Resposta da IA:
+◈━━━━━━━━━━━━━━━━◈
 
-})();
+${response}
 
+◈━━━━━━━━━━━━━━━━◈`
+            );
 
-}
+        } catch (error) {
+            await m.reply(
+                formatStylishReply(`Ocorreu um erro ao gerar a resposta.\nDetalhes: ${error.message || error}`)
+            );
+        }
+    })();
+};
