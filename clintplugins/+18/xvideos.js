@@ -1,1 +1,116 @@
-function _0x9858(){const _0x2731b6=['title','◈━━━━━━━━━━━━━━━━◈\x0a│❒\x20What’s\x20this\x20weak-ass\x20query,\x20','💾\x20*Size*:\x20','pushName','floor','\x22,\x20','◈━━━━━━━━━━━━━━━━◈\x0a│❒\x20Shit\x20hit\x20the\x20fan,\x20','610180clJuxt','sendMessage','slice','◈━━━━━━━━━━━━━━━━◈\x0aPowered\x20by\x20*','Xvideo\x20command\x20error:','12jTYEfY','result','reply','👍\x20*Likes*:\x20','download_url','2QKvonF','replace','forEach','results','https://api.giftedtech.web.id/api/download/xvideosdl?apikey=gifted&url=','!\x20Try\x20another\x20query,\x20you\x20sad\x20perv.\x20😒','trim','430339GEDKUv','error','size','duration','1726821Vamvnt','chat','8blqZCH','random','5696517seVCBz','◈━━━━━━━━━━━━━━━━◈\x0a│❒\x20Yo,\x20horny\x20moron,\x20give\x20me\x20a\x20search\x20query!\x20use\x20*!xvideos\x20hot\x20milf*\x20\x0a\x0aor\x20fuck\x20off!\x20😡','exports','https://api.giftedtech.web.id/api/search/xvideossearch?apikey=gifted&query=','◈━━━━━━━━━━━━━━━━◈\x0a│❒\x20Here’s\x20your\x20nasty\x20*','\x20[Picked]','.\x20*','*,\x20','length','!\x20Error:\x20','\x20filthy\x20videos\x20for\x20\x22','11850223EBVgrK','📹\x20*Duration*:\x20','👀\x20*Views*:\x20','10dXezjo','!\x20Don’t\x20get\x20caught\x20with\x20this\x20shit!\x20😈\x0a','url','!\x20I\x20randomly\x20picked\x20this\x20one,\x20you\x20lucky\x20bastard!\x20😈\x0a\x0a','538977RgHWoS','737015PVodCK'];_0x9858=function(){return _0x2731b6;};return _0x9858();}const _0x1165aa=_0x3a8f;function _0x3a8f(_0x11cc26,_0x2f7328){const _0x9858e7=_0x9858();return _0x3a8f=function(_0x3a8f6c,_0x3d188c){_0x3a8f6c=_0x3a8f6c-0x98;let _0x36099c=_0x9858e7[_0x3a8f6c];return _0x36099c;},_0x3a8f(_0x11cc26,_0x2f7328);}(function(_0x15df6b,_0xa8e97e){const _0x3f0e05=_0x3a8f,_0x56958e=_0x15df6b();while(!![]){try{const _0x514414=parseInt(_0x3f0e05(0xbb))/0x1*(parseInt(_0x3f0e05(0x9a))/0x2)+parseInt(_0x3f0e05(0xa9))/0x3+parseInt(_0x3f0e05(0xc4))/0x4+parseInt(_0x3f0e05(0xbc))/0x5*(-parseInt(_0x3f0e05(0xc9))/0x6)+-parseInt(_0x3f0e05(0xa1))/0x7*(parseInt(_0x3f0e05(0xa7))/0x8)+-parseInt(_0x3f0e05(0xa5))/0x9+parseInt(_0x3f0e05(0xb7))/0xa*(-parseInt(_0x3f0e05(0xb4))/0xb);if(_0x514414===_0xa8e97e)break;else _0x56958e['push'](_0x56958e['shift']());}catch(_0x15976c){_0x56958e['push'](_0x56958e['shift']());}}}(_0x9858,0xeb934),module[_0x1165aa(0xab)]=async _0x236ba4=>{const _0x526ea5=_0x1165aa,{client:_0x3ff200,m:_0x2df0d4,text:_0x187358,botname:_0x14d4f3,fetchJson:_0xe9d073}=_0x236ba4;if(!_0x187358||_0x187358[_0x526ea5(0xa0)]()==='')return _0x2df0d4[_0x526ea5(0xcb)](_0x526ea5(0xaa));try{const _0x37748b=_0x187358['trim']()[_0x526ea5(0xc6)](0x0,0x32)[_0x526ea5(0x9b)](/[^a-zA-Z0-9\s]/g,'');if(_0x37748b[_0x526ea5(0xb1)]<0x3)return _0x2df0d4[_0x526ea5(0xcb)](_0x526ea5(0xbe)+_0x2df0d4[_0x526ea5(0xc0)]+'?\x20At\x20least\x203\x20characters,\x20you\x20dumbass!\x20🙄');const _0x414235=encodeURIComponent(_0x37748b),_0x3ca355=await _0xe9d073(_0x526ea5(0xac)+_0x414235);if(!_0x3ca355||!_0x3ca355['success']||!_0x3ca355[_0x526ea5(0x9d)]||_0x3ca355[_0x526ea5(0x9d)][_0x526ea5(0xb1)]===0x0)return _0x2df0d4[_0x526ea5(0xcb)]('◈━━━━━━━━━━━━━━━━◈\x0a│❒\x20API’s\x20being\x20a\x20bitch,\x20no\x20videos\x20found\x20for\x20\x22'+_0x37748b+'\x22,\x20loser!\x20Try\x20another\x20query.\x20😒');const _0x84c2f=_0x3ca355[_0x526ea5(0x9d)]['slice'](0x0,0x5),_0x4cf7a1=_0x84c2f[Math[_0x526ea5(0xc1)](Math[_0x526ea5(0xa8)]()*_0x84c2f[_0x526ea5(0xb1)])],_0x882a65=await _0xe9d073(_0x526ea5(0x9e)+encodeURIComponent(_0x4cf7a1[_0x526ea5(0xb9)]));if(!_0x882a65||!_0x882a65['success']||!_0x882a65[_0x526ea5(0xca)]||!_0x882a65[_0x526ea5(0xca)][_0x526ea5(0x99)])return _0x2df0d4['reply']('◈━━━━━━━━━━━━━━━━◈\x0a│❒\x20Download\x20API\x20fucked\x20up,\x20no\x20video\x20for\x20you,\x20'+_0x2df0d4['pushName']+_0x526ea5(0x9f));let _0x48be33='◈━━━━━━━━━━━━━━━━◈\x0a│❒\x20Found\x20'+_0x84c2f[_0x526ea5(0xb1)]+_0x526ea5(0xb3)+_0x37748b+_0x526ea5(0xc2)+_0x2df0d4[_0x526ea5(0xc0)]+_0x526ea5(0xba);_0x84c2f[_0x526ea5(0x9c)]((_0x2330b6,_0x1b9a5a)=>{const _0x12d365=_0x526ea5;_0x48be33+=_0x1b9a5a+0x1+_0x12d365(0xaf)+_0x2330b6[_0x12d365(0xbd)]+'*\x20('+_0x2330b6[_0x12d365(0xa4)]+')'+(_0x2330b6[_0x12d365(0xb9)]===_0x4cf7a1[_0x12d365(0xb9)]?_0x12d365(0xae):'')+'\x0a';}),_0x48be33+='\x0a◈━━━━━━━━━━━━━━━━◈\x0aPowered\x20by\x20*'+_0x14d4f3+'*',await _0x2df0d4[_0x526ea5(0xcb)](_0x48be33);const _0x479a72=_0x526ea5(0xad)+_0x882a65[_0x526ea5(0xca)][_0x526ea5(0xbd)]+_0x526ea5(0xb0)+_0x2df0d4['pushName']+_0x526ea5(0xb8)+(_0x526ea5(0xb5)+_0x4cf7a1[_0x526ea5(0xa4)]+'\x0a')+(_0x526ea5(0xb6)+_0x882a65[_0x526ea5(0xca)]['views']+'\x0a')+(_0x526ea5(0x98)+_0x882a65[_0x526ea5(0xca)]['likes']+'\x0a')+(_0x526ea5(0xbf)+_0x882a65[_0x526ea5(0xca)][_0x526ea5(0xa3)]+'\x0a')+(_0x526ea5(0xc7)+_0x14d4f3+'*');await _0x3ff200[_0x526ea5(0xc5)](_0x2df0d4[_0x526ea5(0xa6)],{'video':{'url':_0x882a65[_0x526ea5(0xca)][_0x526ea5(0x99)]},'caption':_0x479a72},{'quoted':_0x2df0d4});}catch(_0x4f9b4d){console[_0x526ea5(0xa2)](_0x526ea5(0xc8),_0x4f9b4d),await _0x2df0d4['reply'](_0x526ea5(0xc3)+_0x2df0d4[_0x526ea5(0xc0)]+_0x526ea5(0xb2)+_0x4f9b4d['message']+'.\x20Bug\x20off\x20and\x20try\x20later,\x20you\x20filthy\x20slacker!\x20😡\x0aCheck\x20https://github.com/xhclintohn/Toxic-MD\x20for\x20help.');}});
+module.exports = async (context) => {
+  const { client, m, text, botname, fetchJson } = context;
+
+  const formatStylishReply = (message) => {
+    return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n◈━━━━━━━━━━━━━━━━◈`;
+  };
+
+  try {
+    // Sem termo de busca
+    if (!text || text.trim() === '') {
+      return m.reply(
+        formatStylishReply(
+          'Informe um termo para pesquisar no Xvideos.\n\nExemplo:\n*!xvideos hot milf*'
+        )
+      );
+    }
+
+    // Sanitize básico, igual ao original (limita tamanho e remove caracteres estranhos)
+    const queryRaw = text.trim().slice(0, 50).replace(/[^a-zA-Z0-9\s]/g, '');
+    if (queryRaw.length < 3) {
+      return m.reply(
+        formatStylishReply(
+          `Esse termo está muito curto, ${m.pushName}.\nUse pelo menos *3 caracteres* para eu conseguir pesquisar.`
+        )
+      );
+    }
+
+    const encodedQuery = encodeURIComponent(queryRaw);
+
+    // Busca na API de pesquisa
+    const searchUrl =
+      `https://api.giftedtech.web.id/api/search/xvideossearch?apikey=gifted&query=` +
+      encodedQuery;
+
+    const searchRes = await fetchJson(searchUrl);
+
+    if (
+      !searchRes ||
+      !searchRes.success ||
+      !searchRes.results ||
+      searchRes.results.length === 0
+    ) {
+      return m.reply(
+        formatStylishReply(
+          `Não encontrei resultados para *"${queryRaw}"*.\nTente outro termo de pesquisa.`
+        )
+      );
+    }
+
+    // Pega até 5 resultados, escolhe 1 aleatório para download
+    const topResults = searchRes.results.slice(0, 5);
+    const picked =
+      topResults[Math.floor(Math.random() * topResults.length)];
+
+    // Chama API de download para o vídeo escolhido
+    const downloadUrl =
+      `https://api.giftedtech.web.id/api/download/xvideosdl?apikey=gifted&url=` +
+      encodeURIComponent(picked.url);
+
+    const dlRes = await fetchJson(downloadUrl);
+
+    if (!dlRes || !dlRes.success || !dlRes.result || !dlRes.result.download_url) {
+      return m.reply(
+        formatStylishReply(
+          `Não consegui obter o vídeo para você no momento.\nTente novamente em alguns minutos.`
+        )
+      );
+    }
+
+    // Monta o texto de lista dos resultados
+    let listMsg =
+      `◈━━━━━━━━━━━━━━━━◈\n` +
+      `│❒ Encontrei *${topResults.length}* vídeos para *"${queryRaw}"*.\n` +
+      `│❒ Um deles foi selecionado para download.\n` +
+      `◈━━━━━━━━━━━━━━━━◈\n`;
+
+    topResults.forEach((item, idx) => {
+      listMsg += `${idx + 1}. *${item.title}* (${item.duration})${
+        item.url === picked.url ? '  [escolhido]' : ''
+      }\n`;
+    });
+
+    listMsg += `\n◈━━━━━━━━━━━━━━━━◈\nPowered by *${botname}*`;
+
+    await m.reply(listMsg);
+
+    // Monta a legenda do vídeo
+    const info = dlRes.result;
+    const caption =
+      `◈━━━━━━━━━━━━━━━━◈\n` +
+      `│❒ *Título*: ${info.title}\n` +
+      `│❒ *Pedido por*: ${m.pushName}\n` +
+      `│🎬 *Duração*: ${picked.duration}\n` +
+      `│👀 *Views*: ${info.views}\n` +
+      `│👍 *Likes*: ${info.likes}\n` +
+      `│💾 *Tamanho*: ${info.size}\n` +
+      `◈━━━━━━━━━━━━━━━━◈\n` +
+      `Assista com responsabilidade.\nPowered by *${botname}*`;
+
+    await client.sendMessage(
+      m.chat,
+      {
+        video: { url: info.download_url },
+        caption,
+      },
+      { quoted: m }
+    );
+  } catch (err) {
+    console.error('Xvideo command error:', err);
+    await m.reply(
+      formatStylishReply(
+        `Ocorreu um erro ao processar sua pesquisa.\n\nDetalhes: ${err.message}`
+      )
+    );
+  }
+};
