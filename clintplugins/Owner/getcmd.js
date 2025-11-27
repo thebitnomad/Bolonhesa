@@ -4,17 +4,25 @@ module.exports = async (context) => {
     const { client, m, text, prefix } = context;
 
     try {
-        // Restrict to your number only
+        // Restrito apenas ao número do dono
         const allowedNumber = '254735342808@s.whatsapp.net';
         if (m.sender !== allowedNumber) {
             return await client.sendMessage(m.chat, {
-                text: `❌ *Access denied!* This command is restricted to the bot owner.\n\n◈━━━━━━━━━━━━━━━━◈\n> Pσɯҽɾԃ Ⴆყ Tσxιƈ-ɱԃȥ`
+                text: `❌ *Acesso negado!*  
+Este comando é restrito ao proprietário do bot.
+
+◈━━━━━━━━━━━━━━━━◈
+> Powered by *9bot*`
             }, { quoted: m });
         }
 
         if (!text) {
             return await client.sendMessage(m.chat, {
-                text: `📜 *Please provide a command name!* Example: *${prefix}getcmd or ${prefix}cmd ping*\n\n◈━━━━━━━━━━━━━━━━◈\n> Pσɯҽɾԃ Ⴆყ Tσxιƈ-ɱԃȥ`
+                text: `📜 *Por favor, informe o nome do comando!*  
+Exemplo: *${prefix}getcmd* ou *${prefix}cmd ping*
+
+◈━━━━━━━━━━━━━━━━◈
+> Powered by *9bot*`
             }, { quoted: m });
         }
 
@@ -43,14 +51,25 @@ module.exports = async (context) => {
 
             try {
                 const data = await fs.readFile(filePath, 'utf8');
-                const replyText = `✅ *Command file: ${commandName}.js*\n\n\`\`\`javascript\n${data}\n\`\`\`\n\n◈━━━━━━━━━━━━━━━━◈\n> Pσɯҽɾԃ Ⴆყ Tσxιƈ-ɱԃȥ`;
+                const replyText = `✅ *Arquivo do comando:* ${commandName}.js
+
+\`\`\`javascript
+${data}
+\`\`\`
+
+◈━━━━━━━━━━━━━━━━◈
+> Pσɯҽɾԃ Ⴆყ Tσxιƈ-ɱԃȥ`;
+
                 await client.sendMessage(m.chat, { text: replyText }, { quoted: m });
                 fileFound = true;
                 break;
             } catch (err) {
                 if (err.code !== 'ENOENT') {
                     await client.sendMessage(m.chat, {
-                        text: `⚠️ *Error reading command file:* ${err.message}\n\n◈━━━━━━━━━━━━━━━━◈\n> Pσɯҽɾԃ Ⴆყ Tσxιƈ-ɱԃȥ`
+                        text: `⚠️ *Erro ao ler o arquivo do comando:* ${err.message}
+
+◈━━━━━━━━━━━━━━━━◈
+> Pσɯҽɾԃ Ⴆყ Tσxιƈ-ɱԃȥ`
                     }, { quoted: m });
                     return;
                 }
@@ -59,13 +78,23 @@ module.exports = async (context) => {
 
         if (!fileFound) {
             await client.sendMessage(m.chat, {
-                text: `❌ *Command not found:* ${commandName}\n\nTry a valid command name!\n\n◈━━━━━━━━━━━━━━━━◈\n> Pσɯҽɾԃ Ⴆყ Tσxιƈ-ɱԃȥ`
+                text: `❌ *Comando não encontrado:* ${commandName}
+
+Tente um nome de comando válido.
+
+◈━━━━━━━━━━━━━━━━◈
+> Pσɯҽɾԃ Ⴆყ Tσxιƈ-ɱԃȥ`
             }, { quoted: m });
         }
+
     } catch (error) {
         console.error('Error in getcmd command:', error);
         await client.sendMessage(m.chat, {
-            text: `⚠️ *Oops! Failed to process command:* ${error.message}\n\n◈━━━━━━━━━━━━━━━━◈\nPowered by *𝐓𝐎𝐖𝐈𝐂-𝐌𝐃 𝐕3*`
+            text: `⚠️ *Ops! Não foi possível processar o comando:*  
+${error.message}
+
+◈━━━━━━━━━━━━━━━━◈
+Powered by *9bot*`
         }, { quoted: m });
     }
 };
