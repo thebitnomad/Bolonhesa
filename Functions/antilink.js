@@ -52,15 +52,15 @@ module.exports = async (client, m) => {
             },
         });
 
-        // Toxic warning message
+        // Mensagem de aviso divertida
         await client.sendMessage(m.chat, {
             text:
-                `◈━━❰ *Toxic-MD Antilink* ❱━━◈\n` +
-                `│ 😒 @${m.sender.split("@")[0]}, you really thought you could drop a link here?\n` +
-                `│ 🧹 Message swept away.\n` +
+                `◈━━❰ *Antilink* ❱━━◈\n` +
+                `│ 🙅 @${m.sender.split("@")[0]}, link aqui não, né? 😂\n` +
+                `│ 🧹 Seu link foi limpo do rolê.\n` +
                 (antilinkMode === "remove"
-                    ? `│ 🚪 And now you're getting kicked. Actions ➤ Consequences.\n`
-                    : `│ ⚠️ Try that again and see what happens.\n`) +
+                    ? `│ 🚪 Modo hardcore ativado: você foi removido por mandar link no grupo.\n`
+                    : `│ ⚠️ Da próxima pode rolar punição. Melhor não arriscar. 😉\n`) +
                 `┗━━━━━━━━━━━━━━━━┛`,
             mentions: [m.sender],
         });
@@ -75,24 +75,24 @@ module.exports = async (client, m) => {
 
                 await client.sendMessage(m.chat, {
                     text:
-                        `◈━━❰ *Toxic-MD* ❱━━◈\n` +
-                        `│ 🚫 @${tag} has been *yeeted* out for dropping links.\n` +
-                        `│ Next time, read the rules. If you can.\n` +
+                        `◈━━❰ *Antilink* ❱━━◈\n` +
+                        `│ 🚫 @${tag} saiu do grupo por mandar link.\n` +
+                        `│ 📜 Leiam as regras pra não sair sem se despedir de novo. 😅\n` +
                         `┗━━━━━━━━━━━━━━┛`,
                     mentions: [user],
                 });
             } catch {
                 await client.sendMessage(m.chat, {
                     text:
-                        `◈━━❰ *Toxic-MD* ❱━━◈\n` +
-                        `│ 🤦 Can't kick @${tag}. Probably missing admin perms.\n` +
-                        `│ Fix that, boss.\n` +
+                        `◈━━❰ *Antilink* ❱━━◈\n` +
+                        `│ 🤷 Não consegui remover @${tag}.\n` +
+                        `│ 🔑 Parece que estou sem permissão de admin. Dono do grupo, me dá uma força aí. 🙌\n` +
                         `┗━━━━━━━━━━━━━━┛`,
                     mentions: [user],
                 });
             }
         }
     } catch (err) {
-        // Silent fail — Toxic-MD doesn't whine 😏
+        // Silent fail
     }
 };
