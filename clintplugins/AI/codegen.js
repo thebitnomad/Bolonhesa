@@ -1,18 +1,29 @@
 const axios = require("axios");
 
 module.exports = async (context) => {
-    const { client, m, text } = context;
+    const { client, m, text, botname } = context;
 
     if (!text) {
-        return m.reply("Example usage:\n.codegen Function to calculate triangle area|Python");
+        return m.reply(
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Uso incorreto.
+│❒ Exemplo:
+│❒ .codegen Função para calcular área de um triângulo | Python
+◈━━━━━━━━━━━━━━━━◈`
+        );
     }
 
     let [prompt, language] = text.split("|").map(v => v.trim());
 
     if (!prompt || !language) {
         return m.reply(
-            "Invalid format!\nUse the format:\n.codegen <prompt>|<language>\n\n" +
-            "Example:\n.codegen Check for prime number|JavaScript"
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Formato inválido!
+│❒ Use:
+│❒ .codegen <prompt> | <linguagem>
+│❒ Exemplo:
+│❒ .codegen Verificar número primo | JavaScript
+◈━━━━━━━━━━━━━━━━◈`
         );
     }
 
@@ -22,21 +33,39 @@ module.exports = async (context) => {
             outputLang: language
         };
 
-        const { data } = await axios.post("https://www.codeconvert.ai/api/generate-code", payload);
+        const { data } = await axios.post(
+            "https://www.codeconvert.ai/api/generate-code",
+            payload
+        );
 
         if (!data || typeof data !== "string") {
-            return m.reply("Failed to retrieve code from API.");
+            return m.reply(
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Não foi possível obter o código da API.
+◈━━━━━━━━━━━━━━━━◈`
+            );
         }
 
-        m.reply(
-            `*Generated Code (${language}):*\n` +
-            "```" + language.toLowerCase() + "\n" +
-            data.trim() +
-            "\n```"
+        await m.reply(
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Código gerado em *${language}*:
+◈━━━━━━━━━━━━━━━━◈
+
+\`\`\`${language.toLowerCase()}
+${data.trim()}
+\`\`\`
+
+◈━━━━━━━━━━━━━━━━◈
+Powered by *${botname}*`
         );
 
     } catch (error) {
         console.error(error);
-        m.reply("An error occurred while processing your request.");
+        m.reply(
+`◈━━━━━━━━━━━━━━━━◈
+│❒ Ocorreu um erro ao processar sua solicitação.
+│❒ Tente novamente em instantes.
+◈━━━━━━━━━━━━━━━━◈`
+        );
     }
 };
