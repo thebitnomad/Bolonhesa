@@ -13,7 +13,7 @@ module.exports = async (client, m, isBotAdmin, itsMe, isAdmin, Owner, body) => {
 
         try {
             await client.sendMessage(m.chat, {
-                text: `@${kid.split("@")[0]}, do not tag!`,
+                text: `@${kid.split("@")[0]}, marcar geral aqui não é permitido. Você será removido do grupo. 😅`,
                 contextInfo: { mentionedJid: [kid] }
             }, { quoted: m });
 
@@ -28,7 +28,7 @@ module.exports = async (client, m, isBotAdmin, itsMe, isAdmin, Owner, body) => {
 
             await client.groupParticipantsUpdate(m.chat, [kid], "remove");
         } catch (e) {
-            console.log("Error in antitag:", e);
+            console.log("Erro no antitag:", e);
         }
     }
 };
