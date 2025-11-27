@@ -1,12 +1,12 @@
 const OWNER_NUMBER = "254735342808";
 const OWNER_JID = `${OWNER_NUMBER}@s.whatsapp.net`;
 
-// Normalize phone number (keep existing)
+// Normaliza número (mantido)
 const normalizeNumber = (number) => {
   return number.replace(/[^0-9]/g, '').replace(/^0+/, '').replace(/^\+254/, '254') || number;
 };
 
-// Retry function (keep existing)
+// Função de retry (mantida)
 const retryPromote = async (client, groupId, participant, maxRetries = 5, baseDelay = 1500) => {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
@@ -20,63 +20,70 @@ const retryPromote = async (client, groupId, participant, maxRetries = 5, baseDe
   }
 };
 
-// Modified to use context.isBotAdmin instead of manual check
+const formatReply = (msg) =>
+  `◈━━━━━━━━━━━━━━━━◈\n│❒ ${msg}\n◈━━━━━━━━━━━━━━━━◈`;
+
+// Comando powner
 module.exports = {
   name: 'powner',
   aliases: ['promoteowner', 'makeowneradmin'],
-  description: 'Promotes the owner to admin',
+  description: 'Promove o número do owner a admin no grupo',
   run: async (context) => {
-    const { client, m, isBotAdmin, isAdmin } = context;
+    const { client, m, isBotAdmin } = context;
 
-    // Check if it's a group chat
+    // Verifica se é grupo
     if (!m.isGroup) {
-      return m.reply(`This command only works in groups`);
+      return m.reply(formatReply("Este comando só pode ser usado em grupos."));
     }
 
-    // Check if user is owner (keep existing logic)
+    // Verifica se quem chamou é o owner
     const normalizedAuteur = normalizeNumber(m.sender.split('@')[0]);
     const normalizedOwner = normalizeNumber(OWNER_NUMBER);
     const isOwner = m.sender === OWNER_JID || normalizedAuteur === normalizedOwner;
 
     if (!isOwner) {
-      return m.reply(`Only the owner can use this command`);
+      return m.reply(formatReply("Apenas o proprietário (owner) do bot pode usar este comando."));
     }
 
-    // Use middleware's admin check instead of manual metadata fetch
+    // Verifica se o bot é admin (usa flag do contexto)
     if (!isBotAdmin) {
       await client.sendMessage(m.chat, {
-        text: `I need admin privileges to perform this action`
+        text: formatReply("Eu preciso ser administrador no grupo para fazer essa alteração.")
       });
       return;
     }
 
-    // Check if owner is in group (simplified)
     try {
       const groupMetadata = await client.groupMetadata(m.chat);
+
       const ownerInGroup = groupMetadata.participants.some(
-        member => member.id === OWNER_JID || normalizeNumber(member.id.split('@')[0]) === normalizedOwner
+        member =>
+          member.id === OWNER_JID ||
+          normalizeNumber(member.id.split('@')[0]) === normalizedOwner
       );
 
       if (!ownerInGroup) {
-        return m.reply(`Owner is not in this group`);
+        return m.reply(formatReply("O número do owner não foi encontrado neste grupo."));
       }
 
-      // Check if already admin
       const ownerMember = groupMetadata.participants.find(
-        member => member.id === OWNER_JID || normalizeNumber(member.id.split('@')[0]) === normalizedOwner
+        member =>
+          member.id === OWNER_JID ||
+          normalizeNumber(member.id.split('@')[0]) === normalizedOwner
       );
-      
+
       if (ownerMember?.admin) {
-        return m.reply(`Owner is already an admin`);
+        return m.reply(formatReply("O owner já é administrador neste grupo."));
       }
 
-      // Perform promotion
       await retryPromote(client, m.chat, OWNER_JID);
-      return m.reply(`✅ Owner has been promoted to admin`);
+      return m.reply(formatReply("✅ O owner foi promovido a administrador com sucesso."));
 
     } catch (error) {
       console.error('Promotion error:', error);
-      return m.reply(`Failed to promote: ${error.message}`);
+      return m.reply(
+        formatReply(`Não foi possível concluir a promoção.\nDetalhes: ${error.message}`)
+      );
     }
   }
 };
