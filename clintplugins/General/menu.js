@@ -51,7 +51,7 @@ ${mode} ( ! )
 
 ( ! ) *Selecione uma opção abaixo para continuar.*`;
 
-    // Mensagem com lista de botões (compatível com iOS)
+    // normal list buttons
     const listMessage = {
       text: menuText,
       footer: `Powered by ${botname}`,
