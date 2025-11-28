@@ -3,7 +3,6 @@ const {
   useMultiFileAuthState,
   DisconnectReason,
   fetchLatestWaWebVersion,
-  makeInMemoryStore,
   downloadContentFromMessage,
   jidDecode,
   proto,
@@ -11,6 +10,9 @@ const {
   makeCacheableSignalKeyStore,
   Browsers
 } = require("@whiskeysockets/baileys");
+
+// Import makeInMemoryStore separately
+const { makeInMemoryStore } = require("@whiskeysockets/baileys");
 
 const pino = require("pino");
 const { Boom } = require("@hapi/boom");
@@ -28,6 +30,8 @@ const _ = require("lodash");
 const PhoneNumber = require("awesome-phonenumber");
 const { imageToWebp, videoToWebp, writeExifImg, writeExifVid } = require('../lib/exif');
 const { isUrl, generateMessageTag, getBuffer, getSizeMedia, fetchJson, await, sleep } = require('../lib/botFunctions');
+
+// Initialize store after importing makeInMemoryStore
 const store = makeInMemoryStore({ logger: pino().child({ level: "silent", stream: "store" }) });
 
 const authenticationn = require('../Auth/auth.js');
@@ -207,7 +211,7 @@ async function startToxic() {
       return message;
     },
     version: version,
-    browser: ["Ubuntu", "Chrome", "125"], 
+    browser: Browsers.ubuntu('Chrome'),
     logger: pino({ level: 'silent' }),
     auth: {
       creds: state.creds,
