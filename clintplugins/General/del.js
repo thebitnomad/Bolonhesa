@@ -34,7 +34,7 @@ module.exports = {
                 );
                 return m.reply(
                     formatStylishReply(
-                        'Não consegui identificar corretamente o seu número. Tente novamente ou verifique a configuração do bot.\n│❒ Ajuda: https://github.com/xhclintohn/Toxic-MD'
+                        'Não consegui identificar corretamente o seu número. Tente novamente ou verifique a configuração do bot.\n│❒ Ajuda: https://9bot.com.br'
                     )
                 );
             }
