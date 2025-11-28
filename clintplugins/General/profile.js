@@ -4,34 +4,51 @@ module.exports = async (context) => {
     try {
         const isQuoted = !!m.quoted;
         const sender = isQuoted ? m.quoted.sender : m.sender;
-        const name = isQuoted ? `@${sender.split('@')[0]}` : m.pushName;
+        const name = isQuoted ? `@${sender.split('@')[0]}` : (m.pushName || 'Usuário');
 
-        let ppUrl = pict; // Default to context-provided image
+        let ppUrl = pict; // Imagem padrão vinda do contexto
         try {
             ppUrl = await client.profilePictureUrl(sender, 'image');
         } catch {
-            ppUrl = pict; // Fallback to pict if profile picture is unavailable
+            ppUrl = pict; // Fallback para pict se não tiver foto de perfil
         }
 
-        let statusText = 'Not set';
+        let statusText = 'Não definido';
         try {
             const status = await client.fetchStatus(sender);
-            statusText = status.status || 'Not set';
+            statusText = status?.status || 'Não definido';
         } catch {
-            statusText = 'About not accessible due to privacy settings';
+            statusText = 'Sobre não acessível por causa das configurações de privacidade.';
         }
 
-        const caption = `👤 *Profile for ${name}*\n\n🖼️ *Profile Picture*: ${ppUrl ? 'Displayed below' : 'Not available'}\n📝 *About*: ${statusText}\n\n◈━━━━━━━━━━━━━━━━◈\nPowered by *𝐓𝐎𝐗𝐈𝐂-𝐌𝐃 𝐕3*`;
+        const caption = `◈━━━━━━━━━━━━━━━━◈
+│❒ 👤 *Perfil de:* ${name}
+│❒
+│❒ 🖼️ *Foto de perfil:* ${ppUrl ? 'Exibida abaixo.' : 'Não disponível.'}
+│❒ 📝 *Sobre (status):* ${statusText}
+│❒
+│❒ Powered by 9bot.com.br
+◈━━━━━━━━━━━━━━━━◈`;
 
         const message = {
             image: { url: ppUrl },
-            caption: caption,
+            caption,
             mentions: isQuoted ? [sender] : []
         };
 
         await client.sendMessage(m.chat, message, { quoted: m });
     } catch (error) {
         console.error('Error in profile command:', error);
-        await client.sendMessage(m.chat, { text: `⚠️ *Oops! Failed to fetch profile:* ${error.message}\n\nTry again later!` }, { quoted: m });
+        await client.sendMessage(
+            m.chat,
+            {
+                text: `◈━━━━━━━━━━━━━━━━◈
+│❒ Não foi possível buscar o perfil.
+│❒ Detalhes: ${error.message}
+│❒ Tente novamente mais tarde.
+◈━━━━━━━━━━━━━━━━◈`
+            },
+            { quoted: m }
+        );
     }
 };
