@@ -82,105 +82,15 @@ function writeSessionToCreds() {
   }
 }
 
-// Function to convert JSON session to Baileys authentication state
-function sessionToAuthState(sessionJson) {
+// Simple function to check if session is valid
+function isSessionValid(sessionData) {
   try {
-    // Parse the session JSON if it's a string
-    const sessionData = typeof sessionJson === 'string' ? JSON.parse(sessionJson) : sessionJson;
-
-    // Convert Buffer data to Uint8Array for Baileys
-    function convertBuffers(obj) {
-      if (obj && typeof obj === 'object') {
-        if (obj.type === 'Buffer' && Array.isArray(obj.data)) {
-          return Buffer.from(obj.data);
-        }
-        for (let key in obj) {
-          if (obj.hasOwnProperty(key)) {
-            obj[key] = convertBuffers(obj[key]);
-          }
-        }
-      }
-      return obj;
-    }
-
-    const convertedSession = convertBuffers(sessionData);
-
-    // Create Baileys-compatible auth state
-    const creds = {
-      noice: convertedSession.noiseKey?.public || convertedSession.noiseKey,
-      signedIdentityKey: convertedSession.signedIdentityKey,
-      signedPreKey: convertedSession.signedPreKey,
-      registrationId: convertedSession.registrationId,
-      advSecretKey: convertedSession.advSecretKey,
-      processedHistoryMessages: convertedSession.processedHistoryMessages || [],
-      nextPreKeyId: convertedSession.nextPreKeyId || 1,
-      firstUnuploadedPreKeyId: convertedSession.firstUnuploadedPreKeyId || 1,
-      accountSyncCounter: convertedSession.accountSyncCounter || 0,
-      accountSettings: convertedSession.accountSettings || { unarchiveChats: false },
-      deviceId: convertedSession.deviceId,
-      phoneId: convertedSession.phoneId,
-      identityId: convertedSession.identityId,
-      registered: convertedSession.registered,
-      backupToken: convertedSession.backupToken,
-      registration: convertedSession.registration || {},
-      pairingCode: convertedSession.pairingCode,
-      me: convertedSession.me,
-      account: convertedSession.account,
-      signalIdentities: convertedSession.signalIdentities || [],
-      platform: convertedSession.platform,
-      routingInfo: convertedSession.routingInfo,
-      lastAccountSyncTimestamp: convertedSession.lastAccountSyncTimestamp,
-      lastPropHash: convertedSession.lastPropHash,
-      myAppStateKeyId: convertedSession.myAppStateKeyId
-    };
-
-    const keys = {
-      get: (type, ids) => {
-        const result = {};
-        for (const id of ids) {
-          switch (type) {
-            case 'pre-key':
-              if (convertedSession.signedPreKey && convertedSession.signedPreKey.keyId === id) {
-                result[id] = convertedSession.signedPreKey;
-              }
-              break;
-            case 'session':
-              // Session keys would be handled by Baileys
-              break;
-            case 'sender-key':
-              // Sender keys would be handled by Baileys
-              break;
-            case 'app-state-sync-key':
-              if (convertedSession.myAppStateKeyId === id) {
-                result[id] = convertedSession;
-              }
-              break;
-            case 'app-state-sync-version':
-              // Version keys
-              break;
-          }
-        }
-        return result;
-      },
-      set: (data) => {
-        // Keys would be saved here in normal operation
-        console.log('Keys updated:', Object.keys(data));
-      }
-    };
-
-    return {
-      state: {
-        creds,
-        keys
-      },
-      saveCreds: () => {
-        console.log('Credentials would be saved here');
-        return Promise.resolve();
-      }
-    };
+    if (!sessionData) return false;
+    if (!sessionData.me || !sessionData.me.id) return false;
+    if (!sessionData.registered) return false;
+    return true;
   } catch (error) {
-    console.error('Error converting session to auth state:', error);
-    throw error;
+    return false;
   }
 }
 
@@ -190,7 +100,7 @@ async function initializeApp() {
   console.log('🚀 Starting Toxic-MD initialization...');
 
   // First, write session data if available
-  writeSessionToCreds();
+  const sessionWritten = writeSessionToCreds();
 
   // Wait for database to be ready
   let dbConnected = false;
@@ -232,14 +142,25 @@ async function startToxic() {
   const { autobio, mode, anticall } = settingss;
   const { version } = await fetchLatestWaWebVersion();
 
-  // Check if we have session data in environment variable
+  // Check if we have valid session data
   let authState;
+  let usingEnvSession = false;
+  
   if (process.env.SESSION) {
     try {
-      console.log('🔑 Using session data from environment variable');
-      authState = sessionToAuthState(process.env.SESSION);
+      const sessionData = typeof process.env.SESSION === 'string' ? JSON.parse(process.env.SESSION) : process.env.SESSION;
+      
+      if (isSessionValid(sessionData)) {
+        console.log('🔑 Using session data from environment variable');
+        // Use multi-file auth state since we already wrote the creds.json
+        authState = await useMultiFileAuthState(sessionName);
+        usingEnvSession = true;
+      } else {
+        console.log('❌ Invalid session data in environment, falling back to file auth state');
+        authState = await useMultiFileAuthState(sessionName);
+      }
     } catch (error) {
-      console.error('❌ Failed to parse session from environment, falling back to file auth state');
+      console.error('❌ Failed to parse session from environment, falling back to file auth state:', error.message);
       authState = await useMultiFileAuthState(sessionName);
     }
   } else {
@@ -249,8 +170,15 @@ async function startToxic() {
 
   const { saveCreds, state } = authState;
 
+  // Check if we have valid credentials
+  if (!state.creds || !state.creds.registered) {
+    console.log('❌ No valid session found, will show QR code...');
+  } else {
+    console.log('✅ Valid session found, connecting...');
+  }
+
   const client = toxicConnect({
-    printQRInTerminal: !process.env.SESSION, // Only show QR if no session provided
+    printQRInTerminal: !usingEnvSession || !state.creds.registered, // Show QR if no valid session
     syncFullHistory: true,
     markOnlineOnConnect: true,
     connectTimeoutMs: 60000,
@@ -279,7 +207,7 @@ async function startToxic() {
       return message;
     },
     version: version,
-    browser: ['Ubuntu', 'Chrome', '20.0.04'],
+    browser: Browsers.ubuntu('Chrome'),
     logger: pino({ level: 'silent' }),
     auth: {
       creds: state.creds,
@@ -491,16 +419,30 @@ async function startToxic() {
     const { connection, lastDisconnect } = update;
     const reason = lastDisconnect?.error ? new Boom(lastDisconnect.error).output.statusCode : null;
 
+    console.log('🔗 Connection update:', connection, 'Reason:', reason);
+
     if (connection === "open") {
       reconnectAttempts = 0;
       console.log('✅ WhatsApp connection established successfully!');
+      console.log('🤖 Bot is now ready to receive messages!');
     }
 
     if (connection === "close") {
+      console.log('❌ Connection closed, reason:', reason);
+      
       if (reason === DisconnectReason.loggedOut || reason === 401) {
         console.log('❌ Logged out, clearing session...');
-        await fs.rmSync(sessionName, { recursive: true, force: true });
-        return startToxic();
+        // Clear the session files
+        try {
+          if (fs.existsSync(path.join(sessionName, 'creds.json'))) {
+            fs.unlinkSync(path.join(sessionName, 'creds.json'));
+          }
+        } catch (error) {
+          console.error('Error clearing session:', error);
+        }
+        console.log('🔄 Restarting bot...');
+        setTimeout(() => startToxic(), 2000);
+        return;
       }
 
       if (reconnectAttempts < maxReconnectAttempts) {
@@ -508,6 +450,9 @@ async function startToxic() {
         reconnectAttempts++;
         console.log(`🔄 Reconnecting in ${delay/1000} seconds... (Attempt ${reconnectAttempts}/${maxReconnectAttempts})`);
         setTimeout(() => startToxic(), delay);
+      } else {
+        console.log('❌ Max reconnection attempts reached. Please check your session data.');
+        console.log('💡 If using environment session, verify the SESSION data is correct and complete.');
       }
     }
 
