@@ -1,91 +1,153 @@
 module.exports = {
   name: 'slap',
   aliases: ['smack', 'hit'],
-  description: 'Slaps a tagged or quoted user with a toxic, realistic reaction',
+  description: 'Dá um “tapa” de interação em um usuário marcado ou citado (zoeira de grupo com aviso).',
   run: async (context) => {
     const { client, m } = context;
 
-    try {
-      // Log message context for debugging
-      console.log(`Slap command context: isGroup=${m.isGroup}, mentionedJid=${JSON.stringify(m.mentionedJid)}, quotedSender=${m.quoted?.sender || 'none'}, sender=${m.sender}`);
+    const formatStylishReply = (message) => {
+      const lines = String(message || '')
+        .split('\n')
+        .map((l) => l.trim())
+        .filter((l) => l.length > 0);
+      const body = lines.map((l) => `│❒ ${l}`).join('\n');
+      return `◈━━━━━━━━━━━━━━━━◈\n${body}\n◈━━━━━━━━━━━━━━━━◈`;
+    };
 
-      // Check if a user is tagged or quoted
+    try {
+      // Log de contexto para depuração
+      console.log(
+        formatStylishReply(
+          `Comando de tapa iniciado.\n` +
+          `isGroup=${m.isGroup}, mentionedJid=${JSON.stringify(m.mentionedJid)}, quotedSender=${m.quoted?.sender || 'none'}, sender=${m.sender}`
+        )
+      );
+
+      // Verifica se alguém foi marcado ou citado
       if (!m.mentionedJid || m.mentionedJid.length === 0) {
         if (!m.quoted || !m.quoted.sender) {
-          console.error('No tagged or quoted user provided');
-          return m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Yo, dumbass, tag someone or quote a message to slap! I ain’t smacking thin air!`);
+          console.error(
+            formatStylishReply(
+              'Nenhum usuário marcado ou mensagem citada para o comando de tapa.'
+            )
+          );
+          return m.reply(
+            formatStylishReply(
+              `Ei, estrategista do caos! 😅\n` +
+              `Marque alguém ou responda a uma mensagem para usar o comando de tapa.\n` +
+              `Sem alvo, não tem como começar a zoeira.`
+            )
+          );
         }
       }
 
-      // Get the target user (tagged or quoted)
+      // Define o alvo (marcado ou citado)
       const targetUser = m.mentionedJid[0] || (m.quoted ? m.quoted.sender : null);
-      console.log(`Target JID: ${targetUser}`);
+      console.log(
+        formatStylishReply(
+          `Usuário alvo do tapa: ${targetUser || 'nenhum'}`
+        )
+      );
 
-      // Validate target user
+      // Valida o alvo
       if (
         !targetUser ||
         typeof targetUser !== 'string' ||
         (!targetUser.includes('@s.whatsapp.net') && !targetUser.includes('@lid'))
       ) {
-        console.error(`Invalid target user: ${JSON.stringify(targetUser)}`);
-        return m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Invalid user, idiot! Tag or quote a real person to slap!`);
+        console.error(
+          formatStylishReply(
+            `Usuário alvo inválido: ${JSON.stringify(targetUser)}`
+          )
+        );
+        return m.reply(
+          formatStylishReply(
+            `Não consegui reconhecer o usuário.\n` +
+            `Marque ou responda alguém real do grupo para usar o comando.`
+          )
+        );
       }
 
-      // Extract phone numbers
+      // Extrai números
       const targetNumber = targetUser.split('@')[0];
       const senderNumber = m.sender.split('@')[0];
+
       if (!targetNumber || !senderNumber) {
-        console.error(`Failed to extract numbers: target=${targetUser}, sender=${m.sender}`);
-        return m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Something’s fucked up with the user IDs. Try again, moron!`);
+        console.error(
+          formatStylishReply(
+            `Falha ao extrair números: target=${targetUser}, sender=${m.sender}`
+          )
+        );
+        return m.reply(
+          formatStylishReply(
+            `Algo deu errado ao identificar quem bate e quem “apanha” na zoeira.\n` +
+            `Tente novamente em alguns instantes.`
+          )
+        );
       }
 
-      // Send slapping message with dramatic delay
+      // Mensagem inicial com suspense
       const slappingMsg = await client.sendMessage(
         m.chat,
         {
-          text: `◈━━━━━━━━━━━━━━━━◈\n│❒ @${senderNumber} is winding up to slap @${targetNumber}... 🖐️\n│❒ This is gonna sting, bitch!\n◈━━━━━━━━━━━━━━━━◈`,
+          text:
+            `◈━━━━━━━━━━━━━━━━◈\n` +
+            `│❒ @${senderNumber} está se preparando para mandar um tapa em @${targetNumber}... 🖐️\n` +
+            `│❒ Calma, é só zoeira de grupo, ninguém está machucando ninguém. 😄\n` +
+            `◈━━━━━━━━━━━━━━━━◈`,
           mentions: [m.sender, targetUser],
         },
         { quoted: m }
       );
 
-      // Random dramatic delay between 1-3 seconds
-      await new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 2000));
+      // Delay dramático entre 1–3 segundos
+      await new Promise((resolve) =>
+        setTimeout(resolve, 1000 + Math.random() * 2000)
+      );
 
-      // Generate random slap intensity
+      // Níveis de “intensidade” da zoeira
       const intensities = [
         {
-          level: 'Weak',
-          description: 'a pathetic, limp-wristed tap that barely made @TARGET flinch! You call that a slap, @SENDER? Weak sauce!',
+          level: 'Fraco',
+          description:
+            'um tapinha tão leve que @TARGET quase nem sentiu. @SENDER, o grupo esperava mais dessa performance. 😴',
           emoji: '😴',
         },
         {
-          level: 'Moderate',
-          description: 'a solid smack that left a red mark on @TARGET’s face! @SENDER, you got some balls, but it’s still meh!',
+          level: 'Moderado',
+          description:
+            'um tapa bem dado que deixou a bochecha de @TARGET vermelha por alguns segundos. @SENDER mostrou que não está de brincadeira. 🖐️',
           emoji: '🖐️',
         },
         {
-          level: 'Epic',
-          description: 'a thunderous SLAP that sent @TARGET flying across the room! @SENDER, you absolute savage, that was brutal!',
+          level: 'Épico',
+          description:
+            'um tapa tão dramático que o grupo inteiro parou para olhar. @SENDER virou lenda oficial das zoeiras por alguns minutos. 💥',
           emoji: '💥',
         },
       ];
       const intensity = intensities[Math.floor(Math.random() * intensities.length)];
 
-      // Build the final toxic result message with proper interpolation
-      const resultMsg = `◈━━━━━━━━━━━━━━━━◈
-*SLAP REPORT* ${intensity.emoji}
+      // Monta o texto final com substituições
+      const verdictText = intensity.description
+        .replace('@TARGET', `@${targetNumber}`)
+        .replace('@SENDER', `@${senderNumber}`);
 
-*SLAPPER:* @${senderNumber}
-*VICTIM:* @${targetNumber}
-*INTENSITY:* ${intensity.level}
+      const resultMsg =
+        `◈━━━━━━━━━━━━━━━━◈\n` +
+        `│❒ *RELATÓRIO DE TAPA* ${intensity.emoji}\n` +
+        `│\n` +
+        `│❒ *Quem deu o tapa:* @${senderNumber}\n` +
+        `│❒ *Quem levou na zoeira:* @${targetNumber}\n` +
+        `│❒ *Intensidade:* ${intensity.level}\n` +
+        `│\n` +
+        `│❒ *Resumo:* ${verdictText}\n` +
+        `│\n` +
+        `│❒ *AVISO:* Este comando é apenas uma brincadeira de interação no grupo.\n` +
+        `│❒ Nada aqui é real, é tudo no clima de zoeira. Se alguém se sentir desconfortável, é só avisar que a gente pega leve. 💛\n` +
+        `◈━━━━━━━━━━━━━━━━◈`;
 
-*VERDICT:* ${intensity.description.replace('@TARGET', `@${targetNumber}`).replace('@SENDER', `@${senderNumber}`)}
-
-*DISCLAIMER:* This slap was 100% deserved, you pathetic loser! Cry about it! 😈
-◈━━━━━━━━━━━━━━━━◈`;
-
-      // Send the final result
+      // Envia o resultado final
       await client.sendMessage(
         m.chat,
         {
@@ -95,17 +157,31 @@ module.exports = {
         { quoted: m }
       );
 
-      // Delete the slapping message for cleaner look
+      // Tenta apagar a mensagem inicial para deixar o chat mais limpo
       if (slappingMsg && slappingMsg.key) {
         try {
           await client.sendMessage(m.chat, { delete: slappingMsg.key });
         } catch (deleteError) {
-          console.error(`Failed to delete slapping message: ${deleteError.stack}`);
+          console.error(
+            formatStylishReply(
+              `Falha ao apagar a mensagem inicial do tapa: ${deleteError.message}`
+            )
+          );
         }
       }
     } catch (error) {
-      console.error(`Slap command exploded: ${error.stack}`);
-      await m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Shit broke harder than your ego! Can’t slap right now, you unlucky fuck.`);
+      console.error(
+        formatStylishReply(
+          `Erro ao executar o comando de tapa: ${error.message}`
+        ),
+        error
+      );
+      await m.reply(
+        formatStylishReply(
+          `Não foi possível completar o comando de tapa agora.\n` +
+          `Tente novamente em alguns instantes.`
+        )
+      );
     }
   },
 };
