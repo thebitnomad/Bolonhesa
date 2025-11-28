@@ -5,35 +5,35 @@ const { getSettings } = require('../../Database/config');
 module.exports = {
   name: 'fullmenu',
   aliases: ['allmenu', 'commandslist'],
-  description: 'Displays the full bot command menu by category',
+  description: 'Exibe o menu completo de comandos do bot por categoria',
   run: async (context) => {
     const { client, m, totalCommands, mode, pict } = context;
-    const botname = '𝐓𝐨𝐱𝐢𝐜-𝐌𝐃'; 
+    const botname = '9bot'; 
 
     const settings = await getSettings();
-    const effectivePrefix = settings.prefix || ''; // Use empty string for prefixless mode
+    const effectivePrefix = settings.prefix || '';
 
     const categories = [
-      { name: 'General', display: 'GEᑎEᖇᗩᒪ', emoji: '📜' },
-      { name: 'Settings', display: 'SETTINGS', emoji: '🛠️' },
-      { name: 'Owner', display: 'OWNER', emoji: '👑' },
+      { name: 'General', display: 'GERAL', emoji: '📜' },
+      { name: 'Settings', display: 'CONFIGURAÇÕES', emoji: '🛠️' },
+      { name: 'Owner', display: 'DONO', emoji: '👑' },
       { name: 'Heroku', display: 'HEROKU', emoji: '☁️' },
-      { name: 'Wa-Privacy', display: 'PRIVACY', emoji: '🔒' },
-      { name: 'Groups', display: 'GROUPS', emoji: '👥' },
-      { name: 'AI', display: 'AI', emoji: '🧠' },
-      { name: 'Media', display: 'MEDIA', emoji: '🎬' },
-      { name: 'Editting', display: 'EDITING', emoji: '✂️' },
+      { name: 'Wa-Privacy', display: 'PRIVACIDADE', emoji: '🔒' },
+      { name: 'Groups', display: 'GRUPOS', emoji: '👥' },
+      { name: 'AI', display: 'INTELIGÊNCIA ARTIFICIAL', emoji: '🧠' },
+      { name: 'Media', display: 'MÍDIA', emoji: '🎬' },
+      { name: 'Editting', display: 'EDIÇÃO', emoji: '✂️' },
       { name: 'Logo', display: 'LOGO', emoji: '🎨' },
       { name: '+18', display: '+18', emoji: '🔞' },
-      { name: 'Utils', display: 'UTILS', emoji: '🔧' }
+      { name: 'Utils', display: 'UTILITÁRIOS', emoji: '🔧' }
     ];
 
     const getGreeting = () => {
       const currentHour = DateTime.now().setZone('Africa/Nairobi').hour;
-      if (currentHour >= 5 && currentHour < 12) return 'Good Morning';
-      if (currentHour >= 12 && currentHour < 18) return 'Good Afternoon';
-      if (currentHour >= 18 && currentHour < 22) return 'Good Evening';
-      return 'Good Night';
+      if (currentHour >= 5 && currentHour < 12) return 'Bom dia';
+      if (currentHour >= 12 && currentHour < 18) return 'Boa tarde';
+      if (currentHour >= 18 && currentHour < 22) return 'Boa noite';
+      return 'Boa madrugada';
     };
 
     const getCurrentTimeInNairobi = () => {
@@ -42,10 +42,10 @@ module.exports = {
 
     const toFancyFont = (text, isUpperCase = false) => {
       const fonts = {
-        'A': '𝘼', 'B': '𝘽', 'C': '𝘾', 'D': '𝙿', 'E': '𝙀', 'F': '𝙁', 'G': '𝙂', 'H': '𝙃', 'I': '𝙄', 'J': '𝙅', 'K': '𝙆', 'L': '𝙇', 'M': '𝙈',
-        'N': '𝙉', 'O': '𝙊', 'P': '𝙋', 'Q': '𝙌', 'R': '𝙍', 'S': '𝙎', 'T': '𝙏', 'U': '𝙐', 'V': '𝙑', 'W': '𝙒', 'X': '𝙓', 'Y': '𝙔', 'Z': '𝙕',
-        'a': '𝙖', 'b': '𝙗', 'c': '𝙘', 'd': '𝙙', 'e': '𝙚', 'f': '𝙛', 'g': '𝙜', 'h': '𝙝', 'i': '𝙞', 'j': '𝙟', 'k': '𝙠', 'l': '𝙡', 'm': '𝙢',
-        'n': '𝙣', 'o': '𝙤', 'p': '𝙥', 'q': '𝙦', 'r': '𝙧', 's': '𝙨', 't': '𝙩', 'u': '𝙪', 'v': '𝙫', 'w': '𝙬', 'x': '𝙭', 'y': '𝙮', 'z': '𝙯'
+        'A': '𝘼','B': '𝘽','C': '𝘾','D': '𝙿','E': '𝙀','F': '𝙁','G': '𝙂','H': '𝙃','I': '𝙄','J': '𝙅','K': '𝙆','L': '𝙇','M': '𝙈',
+        'N': '𝙉','O': '𝙊','P': '𝙋','Q': '𝙌','R': '𝙍','S': '𝙎','T': '𝙏','U': '𝙐','V': '𝙑','W': '𝙒','X': '𝙓','Y': '𝙔','Z': '𝙕',
+        'a': '𝙖','b': '𝙗','c': '𝙘','d': '𝙙','e': '𝙚','f': '𝙛','g': '𝙜','h': '𝙝','i': '𝙞','j': '𝙟','k': '𝙠','l': '𝙡','m': '𝙢',
+        'n': '𝙣','o': '𝙤','p': '𝙥','q': '𝙦','r': '𝙧','s': '𝙨','t': '𝙩','u': '𝙪','v': '𝙫','w': '𝙬','x': '𝙭','y': '𝙮','z': '𝙯'
       };
       return (isUpperCase ? text.toUpperCase() : text.toLowerCase())
         .split('')
@@ -53,22 +53,23 @@ module.exports = {
         .join('');
     };
 
-    let menuText = `╭─❒ 「 ${botname} Command Menu ⚠ 」\n`;
-    menuText += `│ Greetings, @${m.pushName}\n`;
+    let menuText = `╭─❒ 「 Menu de Comandos ${botname} ⚠ 」\n`;
+    menuText += `│ Saudações, @${m.pushName}\n`;
     menuText += `│\n`;
-    menuText += `│ 🤖 *Bσƚ*: ${botname}\n`;
-    menuText += `│ 📋 *Tσƚαʅ Cσɱɱαɳԃʝ*: ${totalCommands}\n`;
-    menuText += `│ 🕒 *Tιɱҽ*: ${getCurrentTimeInNairobi()}\n`;
-    menuText += `│ 🔣 *Pɾҽϝιx*: ${effectivePrefix || 'None'}\n`;
-    menuText += `│ 🌐 *Mσԃҽ*: ${mode}\n`;
-    menuText += `│ 📚 *LιႦɾαɾყ*: Baileys\n`;
+    menuText += `│ 🤖 *Bot*: ${botname}\n`;
+    menuText += `│ 📋 *Total de Comandos*: ${totalCommands}\n`;
+    menuText += `│ 🕒 *Horário*: ${getCurrentTimeInNairobi()}\n`;
+    menuText += `│ 🔣 *Prefixo*: ${effectivePrefix || 'Nenhum'}\n`;
+    menuText += `│ 🌐 *Modo*: ${mode}\n`;
     menuText += `╰─────────────\n\n`;
 
-    menuText += `*COMMANDS REGISTRY ☑*\n\n`;
+    menuText += `*REGISTRO DE COMANDOS ☑*\n\n`;
 
     let commandCount = 0;
     for (const category of categories) {
-      let commandFiles = fs.readdirSync(`./clintplugins/${category.name}`).filter(file => file.endsWith('.js'));
+      let commandFiles = fs
+        .readdirSync(`./clintplugins/${category.name}`)
+        .filter(file => file.endsWith('.js'));
 
       if (commandFiles.length === 0 && category.name !== '+18') continue;
 
@@ -93,21 +94,25 @@ module.exports = {
       menuText += `╰─────────────\n\n`;
     }
 
-    menuText += `> Pσɯҽɾҽԃ Ⴆყ Tσxιƈ-MD`;
+    menuText += `> Powered by 9bot.com.br`;
 
-    await client.sendMessage(m.chat, {
-      text: menuText,
-      contextInfo: {
-        externalAdReply: {
-          showAdAttribution: false,
-          title: `Toxic-MD WA bot`,
-          body: `Pσɯҽɾҽԃ Ⴆყ Tσxιƈ-MD`,
-          thumbnail: pict,
-          sourceUrl: `https://github.com/xhclintohn/Toxic-MD`,
-          mediaType: 1,
-          renderLargerThumbnail: true
+    await client.sendMessage(
+      m.chat,
+      {
+        text: menuText,
+        contextInfo: {
+          externalAdReply: {
+            showAdAttribution: false,
+            title: `9BOT`,
+            body: `Powered by 9bot.com.br`,
+            thumbnail: pict,
+            sourceUrl: `https://9bot.com.br`,
+            mediaType: 1,
+            renderLargerThumbnail: true
+          }
         }
-      }
-    }, { quoted: m });
+      },
+      { quoted: m }
+    );
   }
 };
