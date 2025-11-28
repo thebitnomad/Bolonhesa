@@ -4,7 +4,12 @@ module.exports = async (context) => {
     const { client, m, text, botname } = context;
 
     const formatStylishReply = (message) => {
-        return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n◈━━━━━━━━━━━━━━━━◈\n> Pσɯҽɾԃ Ⴆყ Tσxιƈ-ɱԃȥ`;
+        const lines = String(message || '')
+            .split('\n')
+            .map((l) => l.trim())
+            .filter((l) => l.length > 0);
+        const body = lines.map((l) => `│❒ ${l}`).join('\n');
+        return `◈━━━━━━━━━━━━━━━━◈\n${body}\n◈━━━━━━━━━━━━━━━━◈\n> Pσɯҽɾԃ Ⴆყ Tσxιƈ-ɱԃȥ`;
     };
 
     const fetchWithRetry = async (url, options, retries = 3, delay = 1000) => {
@@ -12,26 +17,31 @@ module.exports = async (context) => {
             try {
                 const response = await fetch(url, options);
                 if (!response.ok) {
-                    throw new Error(`API failed with status ${response.status}`);
+                    throw new Error(`A API retornou o status ${response.status}`);
                 }
                 return response;
             } catch (error) {
                 if (attempt === retries || error.type !== "request-timeout") {
                     throw error;
                 }
-                console.error(`Attempt ${attempt} failed: ${error.message}. Retrying in ${delay}ms...`);
-                await new Promise(resolve => setTimeout(resolve, delay));
+                console.error(`Tentativa ${attempt} falhou: ${error.message}. Tentando novamente em ${delay}ms...`);
+                await new Promise((resolve) => setTimeout(resolve, delay));
             }
         }
     };
 
     if (!text) {
-        return m.reply(formatStylishReply("Yo, drop a search query, fam! 🔍 Ex: .hentai hinata"));
+        return m.reply(
+            formatStylishReply(
+                `Envie um termo para pesquisa. 🔍\n` +
+                `Exemplo: *.hentai hinata*`
+            )
+        );
     }
 
     try {
-        // Step 1: Search using thehentai-search API
-        const encodedQuery = encodeURIComponent(text);
+        const encodedQuery = encodeURIComponent(text.trim());
+
         const searchResponse = await fetchWithRetry(
             `https://api.privatezia.biz.id/api/anime/thehentai-search?query=${encodedQuery}`,
             { headers: { Accept: "application/json" }, timeout: 15000 }
@@ -39,21 +49,30 @@ module.exports = async (context) => {
 
         const searchData = await searchResponse.json();
 
-        // Validate search response
-        if (!searchData || !searchData.status || !searchData.data || !searchData.data.posts || searchData.data.posts.length === 0) {
-            return m.reply(formatStylishReply("No results found for your query, fam! 😢 Try a different search term."));
+        if (
+            !searchData ||
+            !searchData.status ||
+            !searchData.data ||
+            !Array.isArray(searchData.data.posts) ||
+            searchData.data.posts.length === 0
+        ) {
+            return m.reply(
+                formatStylishReply(
+                    `Não encontrei resultados para a sua pesquisa. 😢\n` +
+                    `Tente usar outro termo ou um nome mais específico.`
+                )
+            );
         }
 
-        // Get the first result's URL
         const firstResult = searchData.data.posts[0];
         const contentUrl = firstResult.url;
-        const title = firstResult.title || "No title available";
+        const title = firstResult.title || 'Sem título disponível';
         const thumbnail = firstResult.imgSrc || null;
-        const views = firstResult.views || "Unknown";
-        const date = firstResult.date || "Unknown";
+        const views = firstResult.views || 'Desconhecido';
+        const date = firstResult.date || 'Data não informada';
 
-        // Step 2: Fetch gallery using thehentai-download API
         const encodedContentUrl = encodeURIComponent(contentUrl);
+
         const downloadResponse = await fetchWithRetry(
             `https://api.privatezia.biz.id/api/anime/thehentai-download?url=${encodedContentUrl}`,
             { headers: { Accept: "application/json" }, timeout: 15000 }
@@ -61,30 +80,52 @@ module.exports = async (context) => {
 
         const downloadData = await downloadResponse.json();
 
-        // Validate download response
-        if (!downloadData || !downloadData.status || !downloadData.data || !downloadData.data.gallery || downloadData.data.gallery.length === 0) {
-            return m.reply(formatStylishReply("Couldn’t fetch the gallery for this content, fam! 😢 Try again later."));
+        if (
+            !downloadData ||
+            !downloadData.status ||
+            !downloadData.data ||
+            !Array.isArray(downloadData.data.gallery) ||
+            downloadData.data.gallery.length === 0
+        ) {
+            return m.reply(
+                formatStylishReply(
+                    `Não consegui carregar a galeria para esse conteúdo. 😢\n` +
+                    `Tente novamente mais tarde.`
+                )
+            );
         }
 
         const gallery = downloadData.data.gallery;
-        const description = downloadData.data.description || "No description available";
+        const description = downloadData.data.description || 'Sem descrição disponível.';
 
-        // Send gallery images
         for (const image of gallery) {
+            const altText = image.alt || 'Imagem da galeria';
+
             await client.sendMessage(
                 m.chat,
                 {
                     image: { url: image.imgSrc },
                     caption: formatStylishReply(
-                        `🎨 Hentai Content\n\n📌 *Title:* ${title}\n📝 *Description:* ${description}\n👀 *Views:* ${views}\n📅 *Date:* ${date}\n🖼️ *Image:* ${image.alt}`
-                    ),
+                        `🎨 *Conteúdo hentai*\n\n` +
+                        `Título: ${title}\n` +
+                        `Descrição: ${description}\n` +
+                        `Visualizações: ${views}\n` +
+                        `Data: ${date}\n` +
+                        `Imagem: ${altText}\n\n` +
+                        `Enviado por: ${botname || 'Toxic-MD'}`
+                    )
                 },
                 { quoted: m }
             );
         }
-
     } catch (e) {
-        console.error("Hentai fetch error:", e);
-        m.reply(formatStylishReply(`Yo, we hit a snag: ${e.message}. Check your query and try again! 😎`));
+        console.error('hentai fetch error:', e);
+        m.reply(
+            formatStylishReply(
+                `Ocorreu um problema ao buscar o conteúdo.\n` +
+                `Motivo: ${e.message || e}\n` +
+                `Verifique o termo de pesquisa e tente novamente. 😎`
+            )
+        );
     }
 };
