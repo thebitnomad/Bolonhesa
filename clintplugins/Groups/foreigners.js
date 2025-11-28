@@ -1,40 +1,95 @@
 const middleware = require("../../utility/botUtil/middleware");
-module.exports = async _0x4dc5e7 => {
-  await middleware(_0x4dc5e7, async () => {
+
+module.exports = async (context) => {
+  await middleware(context, async () => {
     const {
-      client: _0x5377ad,
-      m: _0x4ac4f8,
-      args: _0x2a9e6b,
-      participants: _0x38d862,
-      mycode: _0x5b3bed
-    } = _0x4dc5e7;
-    let _0x2f8982 = _0x38d862.filter(_0x3c9d8b => !_0x3c9d8b.admin).map(_0x1db3fb => _0x1db3fb.id).filter(_0x475052 => !_0x475052.startsWith(_0x5b3bed) && _0x475052 != _0x5377ad.decodeJid(_0x5377ad.user.id));
-    if (!_0x2a9e6b || !_0x2a9e6b[0]) {
-      if (_0x2f8982.length == 0) {
-        return _0x4ac4f8.reply("No foreigners detected.");
+      client,
+      m,
+      args,
+      participants,
+      mycode
+    } = context;
+
+    const formatStylishReply = (message) => {
+      return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n◈━━━━━━━━━━━━━━━━◈`;
+    };
+
+    // Filtra participantes que não são admin e cujo código não começa com o código padrão (mycode)
+    const filteredMembers = participants
+      .filter((p) => !p.admin)
+      .map((p) => p.id)
+      .filter(
+        (jid) =>
+          !jid.startsWith(mycode) &&
+          jid !== client.decodeJid(client.user.id)
+      );
+
+    // Sem argumentos: apenas listar
+    if (!args || !args[0]) {
+      if (filteredMembers.length === 0) {
+        return m.reply(
+          formatStylishReply(
+            `Nenhum número com código diferente de *${mycode}* foi encontrado neste grupo.`
+          )
+        );
       }
-      let _0x2d7d67 = "Foreigners are members whose country code is not " + _0x5b3bed + ". The following " + _0x2f8982.length + " foreigners were found:- \n";
-      for (let _0x28761c of _0x2f8982) {
-        _0x2d7d67 += "🚫 @" + _0x28761c.split("@")[0] + "\n";
+
+      let message =
+        `◈━━━━━━━━━━━━━━━━◈\n` +
+        `│❒ Foram encontrados *${filteredMembers.length}* números cujo código não corresponde ao padrão *${mycode}*.\n` +
+        `│❒ Lista de membros identificados:\n`;
+
+      for (const jid of filteredMembers) {
+        message += `│❒ 🚫 @${jid.split("@")[0]}\n`;
       }
-      _0x2d7d67 += "\nTo remove them send .foreigners -x";
-      _0x5377ad.sendMessage(_0x4ac4f8.chat, {
-        text: _0x2d7d67,
-        mentions: _0x2f8982
-      }, {
-        quoted: _0x4ac4f8
-      });
-    } else if (_0x2a9e6b[0] == "-x") {
+
+      message +=
+        `◈━━━━━━━━━━━━━━━━◈\n` +
+        `│❒ Para remover todos esses membros, envie: *.foreigners -x*\n` +
+        `◈━━━━━━━━━━━━━━━━◈`;
+
+      return client.sendMessage(
+        m.chat,
+        {
+          text: message,
+          mentions: filteredMembers
+        },
+        { quoted: m }
+      );
+    }
+
+    // Com argumento "-x": remover
+    if (args[0] === "-x") {
+      if (filteredMembers.length === 0) {
+        return m.reply(
+          formatStylishReply(
+            `Não há membros com código diferente de *${mycode}* para serem removidos.`
+          )
+        );
+      }
+
       setTimeout(() => {
-        _0x5377ad.sendMessage(_0x4ac4f8.chat, {
-          text: "Toxic will now remove all " + _0x2f8982.length + " foreigners from this group chat in the next second.\n\nGood bye Foreigners. 🥲"
-        }, {
-          quoted: _0x4ac4f8
-        });
+        client.sendMessage(
+          m.chat,
+          {
+            text:
+              `◈━━━━━━━━━━━━━━━━◈\n` +
+              `│❒ O bot irá remover *${filteredMembers.length}* membros cujo código é diferente de *${mycode}* deste grupo.\n` +
+              `│❒ Esta ação será executada em instantes.\n` +
+              `◈━━━━━━━━━━━━━━━━◈`
+          },
+          { quoted: m }
+        );
+
         setTimeout(() => {
-          _0x5377ad.groupParticipantsUpdate(_0x4ac4f8.chat, _0x2f8982, "remove");
+          client.groupParticipantsUpdate(m.chat, filteredMembers, "remove");
+
           setTimeout(() => {
-            _0x4ac4f8.reply("✅ Done. All foreigners removed.");
+            m.reply(
+              formatStylishReply(
+                `Pronto. Todos os membros com código diferente de *${mycode}* foram removidos do grupo.`
+              )
+            );
           }, 1000);
         }, 1000);
       }, 1000);
