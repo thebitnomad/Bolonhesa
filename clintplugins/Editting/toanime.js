@@ -12,17 +12,19 @@ async function uploadImage(buffer) {
 
     try {
         const response = await axios.post('https://qu.ax/upload.php', form, {
-            headers: form.getHeaders(),
+            headers: form.getHeaders()
         });
 
-        const link = response.data.files[0].url;
-        if (!link) throw new Error('No URL returned');
+        const link = response.data.files?.[0]?.url;
+        if (!link) {
+            throw new Error('Nenhuma URL foi retornada pelo servidor de upload.');
+        }
 
-        if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
         return { url: link };
-    } catch (error) {
-        if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
-        throw error;
+    } finally {
+        if (fs.existsSync(tempFilePath)) {
+            fs.unlinkSync(tempFilePath);
+        }
     }
 }
 
@@ -33,14 +35,19 @@ module.exports = {
     run: async (context) => {
         const { client, m } = context;
 
-        // === 1. MUST REPLY ===
+        // === 1. OBRIGATÓRIO RESPONDER UMA IMAGEM ===
         if (!m.quoted) {
-            return m.reply(`◈━━━━━━━━━━━━━━━━◈\n│You must *reply* to an image!\n│Example: Reply image → \`.toanime\`\n┗━━━━━━━━━━━━━━━┛`);
+            return m.reply(
+                `◈━━━━━━━━━━━━━━━━◈
+│❒ Você precisa *responder* a uma imagem.
+│❒ Exemplo: responda à foto e envie \`.toanime\`.
+◈━━━━━━━━━━━━━━━━◈`
+            );
         }
 
         const quoted = m.quoted;
 
-        // === 2. SAFE MIME CHECK ===
+        // === 2. VALIDAÇÃO SEGURA DO MIMETYPE ===
         let quotedMime = '';
         if (quoted.mtype === 'imageMessage' && quoted.msg?.mimetype) {
             quotedMime = quoted.msg.mimetype;
@@ -49,26 +56,44 @@ module.exports = {
         }
 
         if (!quotedMime || !quotedMime.startsWith('image/')) {
-            return m.reply(`◈━━━━━━━━━━━━━━━━◈\n│The replied message is *not an image*!\n│Please reply to a *photo*.\n┗━━━━━━━━━━━━━━━┛`);
+            return m.reply(
+                `◈━━━━━━━━━━━━━━━━◈
+│❒ A mensagem respondida *não é uma imagem*.
+│❒ Por favor, responda a uma *foto* para continuar.
+◈━━━━━━━━━━━━━━━━◈`
+            );
         }
 
-        // === 3. PROCESSING ===
-        const processing = await m.reply(`◈━━━━━━━━━━━━━━━━◈\n│Converting to anime...\n│Please wait!\n┗━━━━━━━━━━━━━━━┛`);
+        // === 3. MENSAGEM DE PROCESSAMENTO ===
+        const processing = await m.reply(
+            `◈━━━━━━━━━━━━━━━━◈
+│❒ Convertendo sua foto para estilo anime...
+│❒ Por favor, aguarde um instante.
+◈━━━━━━━━━━━━━━━━◈`
+        );
 
         try {
-            // === 4. DOWNLOAD ===
+            // === 4. DOWNLOAD DA MÍDIA ===
             const media = await quoted.download();
-            if (!media || media.length === 0) throw new Error('Failed to download');
-
-            // === 5. SIZE ===
-            if (media.length > 10 * 1024 * 1024) {
-                return m.reply(`◈━━━━━━━━━━━━━━━━◈\n│Image too large! Max 10MB.\n┗━━━━━━━━━━━━━━━┛`);
+            if (!media || media.length === 0) {
+                throw new Error('Não foi possível baixar a imagem enviada.');
             }
 
-            // === 6. UPLOAD ===
+            // === 5. LIMITE DE TAMANHO ===
+            if (media.length > 10 * 1024 * 1024) {
+                await client.sendMessage(m.chat, { delete: processing.key }).catch(() => {});
+                return m.reply(
+                    `◈━━━━━━━━━━━━━━━━◈
+│❒ A imagem é muito grande.
+│❒ Tamanho máximo permitido: 10MB.
+◈━━━━━━━━━━━━━━━━◈`
+                );
+            }
+
+            // === 6. UPLOAD DA IMAGEM ===
             const { url: imageUrl } = await uploadImage(media);
 
-            // === 7. API CALL ===
+            // === 7. CHAMADA À API DE ANIME ===
             const apiResponse = await axios.get('https://fgsi.koyeb.app/api/ai/image/toAnime', {
                 params: {
                     apikey: 'fgsiapi-2dcdfa06-6d',
@@ -80,25 +105,40 @@ module.exports = {
 
             const animeBuffer = Buffer.from(apiResponse.data);
 
-            // === 8. SEND RESULT ===
-            await client.sendMessage(m.chat, {
-                image: animeBuffer,
-                caption: `◈━━━━━━━━━━━━━━━━◈\n│ANIME TRANSFORMATION COMPLETE!\n│@everyone look at this weeb\n┗━━━━━━━━━━━━━━━┛`,
-                mentions: [m.sender]
-            }, { quoted: m });
+            // === 8. ENVIO DO RESULTADO ===
+            await client.sendMessage(
+                m.chat,
+                {
+                    image: animeBuffer,
+                    caption: `◈━━━━━━━━━━━━━━━━◈
+│❒ Transformação em anime concluída! ✨
+│❒ Olha só como ficou em estilo anime. 👀
+◈━━━━━━━━━━━━━━━━◈`,
+                    mentions: [m.sender]
+                },
+                { quoted: m }
+            );
 
-            // === 9. CLEANUP ===
-            await client.sendMessage(m.chat, { delete: processing.key });
-
+            // === 9. REMOVER MENSAGEM DE PROCESSAMENTO ===
+            await client.sendMessage(m.chat, { delete: processing.key }).catch(() => {});
         } catch (err) {
-            console.error('ToAnime Error:', err.message);
+            console.error(
+                `◈━━━━━━━━━━━━━━━━◈
+│❒ Erro no comando toanime: ${err.message}
+◈━━━━━━━━━━━━━━━━◈`
+            );
 
             const errorMsg = err.response
-                ? `API Error: ${err.response.status}`
-                : err.message.includes('timeout') ? 'API timed out.'
-                : `Failed: ${err.message}`;
+                ? `Erro na API: código ${err.response.status}.`
+                : err.message.includes('timeout')
+                ? 'A requisição para a API demorou demais (timeout).'
+                : `Falha ao processar a imagem: ${err.message}`;
 
-            await m.reply(`◈━━━━━━━━━━━━━━━━◈\n│${errorMsg}\n┗━━━━━━━━━━━━━━━┛`);
+            await m.reply(
+                `◈━━━━━━━━━━━━━━━━◈
+│❒ ${errorMsg}
+◈━━━━━━━━━━━━━━━━◈`
+            );
         }
     }
 };
