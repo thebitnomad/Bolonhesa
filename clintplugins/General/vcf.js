@@ -1,27 +1,50 @@
 const fs = require('fs');
 
 module.exports = async (context) => {
-    const { client, m, participants } = context;
+    const { client, m } = context;
 
     if (!m.isGroup) {
-        return m.reply('◈━━━━━━━━━━━━━━━━◈\n❒ Command meant for groups.\n◈━━━━━━━━━━━━━━━━◈');
+        return m.reply(
+            `◈━━━━━━━━━━━━━━━━◈\n` +
+            `│❒ Este comando só pode ser utilizado em grupos.\n` +
+            `◈━━━━━━━━━━━━━━━━◈`
+        );
     }
 
     try {
         const gcdata = await client.groupMetadata(m.chat);
+        const contactCount = gcdata.participants.length;
+
         const vcard = gcdata.participants
-            .map((a, i) => {
-                const number = a.id.split('@')[0];
-                return `BEGIN:VCARD\nVERSION:3.0\nFN:[${i}] +${number}\nTEL;type=CELL;type=VOICE;waid=${number}:+${number}\nEND:VCARD`;
+            .map((participant, index) => {
+                const number = participant.id.split('@')[0];
+                return (
+                    `BEGIN:VCARD\n` +
+                    `VERSION:3.0\n` +
+                    `FN:[${index}] +${number}\n` +
+                    `TEL;type=CELL;type=VOICE;waid=${number}:+${number}\n` +
+                    `END:VCARD`
+                );
             })
             .join('\n');
 
         const cont = './contacts.vcf';
 
-        await m.reply(`◈━━━━━━━━━━━━━━━━◈\n❒ A moment, Toxic-MD is compiling ${gcdata.participants.length} contacts into a VCF...\n◈━━━━━━━━━━━━━━━━◈`);
+        await m.reply(
+            `◈━━━━━━━━━━━━━━━━◈\n` +
+            `│❒ Aguarde um momento, estou compilando *${contactCount}* contatos do grupo em um arquivo *VCF*...\n` +
+            `◈━━━━━━━━━━━━━━━━◈`
+        );
 
         await fs.promises.writeFile(cont, vcard);
-        await m.reply('◈━━━━━━━━━━━━━━━━◈\n❒ Import this VCF in a separate email account to avoid messing with your contacts...\n◈━━━━━━━━━━━━━━━━◈');
+
+        await m.reply(
+            `◈━━━━━━━━━━━━━━━━◈\n` +
+            `│❒ Arquivo *VCF* gerado com sucesso.\n` +
+            `│❒ Recomendo importar este VCF em uma conta de e-mail separada\n` +
+            `│❒ para evitar misturar com seus contatos principais.\n` +
+            `◈━━━━━━━━━━━━━━━━◈`
+        );
 
         await client.sendMessage(
             m.chat,
@@ -29,14 +52,30 @@ module.exports = async (context) => {
                 document: fs.readFileSync(cont),
                 mimetype: 'text/vcard',
                 fileName: 'Group contacts.vcf',
-                caption: `VCF for ${gcdata.subject}\n${gcdata.participants.length} contacts`
+                caption:
+                    `◈━━━━━━━━━━━━━━━━◈\n` +
+                    `│❒ Arquivo *VCF* do grupo: *${gcdata.subject}*\n` +
+                    `│❒ Total de contatos: *${contactCount}*\n` +
+                    `◈━━━━━━━━━━━━━━━━◈`
             },
             { ephemeralExpiration: 86400, quoted: m }
         );
 
         await fs.promises.unlink(cont);
     } catch (error) {
-        console.error(`VCF error: ${error.message}`);
-        await m.reply('◈━━━━━━━━━━━━━━━━◈\n❒ Failed to generate VCF. Try again later.\n◈━━━━━━━━━━━━━━━━◈');
+        console.error(
+            `◈━━━━━━━━━━━━━━━━◈\n` +
+            `│❒ Ocorreu um erro ao gerar o arquivo VCF.\n` +
+            `│❒ Detalhes técnicos foram registrados no console.\n` +
+            `◈━━━━━━━━━━━━━━━━◈\n`,
+            error
+        );
+
+        await m.reply(
+            `◈━━━━━━━━━━━━━━━━◈\n` +
+            `│❒ Não foi possível gerar o arquivo *VCF* no momento.\n` +
+            `│❒ Tente novamente em alguns instantes.\n` +
+            `◈━━━━━━━━━━━━━━━━◈`
+        );
     }
 };
