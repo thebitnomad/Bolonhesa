@@ -5,6 +5,11 @@ module.exports = async (context) => {
         const { client, m } = context;
 
         await client.groupSettingUpdate(m.chat, 'not_announcement');
-        m.reply('◈━━━━━━━━━━━━━━━━◈\n❒ Group opened.\n◈━━━━━━━━━━━━━━━━◈');
+
+        m.reply(
+            `◈━━━━━━━━━━━━━━━━◈
+│❒ O grupo foi aberto. Agora todos podem enviar mensagens!
+◈━━━━━━━━━━━━━━━━◈`
+        );
     });
 };
