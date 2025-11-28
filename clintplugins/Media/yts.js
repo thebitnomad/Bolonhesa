@@ -4,46 +4,54 @@ module.exports = async (context) => {
   const { client, m, text } = context;
 
   const formatStylishReply = (message) => {
-    return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n◈━━━━━━━━━━━━━━━━◈\n> Pσɯҽɾԃ Ⴆყ Tσxιƈ-ɱԃȥ`;
+    return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n◈━━━━━━━━━━━━━━━━◈\n> Powered by 9bot.com.br`;
   };
 
-  if (!text) {
+  const query = (text || "").trim();
+
+  if (!query) {
     return client.sendMessage(
       m.chat,
-      { text: formatStylishReply("Yo, drop a search term, fam! 🔍 Ex: .yts Alan Walker Alone") },
+      {
+        text: formatStylishReply(
+          "Envie um termo para eu pesquisar no YouTube para você. 🔍\n\nExemplo: .yts Alan Walker Alone"
+        ),
+      },
       { quoted: m, ad: true }
     );
   }
 
   try {
-    const searchResult = await yts(text);
+    const searchResult = await yts(query);
 
     if (!searchResult || !searchResult.videos || searchResult.videos.length === 0) {
       return client.sendMessage(
         m.chat,
-        { text: formatStylishReply("Bruh, no YouTube results found! 😕 Try another search.") },
+        {
+          text: formatStylishReply(
+            "Não encontrei resultados no YouTube para essa pesquisa. 😕\nTente outro termo ou ajuste o nome da música/vídeo."
+          ),
+        },
         { quoted: m, ad: true }
       );
     }
 
-    // Take first 5 results
     const videos = searchResult.videos.slice(0, 5);
 
-    let replyText = `🔎 *YouTube Search Results for:* ${text}\n\n`;
+    let replyText = `🔎 *Resultados da busca no YouTube para:* ${query}\n\n`;
 
     for (let i = 0; i < videos.length; i++) {
       const v = videos[i];
       replyText += `◈━━━━━━━━━━━━━━━━◈\n`;
-      replyText += `🎬 *Title:* ${v.title}\n`;
+      replyText += `🎬 *Título:* ${v.title}\n`;
       replyText += `📎 *Link:* ${v.url}\n`;
-      replyText += `👤 *Author:* ${v.author.name} (${v.author.url})\n`;
-      replyText += `👁 *Views:* ${v.views.toLocaleString()}\n`;
-      replyText += `⏳ *Duration:* ${v.timestamp}\n`;
-      replyText += `📅 *Uploaded:* ${v.ago}\n`;
-      replyText += `\n`;
+      replyText += `👤 *Canal:* ${v.author.name} (${v.author.url})\n`;
+      replyText += `👁 *Visualizações:* ${v.views.toLocaleString()}\n`;
+      replyText += `⏳ *Duração:* ${v.timestamp}\n`;
+      replyText += `📅 *Enviado há:* ${v.ago}\n\n`;
     }
 
-    replyText += `◈━━━━━━━━━━━━━━━━◈\n> Pσɯҽɾԃ Ⴆყ Tσxιƈ-ɱԃȥ`;
+    replyText += `◈━━━━━━━━━━━━━━━━◈\n> Powered by 9bot.com.br`;
 
     await client.sendMessage(
       m.chat,
@@ -51,20 +59,24 @@ module.exports = async (context) => {
       { quoted: m, ad: true }
     );
 
-    // Optionally send thumbnail of the first result
     await client.sendMessage(
       m.chat,
       {
         image: { url: videos[0].thumbnail },
-        caption: formatStylishReply(`🎬 First result: *${videos[0].title}*\n📎 ${videos[0].url}`),
+        caption: formatStylishReply(
+          `🎬 Primeiro resultado:\n*${videos[0].title}*\n📎 ${videos[0].url}`
+        ),
       },
       { quoted: m }
     );
-
   } catch (error) {
     await client.sendMessage(
       m.chat,
-      { text: formatStylishReply(`Error: ${error.message}`) },
+      {
+        text: formatStylishReply(
+          `Ocorreu um erro ao buscar no YouTube. 😥\n\nDetalhes: ${error.message}`
+        ),
+      },
       { quoted: m, ad: true }
     );
   }
