@@ -48,6 +48,108 @@ const connectionHandler = require('../Handler/connectionHandler');
 const antidelete = require('../Functions/antidelete');
 const antilink = require('../Functions/antilink');
 
+// Function to convert JSON session to Baileys authentication state
+function sessionToAuthState(sessionJson) {
+  try {
+    // Parse the session JSON if it's a string
+    const sessionData = typeof sessionJson === 'string' ? JSON.parse(sessionJson) : sessionJson;
+    
+    // Convert Buffer data to Uint8Array for Baileys
+    function convertBuffers(obj) {
+      if (obj && typeof obj === 'object') {
+        if (obj.type === 'Buffer' && Array.isArray(obj.data)) {
+          return Buffer.from(obj.data);
+        }
+        for (let key in obj) {
+          if (obj.hasOwnProperty(key)) {
+            obj[key] = convertBuffers(obj[key]);
+          }
+        }
+      }
+      return obj;
+    }
+    
+    const convertedSession = convertBuffers(sessionData);
+    
+    // Create Baileys-compatible auth state
+    const creds = {
+      noice: convertedSession.noiseKey?.public || convertedSession.noiseKey,
+      signedIdentityKey: convertedSession.signedIdentityKey,
+      signedPreKey: convertedSession.signedPreKey,
+      registrationId: convertedSession.registrationId,
+      advSecretKey: convertedSession.advSecretKey,
+      processedHistoryMessages: convertedSession.processedHistoryMessages || [],
+      nextPreKeyId: convertedSession.nextPreKeyId || 1,
+      firstUnuploadedPreKeyId: convertedSession.firstUnuploadedPreKeyId || 1,
+      accountSyncCounter: convertedSession.accountSyncCounter || 0,
+      accountSettings: convertedSession.accountSettings || { unarchiveChats: false },
+      deviceId: convertedSession.deviceId,
+      phoneId: convertedSession.phoneId,
+      identityId: convertedSession.identityId,
+      registered: convertedSession.registered,
+      backupToken: convertedSession.backupToken,
+      registration: convertedSession.registration || {},
+      pairingCode: convertedSession.pairingCode,
+      me: convertedSession.me,
+      account: convertedSession.account,
+      signalIdentities: convertedSession.signalIdentities || [],
+      platform: convertedSession.platform,
+      routingInfo: convertedSession.routingInfo,
+      lastAccountSyncTimestamp: convertedSession.lastAccountSyncTimestamp,
+      lastPropHash: convertedSession.lastPropHash,
+      myAppStateKeyId: convertedSession.myAppStateKeyId
+    };
+
+    const keys = {
+      get: (type, ids) => {
+        const result = {};
+        for (const id of ids) {
+          switch (type) {
+            case 'pre-key':
+              if (convertedSession.signedPreKey && convertedSession.signedPreKey.keyId === id) {
+                result[id] = convertedSession.signedPreKey;
+              }
+              break;
+            case 'session':
+              // Session keys would be handled by Baileys
+              break;
+            case 'sender-key':
+              // Sender keys would be handled by Baileys
+              break;
+            case 'app-state-sync-key':
+              if (convertedSession.myAppStateKeyId === id) {
+                result[id] = convertedSession;
+              }
+              break;
+            case 'app-state-sync-version':
+              // Version keys
+              break;
+          }
+        }
+        return result;
+      },
+      set: (data) => {
+        // Keys would be saved here in normal operation
+        console.log('Keys updated:', Object.keys(data));
+      }
+    };
+
+    return {
+      state: {
+        creds,
+        keys
+      },
+      saveCreds: () => {
+        console.log('Credentials would be saved here');
+        return Promise.resolve();
+      }
+    };
+  } catch (error) {
+    console.error('Error converting session to auth state:', error);
+    throw error;
+  }
+}
+
 async function startToxic() {
   let settingss = await getSettings();
   if (!settingss) {
@@ -63,10 +165,25 @@ async function startToxic() {
   const { autobio, mode, anticall } = settingss;
   const { version } = await fetchLatestWaWebVersion();
 
-  const { saveCreds, state } = await useMultiFileAuthState(sessionName);
+  // Check if we have session data in environment variable
+  let authState;
+  if (process.env.SESSION) {
+    try {
+      console.log('🔑 Using session data from environment variable');
+      authState = sessionToAuthState(process.env.SESSION);
+    } catch (error) {
+      console.error('❌ Failed to parse session from environment, falling back to file auth state');
+      authState = await useMultiFileAuthState(sessionName);
+    }
+  } else {
+    console.log('📁 Using multi-file auth state');
+    authState = await useMultiFileAuthState(sessionName);
+  }
+
+  const { saveCreds, state } = authState;
 
   const client = toxicConnect({
-    printQRInTerminal: false, 
+    printQRInTerminal: !process.env.SESSION, // Only show QR if no session provided
     syncFullHistory: true,
     markOnlineOnConnect: true,
     connectTimeoutMs: 60000,
@@ -309,10 +426,12 @@ async function startToxic() {
 
     if (connection === "open") {
       reconnectAttempts = 0;
+      console.log('✅ WhatsApp connection established successfully!');
     }
 
     if (connection === "close") {
       if (reason === DisconnectReason.loggedOut || reason === 401) {
+        console.log('❌ Logged out, clearing session...');
         await fs.rmSync(sessionName, { recursive: true, force: true });
         return startToxic();
       }
@@ -320,6 +439,7 @@ async function startToxic() {
       if (reconnectAttempts < maxReconnectAttempts) {
         const delay = baseReconnectDelay * Math.pow(2, reconnectAttempts);
         reconnectAttempts++;
+        console.log(`🔄 Reconnecting in ${delay/1000} seconds... (Attempt ${reconnectAttempts}/${maxReconnectAttempts})`);
         setTimeout(() => startToxic(), delay);
       }
     }
