@@ -1,110 +1,183 @@
-const { DateTime } = require('luxon');
 const fs = require('fs');
+const path = require('path');
+const { generateWAMessageFromContent } = require('@whiskeysockets/baileys');
 const { getSettings } = require('../../Database/config');
 
 module.exports = {
   name: 'menu',
-  aliases: ['allmenu', 'commandslist'],
-  description: 'Exibe o menu completo de comandos do bot por categoria',
+  aliases: ['help', 'commands', 'list'],
+  description: 'Exibe o menu de comandos do 9bot com botões interativos',
   run: async (context) => {
-    const { client, m, totalCommands, mode, pict } = context;
-    const botname = '9bot'; 
+    const { client, m, mode, pict, botname, text, prefix } = context;
 
-    const settings = await getSettings();
-    const effectivePrefix = settings.prefix || '';
-
-    const categories = [
-      { name: 'General', display: 'GERAL', emoji: '📜' },
-      { name: 'Settings', display: 'CONFIGURAÇÕES', emoji: '🛠️' },
-      { name: 'Owner', display: 'DONO', emoji: '👑' },
-      { name: 'Heroku', display: 'HEROKU', emoji: '☁️' },
-      { name: 'Wa-Privacy', display: 'PRIVACIDADE', emoji: '🔒' },
-      { name: 'Groups', display: 'GRUPOS', emoji: '👥' },
-      { name: 'AI', display: 'INTELIGÊNCIA ARTIFICIAL', emoji: '🧠' },
-      { name: 'Media', display: 'MÍDIA', emoji: '🎬' },
-      { name: 'Editting', display: 'EDIÇÃO', emoji: '✂️' },
-      { name: 'Logo', display: 'LOGO', emoji: '🎨' },
-      { name: '+18', display: '+18', emoji: '🔞' },
-      { name: 'Utils', display: 'UTILITÁRIOS', emoji: '🔧' }
-    ];
-
-    const getGreeting = () => {
-      const currentHour = DateTime.now().setZone('Africa/Nairobi').hour;
-      if (currentHour >= 5 && currentHour < 12) return 'Bom dia';
-      if (currentHour >= 12 && currentHour < 18) return 'Boa tarde';
-      if (currentHour >= 18 && currentHour < 22) return 'Boa noite';
-      return 'Boa madrugada';
-    };
-
-    const getCurrentTimeInNairobi = () => {
-      return DateTime.now().setZone('Africa/Nairobi').toLocaleString(DateTime.TIME_SIMPLE);
-    };
-
-    const toFancyFont = (text, isUpperCase = false) => {
-      const fonts = {
-        'A': '𝘼','B': '𝘽','C': '𝘾','D': '𝘿','E': '𝙀','F': '𝙁','G': '𝙂','H': '𝙃','I': '𝙄','J': '𝙅','K': '𝙆','L': '𝙇','M': '𝙈',
-        'N': '𝙉','O': '𝙊','P': '𝙋','Q': '𝙌','R': '𝙍','S': '𝙎','T': '𝙏','U': '𝙐','V': '𝙑','W': '𝙒','X': '𝙓','Y': '𝙔','Z': '𝙕',
-        'a': '𝙖','b': '𝙗','c': '𝙘','d': '𝙙','e': '𝙚','f': '𝙛','g': '𝙜','h': '𝙝','i': '𝙞','j': '𝙟','k': '𝙠','l': '𝙡','m': '𝙢',
-        'n': '𝙣','o': '𝙤','p': '𝙥','q': '𝙦','r': '𝙧','s': '𝙨','t': '𝙩','u': '𝙪','v': '𝙫','w': '𝙬','x': '𝙭','y': '𝙮','z': '𝙯'
-      };
-      return (isUpperCase ? text.toUpperCase() : text.toLowerCase())
-        .split('')
-        .map(char => fonts[char] || char)
-        .join('');
-    };
-
-    // Even though menuText is created, you asked for NO TEXT output.
-    // It is kept here only to avoid breaking the plugin logic.
-    let menuText = "";
-
-    let commandCount = 0;
-    for (const category of categories) {
-      let commandFiles = fs
-        .readdirSync(`./clintplugins/${category.name}`)
-        .filter(file => file.endsWith('.js'));
-
-      if (commandFiles.length === 0 && category.name !== '+18') continue;
-
-      if (category.name === '+18') {
-        const plus18Commands = ['xvideo'];
-        for (const cmd of plus18Commands) {
-          const fancyCommandName = toFancyFont(cmd);
-          commandCount++;
-        }
-      }
-
-      for (const file of commandFiles) {
-        const commandName = file.replace('.js', '');
-        const fancyCommandName = toFancyFont(commandName);
-        commandCount++;
-      }
+    // Resposta quando o usuário digita algo além do comando
+    if (text) {
+      await client.sendMessage(
+        m.chat,
+        {
+          text:
+            `◈━━━━━━━━━━━━━━━━◈
+│❒ Yo ${m.pushName}, pra que complicar?
+│❒ É só usar *${prefix}menu* e tá tudo certo. 😉
+◈━━━━━━━━━━━━━━━━◈`,
+        },
+        { quoted: m, ad: true }
+      );
+      return;
     }
 
-    // **OUTPUT** → Buttons only
-    await client.sendMessage(
+    const settings = await getSettings();
+    const effectivePrefix = settings.prefix || '.'; // Prefixo dinâmico do banco
+
+    // Texto do menu principal
+    const menuText =
+      `◈━━━━━━━━━━━━━━━━◈
+│❒ *( 💬 ) - Olá, @${m.pushName}*
+│❒ Bem-vindo ao menu do bot.
+│❒ Aqui você vê o que o *${botname}* sabe fazer. 
+◈━━━━━━━━━━━━━━━━◈
+
+- 計さ INFORMAÇÕES DO BOT ✓
+
+⌬ *Bot*:
+9bot
+
+⌬ *Prefixo*:
+${effectivePrefix} (decora isso direitinho 😌)
+
+⌬ *Modo*:
+${mode} ( ! )
+
+◈━━━━━━━━━━━━━━━━◈
+
+( ! ) *Selecione uma opção abaixo para continuar.*`;
+
+    // Create native flow message with buttons for better iOS compatibility
+    const msg = generateWAMessageFromContent(
       m.chat,
       {
-        text: "",
-        footer: "",
-        buttons: [
-          { buttonId: ".settings", buttonText: { displayText: "⚙ SETTINGS" }, type: 1 },
-          { buttonId: ".fullmenu", buttonText: { displayText: "📜 FULL MENU" }, type: 1 },
-          { buttonId: ".support", buttonText: { displayText: "🛠 SUPPORT" }, type: 1 }
-        ],
-        headerType: 1,
-        contextInfo: {
-          externalAdReply: {
-            showAdAttribution: false,
-            title: `Toxic-MD`,
-            body: `Open Dashboard`,
-            thumbnail: pict,
-            sourceUrl: `https://toxicmd.site`,
-            mediaType: 1,
-            renderLargerThumbnail: true
-          }
+        nativeFlowMessage: {
+          buttons: [
+            {
+              name: 'quick_reply',
+              buttonParamsJson: JSON.stringify({
+                display_text: '📋 Full Menu',
+                id: `${prefix}fullmenu`
+              })
+            },
+            {
+              name: 'quick_reply',
+              buttonParamsJson: JSON.stringify({
+                display_text: '👨‍💻 Dev',
+                id: `${prefix}dev`
+              })
+            },
+            {
+              name: 'quick_reply',
+              buttonParamsJson: JSON.stringify({
+                display_text: '📊 Status',
+                id: `${prefix}ping`
+              })
+            },
+            {
+              name: 'quick_reply',
+              buttonParamsJson: JSON.stringify({
+                display_text: '⚙ Settings',
+                id: `${prefix}settings`
+              })
+            },
+            {
+              name: 'cta_url',
+              buttonParamsJson: JSON.stringify({
+                display_text: '🌐 Website',
+                url: 'https://9bot.com.br'
+              })
+            }
+          ],
+          messageParamsJson: JSON.stringify({
+            title: `${botname} - Menu Principal`,
+            body: menuText,
+            footer: `Powered by ${botname}`,
+            limited_time_offer: {
+              text: '9BOT',
+              url: 'https://9bot.com.br',
+              copy_code: '9BOT'
+            }
+          })
         }
       },
       { quoted: m }
     );
-  }
+
+    await client.relayMessage(m.chat, msg.message, { messageId: msg.key.id });
+
+    // Alternative approach: Send interactive message separately if native flow doesn't work
+    try {
+      // Send image with caption as fallback
+      await client.sendMessage(
+        m.chat,
+        {
+          image: { url: 'https://mmg.whatsapp.net/v/t62.7119-24/539012045_745537058346694_1512031191239726227_n.enc?ccb=11-4&oh=01_Q5Aa2QGGiJj--6eHxoTTTTzuWtBgCrkcXBz9hN_y2s_Z1lrABA&oe=68D7901C&_nc_sid=5e03e0&mms3=true' },
+          caption: menuText,
+          footer: `Powered by ${botname}`,
+          templateButtons: [
+            {
+              index: 1,
+              urlButton: {
+                displayText: '🌐 Website',
+                url: 'https://9bot.com.br'
+              }
+            },
+            {
+              index: 2,
+              quickReplyButton: {
+                displayText: '📋 Full Menu',
+                id: `${prefix}fullmenu`
+              }
+            },
+            {
+              index: 3,
+              quickReplyButton: {
+                displayText: '👨‍💻 Dev',
+                id: `${prefix}dev`
+              }
+            },
+            {
+              index: 4,
+              quickReplyButton: {
+                displayText: '📊 Status',
+                id: `${prefix}ping`
+              }
+            }
+          ]
+        },
+        { quoted: m }
+      );
+    } catch (error) {
+      console.log('Error sending interactive message:', error);
+    }
+
+    // Lógica de áudio aleatório
+    const audioLinks = [
+      'https://qu.ax/crnMP',
+      'https://qu.ax/caeeD',
+      'https://qu.ax/CXWfS',
+      'https://qu.ax/ytTHs',
+      'https://qu.ax/JGkPc',
+      'https://qu.ax/aESvq',
+    ];
+
+    const randomAudio = audioLinks[Math.floor(Math.random() * audioLinks.length)];
+
+    await client.sendMessage(
+      m.chat,
+      {
+        audio: { url: randomAudio },
+        ptt: true,
+        mimetype: 'audio/mpeg',
+        fileName: 'toxic-menu.mp3',
+      },
+      { quoted: m }
+    );
+  },
 };
