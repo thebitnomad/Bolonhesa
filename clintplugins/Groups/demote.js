@@ -4,101 +4,184 @@ const { getSettings } = require('../../Database/config');
 module.exports = {
   name: 'demote',
   aliases: ['unadmin', 'removeadmin'],
-  description: 'Demotes a user from admin in a group',
+  description: 'Remove as permissões de administrador de um usuário no grupo.',
   run: async (context) => {
     await middleware(context, async () => {
       const { client, m, botname, prefix } = context;
 
+      const formatStylishReply = (message) => {
+        return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n◈━━━━━━━━━━━━━━━━◈`;
+      };
+
       if (!botname) {
-        console.error('Toxic-MD: Botname not set in context');
+        console.error(
+          formatStylishReply(
+            'Configuração incompleta: o nome do bot (botname) não está definido no contexto.'
+          )
+        );
         return m.reply(
-          `◈━━━━━━━━━━━━━━━━◈\n│❒ Bot’s fucked, ${m.pushName}! 😤 No botname set. Yell at the dev, dipshit! 💀\n┗━━━━━━━━━━━━━━━┛`
+          formatStylishReply(
+            `${m.pushName}, o bot não está configurado corretamente.\n` +
+            `O identificador interno (*botname*) não foi definido.\n` +
+            `Peça para o responsável pelo bot revisar as configurações.`
+          )
         );
       }
 
       if (!m.isGroup) {
-        console.log(`Toxic-MD: Demote command attempted in non-group chat by ${m.sender}`);
+        console.log(
+          formatStylishReply(
+            `Comando de *demote* utilizado fora de um grupo por: ${m.sender}.`
+          )
+        );
         return m.reply(
-          `◈━━━━━━━━━━━━━━━━◈\n│❒ Yo, ${m.pushName}, you dumb fuck! 😈 This ain’t a group! Use ${prefix}demote in a group, moron! 🖕\n┗━━━━━━━━━━━━━━━┛`
+          formatStylishReply(
+            `${m.pushName}, este comando só pode ser usado em grupos.\n` +
+            `Use *${prefix}demote @usuario* dentro de um grupo.`
+          )
         );
       }
 
-      // Fetch group metadata with retry
+      // Buscar metadados do grupo
       let groupMetadata;
       try {
         groupMetadata = await client.groupMetadata(m.chat);
       } catch (e) {
-        console.error(`Toxic-MD: Error fetching group metadata: ${e.stack}`);
+        console.error(
+          formatStylishReply(
+            `Erro ao obter os dados do grupo: ${e.message}`
+          ),
+          e
+        );
         return m.reply(
-          `◈━━━━━━━━━━━━━━━━◈\n│❒ Shit broke, ${m.pushName}! 😤 Couldn’t get group data: ${e.message}. Fix this crap! 💀\n┗━━━━━━━━━━━━━━━┛`
+          formatStylishReply(
+            `${m.pushName}, não foi possível obter as informações do grupo.\n` +
+            `Tente novamente em alguns instantes.`
+          )
         );
       }
 
       const members = groupMetadata.participants;
       const admins = members
         .filter((p) => p.admin != null)
-        .map((p) => p.id.split(':')[0]); // Normalize JIDs
-      const botId = client.user.id.split(':')[0]; // Normalize bot ID
-      console.log(`Toxic-MD: Bot ID: ${botId}, Admins: ${JSON.stringify(admins)}`);
+        .map((p) => p.id.split(':')[0]); // Normaliza JIDs
+
+      const botId = client.user.id.split(':')[0]; // Normaliza ID do bot
+      console.log(
+        formatStylishReply(
+          `Verificação de privilégios: Bot ID: ${botId} | Admins atuais: ${JSON.stringify(admins)}`
+        )
+      );
 
       if (!admins.includes(botId)) {
-        console.log(`Toxic-MD: Bot ${botId} is not admin in ${m.chat}`);
+        console.log(
+          formatStylishReply(
+            `O bot (${botId}) não é administrador no grupo: ${m.chat}.`
+          )
+        );
         return m.reply(
-          `◈━━━━━━━━━━━━━━━━◈\n│❒ OI, ${m.pushName}! 😤 I ain’t admin, so I can’t demote anyone! Make me admin or fuck off! 🚫\n┗━━━━━━━━━━━━━━━┛`
+          formatStylishReply(
+            `${m.pushName}, não posso alterar administradores porque o bot não é admin neste grupo.\n` +
+            `Defina o bot como administrador e tente novamente.`
+          )
         );
       }
 
-      // Check for mentioned or quoted user
+      // Verifica se há usuário mencionado ou citado
       if (!m.quoted && (!m.mentionedJid || m.mentionedJid.length === 0)) {
-        console.log(`Toxic-MD: No user mentioned or quoted for demote by ${m.pushName}`);
+        console.log(
+          formatStylishReply(
+            `Nenhum usuário mencionado ou citado para remoção de admin por: ${m.pushName}.`
+          )
+        );
         return m.reply(
-          `◈━━━━━━━━━━━━━━━━◈\n│❒ Brain-dead moron, ${m.pushName}! 😡 Mention or quote a user to demote! Try ${prefix}demote @user, idiot! 🖕\n┗━━━━━━━━━━━━━━━┛`
+          formatStylishReply(
+            `${m.pushName}, você precisa mencionar ou responder a um usuário para remover o cargo de administrador.\n` +
+            `Exemplo: ${prefix}demote @usuario`
+          )
         );
       }
 
       const user = m.mentionedJid[0] || (m.quoted ? m.quoted.sender : null);
       if (!user) {
-        console.log(`Toxic-MD: Invalid user for demote in ${m.chat}`);
+        console.log(
+          formatStylishReply(
+            `Usuário inválido para remoção de admin no grupo: ${m.chat}.`
+          )
+        );
         return m.reply(
-          `◈━━━━━━━━━━━━━━━━◈\n│❒ What the fuck, ${m.pushName}? 😳 No valid user to demote! Try again, you useless shit! 💀\n┗━━━━━━━━━━━━━━━┛`
+          formatStylishReply(
+            `${m.pushName}, não foi possível identificar um usuário válido para remover o cargo de administrador.\n` +
+            `Tente novamente mencionando ou respondendo corretamente ao usuário.`
+          )
         );
       }
 
       const userNumber = user.split('@')[0];
       const userName =
-        m.mentionedJid[0]
+        m.mentionedJid && m.mentionedJid[0]
           ? members.find((p) => p.id.split(':')[0] === user.split(':')[0])?.name || userNumber
           : m.quoted?.pushName || userNumber;
 
-      // Protect the owner
+      // Protege o dono
       const settings = await getSettings();
       const ownerNumber = settings.owner || '254735342808@s.whatsapp.net';
       if (user.split(':')[0] === ownerNumber.split(':')[0]) {
-        console.log(`Toxic-MD: Attempt to demote owner ${user} by ${m.pushName}`);
+        console.log(
+          formatStylishReply(
+            `Tentativa de remover privilégios do proprietário (${user}) por: ${m.pushName}.`
+          )
+        );
         return m.reply(
-          `◈━━━━━━━━━━━━━━━━◈\n│❒ YOU PATHETIC WORM, ${m.pushName}! 😤 Trying to demote the SUPREME BOSS? You’re lower than dirt! 🦄\n┗━━━━━━━━━━━━━━━┛`
+          formatStylishReply(
+            `${m.pushName}, não é possível remover o cargo de administrador do proprietário do bot.\n` +
+            `Apenas o dono pode alterar suas próprias permissões.`
+          )
         );
       }
 
-      // Check if user is admin
+      // Verifica se o usuário é admin
       if (!admins.includes(user.split(':')[0])) {
-        console.log(`Toxic-MD: User ${userName} (${user}) is not admin in ${m.chat}`);
+        console.log(
+          formatStylishReply(
+            `O usuário ${userName} (${user}) não é administrador no grupo: ${m.chat}.`
+          )
+        );
         return m.reply(
-          `◈━━━━━━━━━━━━━━━━◈\n│❒ Yo, ${m.pushName}, you dumbass! 😎 ${userName} ain’t even admin! Stop fucking around! 🖕\n┗━━━━━━━━━━━━━━━┛`
+          formatStylishReply(
+            `${m.pushName}, o usuário *${userName}* não é administrador neste grupo.\n` +
+            `Não há privilégios de admin para serem removidos.`
+          )
         );
       }
 
       try {
         await client.groupParticipantsUpdate(m.chat, [user], 'demote');
-        console.log(`Toxic-MD: Successfully demoted ${userName} (${user}) in ${m.chat}`);
+        console.log(
+          formatStylishReply(
+            `Remoção de privilégios de administrador concluída com sucesso para ${userName} (${user}) no grupo ${m.chat}.`
+          )
+        );
         await m.reply(
-          `◈━━━━━━━━━━━━━━━━◈\n│❒ HAHA, ${userName} GOT STRIPPED! 😈 No more admin for this loser, thanks to *${botname}*! Beg for mercy, trash! 🎗️\n┗━━━━━━━━━━━━━━━┛`,
+          formatStylishReply(
+            `O usuário *${userName}* teve as permissões de administrador removidas com sucesso.\n` +
+            `A ação foi executada por *${botname}*.`
+          ),
           { mentions: [user] }
         );
       } catch (error) {
-        console.error(`Toxic-MD: Demote command error: ${error.stack}`);
+        console.error(
+          formatStylishReply(
+            `Erro ao executar o comando de remoção de admin para ${userName}: ${error.message}`
+          ),
+          error
+        );
         await m.reply(
-          `◈━━━━━━━━━━━━━━━━◈\n│❒ Shit broke, ${m.pushName}! 😤 Couldn’t demote ${userName}: ${error.message}. Try later, incompetent fuck! 💀\n┗━━━━━━━━━━━━━━━┛`
+          formatStylishReply(
+            `${m.pushName}, não foi possível remover as permissões de administrador de *${userName}*.\n` +
+            `Detalhes técnicos: ${error.message}\n` +
+            `Tente novamente em alguns instantes.`
+          )
         );
       }
     });
