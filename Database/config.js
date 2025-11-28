@@ -1,10 +1,28 @@
 const { Pool } = require('pg');
-const { database } = require('../Env/settings');
+
+// Use DATABASE_URL from environment (Heroku) or fallback to local settings
+const databaseUrl = process.env.DATABASE_URL || require('../Env/settings').database;
 
 const pool = new Pool({
-    connectionString: database,
-    ssl: { rejectUnauthorized: false }
+    connectionString: databaseUrl,
+    ssl: { 
+        rejectUnauthorized: false 
+    }
 });
+
+// Add database connection check function
+async function checkDatabaseConnection() {
+    try {
+        const client = await pool.connect();
+        const result = await client.query('SELECT 1 as test');
+        client.release();
+        console.log('✅ Database connection successful');
+        return true;
+    } catch (error) {
+        console.error('❌ Database connection failed:', error.message);
+        return false;
+    }
+}
 
 async function initializeDatabase() {
     const client = await pool.connect();
@@ -53,7 +71,6 @@ async function initializeDatabase() {
             anticall: 'false',
             chatbotpm: 'false',
             autolikeemoji: '❤️',
-            // Updated antilink setting to support "off", "delete", or "remove"
             antilink: 'off',
             antidelete: 'false'
         };
@@ -65,6 +82,8 @@ async function initializeDatabase() {
                 ON CONFLICT (key) DO NOTHING;
             `, [key, value]);
         }
+        
+        console.log('✅ Database tables initialized successfully');
     } catch (error) {
         console.error(`❌ Database setup failed: ${error}`);
     } finally {
@@ -233,7 +252,38 @@ async function getBannedUsers() {
     }
 }
 
-initializeDatabase().catch(err => console.error(`❌ Database initialization failed: ${err}`));
+// Initialize database with retry logic
+async function initializeDatabaseWithRetry(maxAttempts = 10) {
+    let attempts = 0;
+    
+    while (attempts < maxAttempts) {
+        attempts++;
+        console.log(`🔍 Database initialization attempt ${attempts}/${maxAttempts}`);
+        
+        const connected = await checkDatabaseConnection();
+        if (connected) {
+            await initializeDatabase();
+            return true;
+        }
+        
+        if (attempts < maxAttempts) {
+            console.log(`⏳ Waiting 5 seconds before retry...`);
+            await new Promise(resolve => setTimeout(resolve, 5000));
+        }
+    }
+    
+    console.log('❌ Failed to initialize database after all attempts');
+    return false;
+}
+
+// Start database initialization
+initializeDatabaseWithRetry().then(success => {
+    if (success) {
+        console.log('🎉 Database setup completed successfully');
+    } else {
+        console.log('💡 Please check your DATABASE_URL configuration');
+    }
+});
 
 module.exports = {
     addSudoUser,
@@ -248,5 +298,7 @@ module.exports = {
     getSettings,
     updateSetting,
     getGroupSettings,
-    updateGroupSetting
+    updateGroupSetting,
+    checkDatabaseConnection,
+    pool
 };
