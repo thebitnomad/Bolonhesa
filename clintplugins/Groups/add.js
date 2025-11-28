@@ -1,5 +1,5 @@
 const middleware = require('../../utility/botUtil/middleware');
-const { getBinaryNodeChild, getBinaryNodeChildren } = require('baileys-elite');
+const { getBinaryNodeChild, getBinaryNodeChildren } = require('@whiskeysockets/baileys');
 
 module.exports = async (context) => {
     await middleware(context, async () => {
