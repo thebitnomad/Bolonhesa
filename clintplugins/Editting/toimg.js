@@ -3,7 +3,7 @@ const FormData = require('form-data');
 const fs = require('fs');
 const path = require('path');
 
-// Upload function to send sticker to qu.ax and get a URL
+// Função para fazer upload da figurinha no qu.ax e obter uma URL pública
 async function uploadSticker(buffer) {
     const tempFilePath = path.join(__dirname, `temp_sticker_${Date.now()}.webp`);
     fs.writeFileSync(tempFilePath, buffer);
@@ -13,17 +13,21 @@ async function uploadSticker(buffer) {
 
     try {
         const response = await axios.post('https://qu.ax/upload.php', form, {
-            headers: form.getHeaders(),
+            headers: form.getHeaders()
         });
 
         const link = response.data?.files?.[0]?.url;
-        if (!link) throw new Error('No URL returned in response');
+        if (!link) {
+            throw new Error('Nenhuma URL foi retornada na resposta do servidor.');
+        }
 
-        fs.unlinkSync(tempFilePath);
         return { url: link };
     } catch (error) {
-        if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
-        throw new Error(`Upload error: ${error.message}`);
+        throw new Error(`Erro no upload da figurinha: ${error.message}`);
+    } finally {
+        if (fs.existsSync(tempFilePath)) {
+            fs.unlinkSync(tempFilePath);
+        }
     }
 }
 
@@ -32,79 +36,133 @@ module.exports = {
     aliases: ['toimage', 'stickertoimg', 'sticker'],
     description: 'Converts stickers to images',
     run: async (context) => {
-        const { client, m, mime } = context;
+        const { client, m } = context;
 
         const formatStylishReply = (message) => {
-            return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n◈━━━━━━━━━━━━━━━━◈`;
+            return `◈━━━━━━━━━━━━━━━━◈
+│❒ ${message}
+◈━━━━━━━━━━━━━━━━◈`;
         };
 
-        // Check if message is quoted and is a sticker
+        // Verificar se existe mensagem respondida e se é figurinha
         if (!m.quoted) {
-            return client.sendMessage(m.chat, {
-                text: formatStylishReply(`Yo, @${m.sender.split('@')[0]}! 😤 Please reply to a sticker!\nExample: Reply to a sticker with .toimg`),
-                mentions: [m.sender]
-            }, { quoted: m });
+            return client.sendMessage(
+                m.chat,
+                {
+                    text: formatStylishReply(
+                        `Ei, @${m.sender.split('@')[0]}! 😤 Responda a uma figurinha para eu converter em imagem.
+│❒ Exemplo: responda à figurinha e envie o comando .toimg`
+                    ),
+                    mentions: [m.sender]
+                },
+                { quoted: m }
+            );
         }
 
         const quotedMime = m.quoted.mimetype || '';
         if (!/webp/.test(quotedMime)) {
-            return client.sendMessage(m.chat, {
-                text: formatStylishReply('Thats not a sticker! 😤\nPlease reply to a sticker file.')
-            }, { quoted: m });
+            return client.sendMessage(
+                m.chat,
+                {
+                    text: formatStylishReply(
+                        `Isso não é uma figurinha válida. 😤
+│❒ Por favor, responda a um arquivo de figurinha (formato .webp).`
+                    )
+                },
+                { quoted: m }
+            );
         }
 
-        try {
-            /**
-             * Send loading message
-             */
-            const loadingMsg = await client.sendMessage(m.chat, {
-                text: formatStylishReply('Converting sticker to image... 🎨\nThis may take a moment ⏳')
-            }, { quoted: m });
+        let loadingMsg;
 
-            // Step 1: Download sticker
+        try {
+            // 1. Enviar mensagem de carregamento
+            loadingMsg = await client.sendMessage(
+                m.chat,
+                {
+                    text: formatStylishReply(
+                        `Convertendo figurinha em imagem... 🎨
+│❒ Isso pode levar alguns instantes. ⏳`
+                    )
+                },
+                { quoted: m }
+            );
+
+            // 2. Baixar a figurinha
             const stickerBuffer = await m.quoted.download();
 
             if (!stickerBuffer) {
-                await client.sendMessage(m.chat, { delete: loadingMsg.key });
-                return client.sendMessage(m.chat, {
-                    text: formatStylishReply('Failed to download the sticker!\nPlease try again.')
-                }, { quoted: m });
+                if (loadingMsg?.key) {
+                    await client.sendMessage(m.chat, { delete: loadingMsg.key }).catch(() => {});
+                }
+                return client.sendMessage(
+                    m.chat,
+                    {
+                        text: formatStylishReply(
+                            `Não foi possível baixar a figurinha.
+│❒ Tente novamente com outra figurinha.`
+                        )
+                    },
+                    { quoted: m }
+                );
             }
 
-            // Step 2: Upload sticker to get a public URL
-            await client.sendMessage(m.chat, {
-                text: formatStylishReply('Uploading sticker for conversion... 📤')
-            }, { quoted: m });
+            // 3. Upload da figurinha para obter URL pública
+            await client.sendMessage(
+                m.chat,
+                {
+                    text: formatStylishReply(
+                        `Enviando figurinha para conversão... 📤
+│❒ Aguarde enquanto preparo a imagem.`
+                    )
+                },
+                { quoted: m }
+            );
 
             const { url: stickerUrl } = await uploadSticker(stickerBuffer);
 
-            // Step 3: Call the conversion API
-            await client.sendMessage(m.chat, {
-                text: formatStylishReply('Converting to image format... 🔄')
-            }, { quoted: m });
+            // 4. Chamar API de conversão
+            await client.sendMessage(
+                m.chat,
+                {
+                    text: formatStylishReply(
+                        `Convertendo para formato de imagem... 🔄
+│❒ Quase lá, só mais um pouco.`
+                    )
+                },
+                { quoted: m }
+            );
 
             const encodedUrl = encodeURIComponent(stickerUrl);
             const convertApiUrl = `https://api.elrayyxml.web.id/api/maker/convert?url=${encodedUrl}&format=PNG`;
-            
+
             const response = await axios.get(convertApiUrl, {
-                headers: { 
-                    'accept': 'application/json',
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                headers: {
+                    accept: 'application/json',
+                    'User-Agent':
+                        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
                 },
                 timeout: 30000
             });
 
-            // Validate API response
+            // Validar resposta da API
             if (!response.data.status || !response.data.result) {
-                throw new Error('Conversion API failed to process the sticker');
+                throw new Error('O serviço de conversão não conseguiu processar esta figurinha.');
             }
 
             const imageUrl = response.data.result;
 
-            // Step 4: Download the converted image
-            await client.sendMessage(m.chat, {
-                text: formatStylishReply('Downloading converted image... 📥')
-            }, { quoted: m });
+            // 5. Baixar a imagem convertida
+            await client.sendMessage(
+                m.chat,
+                {
+                    text: formatStylishReply(
+                        `Baixando a imagem convertida... 📥
+│❒ Finalizando a sua conversão.`
+                    )
+                },
+                { quoted: m }
+            );
 
             const imageResponse = await axios.get(imageUrl, {
                 responseType: 'arraybuffer',
@@ -113,60 +171,89 @@ module.exports = {
 
             const imageBuffer = Buffer.from(imageResponse.data);
 
-            // Step 5: Delete loading message and send result
-            await client.sendMessage(m.chat, { delete: loadingMsg.key });
+            // 6. Apagar mensagem de carregamento
+            if (loadingMsg?.key) {
+                await client.sendMessage(m.chat, { delete: loadingMsg.key }).catch(() => {});
+            }
 
-            // Send as image
+            // 7. Enviar como imagem
             await client.sendMessage(
                 m.chat,
-                { 
-                    image: imageBuffer, 
-                    caption: formatStylishReply('Sticker converted to image! 🖼️\nNow you can use it as a normal image!')
+                {
+                    image: imageBuffer,
+                    caption: formatStylishReply(
+                        `Figurinha convertida em imagem! 🖼️
+│❒ Agora você pode usar como uma foto normal.`
+                    )
                 },
                 { quoted: m }
             );
 
-            // Also send as document for better quality
+            // 8. Enviar também como documento (melhor qualidade)
             await client.sendMessage(
                 m.chat,
                 {
                     document: imageBuffer,
                     mimetype: 'image/png',
                     fileName: `converted_sticker_${Date.now()}.png`,
-                    caption: formatStylishReply('PNG Version (Better Quality)\nUse this for best results!')
+                    caption: formatStylishReply(
+                        `Versão PNG em alta qualidade. 📁
+│❒ Use esta versão para obter o melhor resultado.`
+                    )
                 },
                 { quoted: m }
             );
-
         } catch (err) {
-            console.error('ToImg conversion error:', err);
-            
-            // Delete loading message on error
-            try {
-                await client.sendMessage(m.chat, { delete: loadingMsg.key });
-            } catch (e) {
-                // Ignore delete errors
+            console.error(
+                formatStylishReply(
+                    `Erro na conversão do comando toimg: ${err.message}`
+                )
+            );
+
+            // Tentar apagar mensagem de carregamento em caso de erro
+            if (loadingMsg?.key) {
+                try {
+                    await client.sendMessage(m.chat, { delete: loadingMsg.key });
+                } catch (_) {
+                    // Ignorar erro ao apagar
+                }
             }
 
-            let errorMessage = 'An unexpected error occurred';
-            
+            let errorMessage;
+
             if (err.message.includes('timeout')) {
-                errorMessage = 'Conversion timed out. The sticker might be too large.';
+                errorMessage =
+                    'A conversão demorou demais e foi interrompida. A figurinha pode estar muito grande.';
             } else if (err.message.includes('Network Error')) {
-                errorMessage = 'Network error. Please check your connection.';
-            } else if (err.message.includes('Upload error')) {
-                errorMessage = 'Failed to upload sticker for processing.';
-            } else if (err.message.includes('Conversion API failed')) {
-                errorMessage = 'The conversion service failed to process this sticker.';
-            } else if (err.message.includes('animated')) {
-                errorMessage = 'Animated stickers are not supported yet!';
+                errorMessage =
+                    'Erro de conexão com o serviço de conversão. Verifique sua internet e tente novamente.';
+            } else if (err.message.includes('upload da figurinha')) {
+                errorMessage =
+                    'Falha ao enviar a figurinha para processamento. Tente novamente em instantes.';
+            } else if (err.message.includes('serviço de conversão')) {
+                errorMessage =
+                    'O serviço de conversão não conseguiu processar essa figurinha específica.';
+            } else if (err.message.toLowerCase().includes('animated')) {
+                errorMessage =
+                    'Figurinhas animadas ainda não são suportadas por este comando.';
             } else {
-                errorMessage = err.message;
+                errorMessage = err.message || 'Ocorreu um erro inesperado durante a conversão.';
             }
 
-            await client.sendMessage(m.chat, {
-                text: formatStylishReply(`Conversion Failed! 😤\nError: ${errorMessage}\n\nTips:\n• Use static stickers only\n• Try with smaller stickers\n• Check your internet connection`)
-            }, { quoted: m });
+            await client.sendMessage(
+                m.chat,
+                {
+                    text: formatStylishReply(
+                        `Falha na conversão da figurinha. 😤
+│❒ Erro: ${errorMessage}
+│❒ Dicas:
+│❒ • Use apenas figurinhas estáticas
+│❒ • Tente com figurinhas menores
+│❒ • Verifique sua conexão com a internet`
+                    )
+                },
+                { quoted: m }
+            );
         }
     }
 };
