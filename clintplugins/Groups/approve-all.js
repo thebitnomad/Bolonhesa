@@ -1,37 +1,96 @@
 module.exports = async (context) => {
   const { client, m, chatUpdate, store, isBotAdmin, isAdmin } = context;
 
+  const formatStylishReply = (message) => {
+    return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n◈━━━━━━━━━━━━━━━━◈`;
+  };
+
   if (!m.isGroup) {
-    return m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Yo, dumbass, this command’s for groups only. Stop screwing around.`);
+    return m.reply(
+      formatStylishReply(
+        `Este comando só pode ser utilizado em grupos.`
+      )
+    );
   }
 
   if (!isAdmin) {
-    return m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Nice try, loser. You need admin powers to pull this off. Get lost.`);
+    return m.reply(
+      formatStylishReply(
+        `Você precisa ser administrador do grupo para usar este comando.`
+      )
+    );
   }
 
   if (!isBotAdmin) {
-    return m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ I ain’t got admin rights, moron. Make me admin or quit wasting my time.`);
+    return m.reply(
+      formatStylishReply(
+        `Não tenho permissão de administrador neste grupo.\n` +
+        `Defina o bot como administrador e tente novamente.`
+      )
+    );
   }
 
-  const responseList = await client.groupRequestParticipantsList(m.chat);
+  try {
+    const responseList = await client.groupRequestParticipantsList(m.chat);
 
-  if (responseList.length === 0) {
-    return m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ What a surprise, no one’s begging to join this dumpster fire. No pending requests, idiot.`);
-  }
-
-  for (const participant of responseList) {
-    try {
-      const response = await client.groupRequestParticipantsUpdate(
-        m.chat,
-        [participant.jid],
-        "approve"
+    if (!responseList || responseList.length === 0) {
+      return m.reply(
+        formatStylishReply(
+          `Não há nenhuma solicitação pendente de entrada neste grupo no momento.`
+        )
       );
-      console.log(response);
-    } catch (error) {
-      console.error('Error approving participant:', error);
-      return m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Shit hit the fan, couldn’t approve @${participant.jid.split('@')[0]}. Fix your group, dumbass.`, { mentions: [participant.jid] });
     }
-  }
 
-  m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Ugh, fine, all the desperate wannabes got approved. Happy now, you pest?`);
+    for (const participant of responseList) {
+      try {
+        const response = await client.groupRequestParticipantsUpdate(
+          m.chat,
+          [participant.jid],
+          'approve'
+        );
+
+        console.log(
+          formatStylishReply(
+            `Solicitação aprovada para: ${participant.jid}`
+          ),
+          response
+        );
+      } catch (error) {
+        console.error(
+          formatStylishReply(
+            `Erro ao aprovar o participante: ${participant.jid}`
+          ),
+          error
+        );
+
+        return m.reply(
+          formatStylishReply(
+            `Não foi possível aprovar @${participant.jid.split('@')[0]}.\n` +
+            `Verifique as configurações do grupo e tente novamente.`
+          ),
+          { mentions: [participant.jid] }
+        );
+      }
+    }
+
+    await m.reply(
+      formatStylishReply(
+        `Todas as solicitações pendentes de participação foram aprovadas com sucesso.`
+      )
+    );
+  } catch (error) {
+    console.error(
+      formatStylishReply(
+        `Ocorreu um erro ao tentar listar ou aprovar as solicitações de entrada.`
+      ),
+      error
+    );
+
+    await m.reply(
+      formatStylishReply(
+        `Não foi possível processar as solicitações de entrada no momento.\n` +
+        `Tente novamente em alguns instantes.`
+      )
+    );
+  }
 };
