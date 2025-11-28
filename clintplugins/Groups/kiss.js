@@ -1,80 +1,143 @@
 module.exports = {
   name: 'kiss',
   aliases: ['smooch', 'peck'],
-  description: 'Kisses a tagged or quoted user with a toxic, realistic reaction',
+  description: 'Envia um “beijo” de interação para um usuário marcado ou citado (zoeira de grupo com aviso).',
   run: async (context) => {
     const { client, m } = context;
 
+    const formatStylishReply = (message) => {
+      const lines = String(message || '')
+        .split('\n')
+        .map((l) => l.trim())
+        .filter((l) => l.length > 0);
+      const body = lines.map((l) => `│❒ ${l}`).join('\n');
+      return `◈━━━━━━━━━━━━━━━━◈\n${body}\n◈━━━━━━━━━━━━━━━━◈`;
+    };
+
     try {
-      console.log(`Kiss command context: isGroup=${m.isGroup}, mentionedJid=${JSON.stringify(m.mentionedJid)}, quotedSender=${m.quoted?.sender || 'none'}, sender=${m.sender}`);
+      console.log(
+        formatStylishReply(
+          `Comando de beijo iniciado.\n` +
+          `isGroup=${m.isGroup}, mentionedJid=${JSON.stringify(m.mentionedJid)}, quotedSender=${m.quoted?.sender || 'none'}, sender=${m.sender}`
+        )
+      );
 
       if (!m.mentionedJid || m.mentionedJid.length === 0) {
         if (!m.quoted || !m.quoted.sender) {
-          console.error('No tagged or quoted user provided');
-          return m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Yo, moron, tag someone or quote a message to kiss! I ain’t kissing nobody without a target!`);
+          console.error(
+            formatStylishReply(
+              'Nenhum usuário marcado ou mensagem citada para o comando de beijo.'
+            )
+          );
+          return m.reply(
+            formatStylishReply(
+              `Ei, romântico perdido! 💋\n` +
+              `Marque alguém ou responda a uma mensagem para mandar um beijo.\n` +
+              `Sem alvo, não tem beijo. 😅`
+            )
+          );
         }
       }
 
       const targetUser = m.mentionedJid[0] || (m.quoted ? m.quoted.sender : null);
-      console.log(`Target JID: ${targetUser}`);
+      console.log(
+        formatStylishReply(
+          `Usuário alvo do beijo: ${targetUser || 'nenhum'}`
+        )
+      );
 
       if (
         !targetUser ||
         typeof targetUser !== 'string' ||
         (!targetUser.includes('@s.whatsapp.net') && !targetUser.includes('@lid'))
       ) {
-        console.error(`Invalid target user: ${JSON.stringify(targetUser)}`);
-        return m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Invalid user, dumbass! Tag or quote a real person to kiss!`);
+        console.error(
+          formatStylishReply(
+            `Usuário alvo inválido: ${JSON.stringify(targetUser)}`
+          )
+        );
+        return m.reply(
+          formatStylishReply(
+            `Não consegui reconhecer o usuário.\n` +
+            `Marque ou responda alguém real do grupo para mandar o beijo. 😉`
+          )
+        );
       }
 
       const targetNumber = targetUser.split('@')[0];
       const senderNumber = m.sender.split('@')[0];
+
       if (!targetNumber || !senderNumber) {
-        console.error(`Failed to extract numbers: target=${targetUser}, sender=${m.sender}`);
-        return m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Something’s fucked up with the user IDs. Try again, idiot!`);
+        console.error(
+          formatStylishReply(
+            `Falha ao extrair números: target=${targetUser}, sender=${m.sender}`
+          )
+        );
+        return m.reply(
+          formatStylishReply(
+            `Algo deu errado ao identificar quem está mandando o beijo.\n` +
+            `Tente novamente em alguns instantes.`
+          )
+        );
       }
 
       const kissingMsg = await client.sendMessage(
         m.chat,
         {
-          text: `◈━━━━━━━━━━━━━━━━◈\n│❒ @${senderNumber} is puckering up to kiss @${targetNumber}... 💋\n│❒ Hope you’re ready for this, loser!\n◈━━━━━━━━━━━━━━━━◈`,
+          text:
+            `◈━━━━━━━━━━━━━━━━◈\n` +
+            `│❒ @${senderNumber} está se aproximando para dar um beijo em @${targetNumber}... 💋\n` +
+            `│❒ Calma, é só brincadeira de grupo, nada aqui é sério. 😄\n` +
+            `◈━━━━━━━━━━━━━━━━◈`,
           mentions: [m.sender, targetUser],
         },
         { quoted: m }
       );
 
-      await new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 2000));
+      await new Promise((resolve) =>
+        setTimeout(resolve, 1000 + Math.random() * 2000)
+      );
 
       const intensities = [
         {
-          level: 'Awkward',
-          description: 'a cringey, sloppy peck that made @TARGET gag! @SENDER, you kiss like a dead fish!',
+          level: 'Constrangedor',
+          description:
+            'um beijo todo sem jeito que deixou @TARGET sem saber se ria ou fingia que nada aconteceu. @SENDER claramente tentou, e isso já vale história pro grupo. 😖',
           emoji: '😖',
         },
         {
-          level: 'Sweet',
-          description: 'a decent smooch that got @TARGET blushing! @SENDER, not bad, but don’t get cocky!',
+          level: 'Doce',
+          description:
+            'um beijo leve e carinhoso que deixou @TARGET um pouco corado. @SENDER mandou bem, mas sem subir pra cabeça, hein. 😘',
           emoji: '😘',
         },
         {
-          level: 'Passionate',
-          description: 'a steamy kiss that left @TARGET speechless! @SENDER, you’re a fucking Casanova!',
+          level: 'Intenso',
+          description:
+            'um beijo tão intenso que deixou @TARGET sem palavras por alguns segundos. @SENDER virou oficialmente o(a) romântico(a) do grupo. 🔥💋',
           emoji: '🔥💋',
         },
       ];
+
       const intensity = intensities[Math.floor(Math.random() * intensities.length)];
 
-      const resultMsg = `◈━━━━━━━━━━━━━━━━◈
-*KISS REPORT* ${intensity.emoji}
+      const verdictText = intensity.description
+        .replace('@TARGET', `@${targetNumber}`)
+        .replace('@SENDER', `@${senderNumber}`);
 
-*KISSER:* @${senderNumber}
-*VICTIM:* @${targetNumber}
-*INTENSITY:* ${intensity.level}
-
-*VERDICT:* ${intensity.description.replace('@TARGET', `@${targetNumber}`).replace('@SENDER', `@${senderNumber}`)}
-
-*DISCLAIMER:* This kiss was 100% legit, you hopeless romantic! Deal with it! 😈
-◈━━━━━━━━━━━━━━━━◈`;
+      const resultMsg =
+        `◈━━━━━━━━━━━━━━━━◈\n` +
+        `│❒ *RELATÓRIO DE BEIJO* ${intensity.emoji}\n` +
+        `│\n` +
+        `│❒ *Quem beijou:* @${senderNumber}\n` +
+        `│❒ *Quem recebeu:* @${targetNumber}\n` +
+        `│❒ *Intensidade:* ${intensity.level}\n` +
+        `│\n` +
+        `│❒ *Resumo:* ${verdictText}\n` +
+        `│\n` +
+        `│❒ *AVISO:* Este comando é apenas uma brincadeira de interação no grupo.\n` +
+        `│❒ Se alguém se sentir desconfortável, é só avisar que a zoeira diminui ou o comando não é mais usado. 💛\n` +
+        `◈━━━━━━━━━━━━━━━━◈`;
 
       await client.sendMessage(
         m.chat,
@@ -89,12 +152,26 @@ module.exports = {
         try {
           await client.sendMessage(m.chat, { delete: kissingMsg.key });
         } catch (deleteError) {
-          console.error(`Failed to delete kissing message: ${deleteError.stack}`);
+          console.error(
+            formatStylishReply(
+              `Falha ao tentar apagar a mensagem inicial do beijo: ${deleteError.message}`
+            )
+          );
         }
       }
     } catch (error) {
-      console.error(`Kiss command exploded: ${error.stack}`);
-      await m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Shit broke harder than your love life! Can’t kiss right now, you pathetic fuck.`);
+      console.error(
+        formatStylishReply(
+          `Erro ao executar o comando de beijo: ${error.message}`
+        ),
+        error
+      );
+      await m.reply(
+        formatStylishReply(
+          `Não foi possível completar o comando de beijo agora.\n` +
+          `Tente novamente em alguns instantes.`
+        )
+      );
     }
   },
 };
