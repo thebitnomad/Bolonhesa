@@ -36,7 +36,6 @@ const { getSettings, getBannedUsers, banUser } = require("../Database/config");
 const { botname } = require('../Env/settings');
 const { DateTime } = require('luxon');
 const { commands, totalCommands } = require('../Handler/commandHandler');
-authenticationn();
 
 const path = require('path');
 
@@ -53,7 +52,7 @@ function sessionToAuthState(sessionJson) {
   try {
     // Parse the session JSON if it's a string
     const sessionData = typeof sessionJson === 'string' ? JSON.parse(sessionJson) : sessionJson;
-    
+
     // Convert Buffer data to Uint8Array for Baileys
     function convertBuffers(obj) {
       if (obj && typeof obj === 'object') {
@@ -68,9 +67,9 @@ function sessionToAuthState(sessionJson) {
       }
       return obj;
     }
-    
+
     const convertedSession = convertBuffers(sessionData);
-    
+
     // Create Baileys-compatible auth state
     const creds = {
       noice: convertedSession.noiseKey?.public || convertedSession.noiseKey,
@@ -148,6 +147,36 @@ function sessionToAuthState(sessionJson) {
     console.error('Error converting session to auth state:', error);
     throw error;
   }
+}
+
+const { checkDatabaseConnection } = require("../Database/config");
+
+async function initializeApp() {
+  console.log('🚀 Starting Toxic-MD initialization...');
+  
+  // Wait for database to be ready
+  let dbConnected = false;
+  let attempts = 0;
+  
+  while (!dbConnected && attempts < 10) {
+    dbConnected = await checkDatabaseConnection();
+    if (!dbConnected) {
+      console.log(`⏳ Database not ready, waiting... (attempt ${attempts + 1}/10)`);
+      await new Promise(resolve => setTimeout(resolve, 5000));
+    }
+    attempts++;
+  }
+  
+  if (!dbConnected) {
+    console.log('❌ Could not connect to database after 10 attempts');
+    console.log('💡 Checking DATABASE_URL:', process.env.DATABASE_URL ? 'Set' : 'Not set');
+    process.exit(1);
+  }
+  
+  console.log('✅ Database connected successfully!');
+  
+  // Now initialize authentication
+  authenticationn();
 }
 
 async function startToxic() {
@@ -486,7 +515,10 @@ app.get("/", (req, res) => {
 
 app.listen(port, () => console.log(`Server listening on port http://localhost:${port}`));
 
-startToxic();
+// Start the app with database initialization
+initializeApp().then(() => {
+  startToxic();
+});
 
 module.exports = startToxic;
 
