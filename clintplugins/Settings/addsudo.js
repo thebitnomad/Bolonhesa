@@ -20,7 +20,7 @@ module.exports = async (context) => {
         `◈━━━━━━━━━━━━━━━━◈\n` +
         `│❒ Por favor, informe um número válido.\n` +
         `│❒ Você pode citar uma mensagem, marcar um usuário ou enviar o número diretamente.\n` +
-        `┗━━━━━━━━━━━━━━━┛`
+        `◈━━━━━━━━━━━━━━━━◈`
       );
     }
 
@@ -30,7 +30,7 @@ module.exports = async (context) => {
         `◈━━━━━━━━━━━━━━━━◈\n` +
         `│❒ Este número já é um usuário sudo.\n` +
         `│❒ ${numberToAdd} já está na lista de permissões elevadas.\n` +
-        `┗━━━━━━━━━━━━━━━┛`
+        `◈━━━━━━━━━━━━━━━━◈`
       );
     }
 
@@ -39,7 +39,7 @@ module.exports = async (context) => {
       `◈━━━━━━━━━━━━━━━━◈\n` +
       `│❒ Novo usuário sudo adicionado com sucesso.\n` +
       `│❒ ${numberToAdd} agora possui permissões de administrador do bot.\n` +
-      `┗━━━━━━━━━━━━━━━┛`
+      `◈━━━━━━━━━━━━━━━━◈`
     );
   });
 };
