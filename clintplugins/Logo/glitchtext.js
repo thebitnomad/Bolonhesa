@@ -1,34 +1,65 @@
 module.exports = async (context) => {
   const { client, m, text, botname, fetchJson } = context;
 
-  if (!text || text.trim() === '') {
-    return m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Yo, brain-dead moron, give me some text for the Glitch Text logo! Use *!glitchtext SomeText* or fuck off! 😡`);
+  const formatStylishReply = (message) => {
+    return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n◈━━━━━━━━━━━━━━━━◈\n> Powered by 9bot.com.br`;
+  };
+
+  const userName = m.pushName || "usuário";
+
+  if (!text || text.trim() === "") {
+    return m.reply(
+      formatStylishReply(
+        `Envie um texto para eu criar o logo *Glitch Text*.\n\nExemplo: !glitchtext Seu Texto`
+      )
+    );
   }
 
   try {
-    const cleanedText = text.trim().slice(0, 50).replace(/[^a-zA-Z0-9\s]/g, '');
+    const cleanedText = text
+      .trim()
+      .slice(0, 50)
+      .replace(/[^a-zA-Z0-9\s]/g, "");
+
     if (cleanedText.length < 3) {
-      return m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ What’s this weak-ass text, ${m.pushName}? At least 3 characters, you dumbass! 🙄`);
+      return m.reply(
+        formatStylishReply(
+          `O texto está muito curto, ${userName}.\nUse pelo menos 3 caracteres para gerar o logo. 🙂`
+        )
+      );
     }
 
     const encodedText = encodeURIComponent(cleanedText);
-    const data = await fetchJson(`https://api.giftedtech.web.id/api/ephoto360/glitchtext?apikey=gifted&text=${encodedText}`);
+    const data = await fetchJson(
+      `https://api.giftedtech.web.id/api/ephoto360/glitchtext?apikey=gifted&text=${encodedText}`
+    );
 
     if (data && data.success && data.result && data.result.image_url) {
-      const caption = `◈━━━━━━━━━━━━━━━━◈\n│❒ Here’s your damn *Glitch Text* logo, ${m.pushName}! Don’t waste my time again, you prick! 😤\n` +
-                     `📸 *Text*: ${cleanedText}\n` +
-                     `🔗 *Source*: Even Toxic-MD’s magic, bitches!\n` +
-                     `◈━━━━━━━━━━━━━━━━◈\nPowered by *${botname}*`;
+      const caption = formatStylishReply(
+        `Aqui está o seu logo *Glitch Text*, ${userName}! ✨\n\n📸 *Texto:* ${cleanedText}\n🔗 *Fonte:* Ephoto360\n🤖 Gerado por *${botname}*`
+      );
 
-      await client.sendMessage(m.chat, { 
-        image: { url: data.result.image_url }, 
-        caption: caption 
-      }, { quoted: m });
+      await client.sendMessage(
+        m.chat,
+        {
+          image: { url: data.result.image_url },
+          caption,
+        },
+        { quoted: m }
+      );
     } else {
-      await m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ API’s being a bitch, no Glitch Text logo for you, loser! Try again later. 😒`);
+      await m.reply(
+        formatStylishReply(
+          "Não consegui gerar o logo *Glitch Text* agora.\nA API pode estar indisponível. Tente novamente em alguns instantes. 😔"
+        )
+      );
     }
   } catch (error) {
-    console.error('GlitchText API error:', error);
-    await m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Shit hit the fan, ${m.pushName}! Error: ${error.message}. Bug off and try later, you slacker! 😡\nCheck https://github.com/xhclintohn/Toxic-v2 for help.`);
+    console.error("GlitchText API error:", error);
+    await m.reply(
+      formatStylishReply(
+        `Ocorreu um erro ao gerar o logo *Glitch Text*, ${userName}.\n\nDetalhes: ${error.message}`
+      )
+    );
   }
 };
