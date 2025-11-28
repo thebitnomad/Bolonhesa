@@ -1,129 +1,118 @@
+const { DateTime } = require('luxon');
 const fs = require('fs');
-const path = require('path');
 const { getSettings } = require('../../Database/config');
 
 module.exports = {
   name: 'menu',
-  aliases: ['help', 'commands', 'list'],
-  description: 'Exibe o menu de comandos do 9bot com botões interativos',
+  aliases: ['allmenu', 'commandslist'],
+  description: 'Exibe o menu completo de comandos do bot por categoria',
   run: async (context) => {
-    const { client, m, mode, pict, botname, text, prefix } = context;
-
-    // Resposta quando o usuário digita algo além do comando
-    if (text) {
-      await client.sendMessage(
-        m.chat,
-        {
-          text:
-            `◈━━━━━━━━━━━━━━━━◈
-│❒ Yo ${m.pushName}, pra que complicar?
-│❒ É só usar *${prefix}menu* e tá tudo certo. 😉
-◈━━━━━━━━━━━━━━━━◈`,
-        },
-        { quoted: m, ad: true }
-      );
-      return;
-    }
+    const { client, m, totalCommands, mode, pict } = context;
+    const botname = '9bot'; 
 
     const settings = await getSettings();
-    const effectivePrefix = settings.prefix || '.'; // Prefixo dinâmico do banco
+    const effectivePrefix = settings.prefix || '';
 
-    // Texto do menu principal
-    const menuText =
-      `◈━━━━━━━━━━━━━━━━◈
-│❒ *( 💬 ) - Olá, @${m.pushName}*
-│❒ Bem-vindo ao menu do bot.
-│❒ Aqui você vê o que o *${botname}* sabe fazer. 
-◈━━━━━━━━━━━━━━━━◈
-
-- 計さ INFORMAÇÕES DO BOT ✓
-
-⌬ *Bot*:
-9bot
-
-⌬ *Prefixo*:
-${effectivePrefix} (decora isso direitinho 😌)
-
-⌬ *Modo*:
-${mode} ( ! )
-
-◈━━━━━━━━━━━━━━━━◈
-
-( ! ) *Selecione uma opção abaixo para continuar.*`;
-
-    // normal list buttons
-    const listMessage = {
-      text: menuText,
-      footer: `Powered by ${botname}`,
-      title: "🎪 Menu Principal",
-      buttonText: "📱 Abrir Opções",
-      sections: [
-        {
-          title: "⌜ 𝘾𝙤𝙢𝙖𝙣𝙙𝙤𝙨 𝘾𝙚𝙣𝙩𝙧𝙖𝙞𝙨 ⌟",
-          rows: [
-            {
-              title: "𝐅𝐮𝐥𝐥𝐌𝐞𝐧𝐮",
-              description: "Mostrar todos os comandos disponíveis",
-              rowId: `${prefix}fullmenu`
-            },
-            {
-              title: "𝐃𝐞𝐯",
-              description: "Enviar contato do desenvolvedor",
-              rowId: `${prefix}dev`
-            }
-          ]
-        },
-        {
-          title: "ℹ 𝙄𝙣𝙛𝙤 𝙙𝙤 𝘽𝙤𝙩",
-          rows: [
-            {
-              title: "𝐏𝐢𝐧𝐠",
-              description: "Ver status/latência do bot",
-              rowId: `${prefix}ping`
-            },
-            {
-              title: "𝐒𝐞𝐭𝐭𝐢𝐧𝐠𝐬",
-              description: "Mostrar configurações atuais do bot",
-              rowId: `${prefix}settings`
-            }
-          ]
-        },
-        {
-          title: "🔗 𝙇𝙞𝙣𝙠𝙨 𝙀𝙭𝙩𝙚𝙧𝙣𝙤𝙨",
-          rows: [
-            {
-              title: "🌐 𝐒𝐢𝐭𝐞 𝐎𝐟𝐢𝐜𝐢𝐚𝐥",
-              description: "Visitar site oficial do 9bot",
-              rowId: `${prefix}site`
-            }
-          ]
-        }
-      ]
-    };
-
-    await client.sendMessage(m.chat, listMessage);
-
-    // Lógica de áudio aleatório
-    const audioLinks = [
-      'https://qu.ax/crnMP',
-      'https://qu.ax/caeeD',
-      'https://qu.ax/CXWfS',
-      'https://qu.ax/ytTHs',
-      'https://qu.ax/JGkPc',
-      'https://qu.ax/aESvq',
+    const categories = [
+      { name: 'General', display: 'GERAL', emoji: '📜' },
+      { name: 'Settings', display: 'CONFIGURAÇÕES', emoji: '🛠️' },
+      { name: 'Owner', display: 'DONO', emoji: '👑' },
+      { name: 'Heroku', display: 'HEROKU', emoji: '☁️' },
+      { name: 'Wa-Privacy', display: 'PRIVACIDADE', emoji: '🔒' },
+      { name: 'Groups', display: 'GRUPOS', emoji: '👥' },
+      { name: 'AI', display: 'INTELIGÊNCIA ARTIFICIAL', emoji: '🧠' },
+      { name: 'Media', display: 'MÍDIA', emoji: '🎬' },
+      { name: 'Editting', display: 'EDIÇÃO', emoji: '✂️' },
+      { name: 'Logo', display: 'LOGO', emoji: '🎨' },
+      { name: '+18', display: '+18', emoji: '🔞' },
+      { name: 'Utils', display: 'UTILITÁRIOS', emoji: '🔧' }
     ];
 
-    const randomAudio = audioLinks[Math.floor(Math.random() * audioLinks.length)];
+    const getGreeting = () => {
+      const currentHour = DateTime.now().setZone('Africa/Nairobi').hour;
+      if (currentHour >= 5 && currentHour < 12) return 'Bom dia';
+      if (currentHour >= 12 && currentHour < 18) return 'Boa tarde';
+      if (currentHour >= 18 && currentHour < 22) return 'Boa noite';
+      return 'Boa madrugada';
+    };
+
+    const getCurrentTimeInNairobi = () => {
+      return DateTime.now().setZone('Africa/Nairobi').toLocaleString(DateTime.TIME_SIMPLE);
+    };
+
+    const toFancyFont = (text, isUpperCase = false) => {
+      const fonts = {
+        'A': '𝘼','B': '𝘽','C': '𝘾','D': '𝙿','E': '𝙀','F': '𝙁','G': '𝙂','H': '𝙃','I': '𝙄','J': '𝙅','K': '𝙆','L': '𝙇','M': '𝙈',
+        'N': '𝙉','O': '𝙊','P': '𝙋','Q': '𝙌','R': '𝙍','S': '𝙎','T': '𝙏','U': '𝙐','V': '𝙑','W': '𝙒','X': '𝙓','Y': '𝙔','Z': '𝙕',
+        'a': '𝙖','b': '𝙗','c': '𝙘','d': '𝙙','e': '𝙚','f': '𝙛','g': '𝙜','h': '𝙝','i': '𝙞','j': '𝙟','k': '𝙠','l': '𝙡','m': '𝙢',
+        'n': '𝙣','o': '𝙤','p': '𝙥','q': '𝙦','r': '𝙧','s': '𝙨','t': '𝙩','u': '𝙪','v': '𝙫','w': '𝙬','x': '𝙭','y': '𝙮','z': '𝙯'
+      };
+      return (isUpperCase ? text.toUpperCase() : text.toLowerCase())
+        .split('')
+        .map(char => fonts[char] || char)
+        .join('');
+    };
+
+    let menuText = `╭─❒ 「 Menu de Comandos ${botname} ⚠ 」\n`;
+    menuText += `│ Saudações, @${m.pushName}\n`;
+    menuText += `│\n`;
+    menuText += `│ 🤖 *Bot*: ${botname}\n`;
+    menuText += `│ 📋 *Total de Comandos*: ${totalCommands}\n`;
+    menuText += `│ 🕒 *Horário*: ${getCurrentTimeInNairobi()}\n`;
+    menuText += `│ 🔣 *Prefixo*: ${effectivePrefix || 'Nenhum'}\n`;
+    menuText += `│ 🌐 *Modo*: ${mode}\n`;
+    menuText += `╰─────────────\n\n`;
+
+    menuText += `*REGISTRO DE COMANDOS ☑*\n\n`;
+
+    let commandCount = 0;
+    for (const category of categories) {
+      let commandFiles = fs
+        .readdirSync(`./clintplugins/${category.name}`)
+        .filter(file => file.endsWith('.js'));
+
+      if (commandFiles.length === 0 && category.name !== '+18') continue;
+
+      menuText += `╭─❒ 「 ${category.display} ${category.emoji} 」\n`;
+
+      if (category.name === '+18') {
+        const plus18Commands = ['xvideo'];
+        for (const cmd of plus18Commands) {
+          const fancyCommandName = toFancyFont(cmd);
+          menuText += `│ ✘ *${fancyCommandName}*\n`;
+          commandCount++;
+        }
+      }
+
+      for (const file of commandFiles) {
+        const commandName = file.replace('.js', '');
+        const fancyCommandName = toFancyFont(commandName);
+        menuText += `│ ✘ *${fancyCommandName}*\n`;
+        commandCount++;
+      }
+
+      menuText += `╰─────────────\n\n`;
+    }
+
+    menuText += `> Powered by 9bot.com.br`;
 
     await client.sendMessage(
       m.chat,
       {
-        audio: { url: randomAudio },
-        ptt: true,
-        mimetype: 'audio/mpeg',
-        fileName: 'toxic-menu.mp3',
+        text: menuText,
+        contextInfo: {
+          externalAdReply: {
+            showAdAttribution: false,
+            title: `9BOT`,
+            body: `Powered by 9bot.com.br`,
+            thumbnail: pict,
+            sourceUrl: `https://9bot.com.br`,
+            mediaType: 1,
+            renderLargerThumbnail: true
+          }
+        }
       },
       { quoted: m }
     );
-  },
+  }
 };
