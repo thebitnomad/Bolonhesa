@@ -207,7 +207,7 @@ async function startToxic() {
       return message;
     },
     version: version,
-    browser: ["Ubuntu", "Chrome", "128"], 
+    browser: ["Ubuntu", "Chrome", "125"], 
     logger: pino({ level: 'silent' }),
     auth: {
       creds: state.creds,
