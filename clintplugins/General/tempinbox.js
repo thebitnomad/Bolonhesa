@@ -1,12 +1,24 @@
 // tempinbox.js
 
+const fetch = require('node-fetch');
+
 module.exports = async (context) => {
     const { client, m, text } = context;
 
-    if (!text)
+    const formatStylishReply = (msg) => (
+        `◈━━━━━━━━━━━━━━━━◈
+│❒ ${msg}
+◈━━━━━━━━━━━━━━━━◈`
+    );
+
+    if (!text) {
         return m.reply(
-            "Provide your token.\nExample:\n.tempinbox YOUR_TOKEN"
+            formatStylishReply(
+                `Informe o seu *token* para consultar a caixa de entrada.
+│❒ Exemplo: *.tempinbox SEU_TOKEN_AQUI*`
+            )
         );
+    }
 
     try {
         const url = `https://tempmail.apinepdev.workers.dev/api/getmessage?emaill=${encodeURIComponent(
@@ -16,38 +28,57 @@ module.exports = async (context) => {
         const res = await fetch(url);
         const raw = await res.text();
 
-        // Detect API returning HTML
-        if (raw.startsWith("<")) {
-            return m.reply("⚠ TempMail API returned HTML (likely down). Try again later.");
+        // API retornando HTML (provavelmente fora do ar)
+        if (raw.trim().startsWith('<')) {
+            return m.reply(
+                formatStylishReply(
+                    'A API de TempMail retornou HTML (provavelmente está fora do ar).\n│❒ Tente novamente mais tarde.'
+                )
+            );
         }
 
         const data = JSON.parse(raw);
 
         if (data.error) {
-            return m.reply(`API Error: ${data.error}`);
+            return m.reply(
+                formatStylishReply(`Erro da API: ${data.error}`)
+            );
         }
 
         if (!data.messages || data.messages.length === 0) {
-            return m.reply("Your inbox is empty or token is invalid.");
+            return m.reply(
+                formatStylishReply(
+                    'Sua caixa de entrada está vazia ou o token é inválido.'
+                )
+            );
         }
 
         for (const msg of data.messages) {
-            const parsed = JSON.parse(msg.message);
+            const parsed = JSON.parse(msg.message || '{}');
 
-            const sender = msg.sender || "Unknown";
-            const subject = msg.subject || "No subject";
-            const date = new Date(parsed.date).toLocaleString();
-            const body = parsed.body || "No message body";
+            const sender = msg.sender || 'Remetente desconhecido';
+            const subject = msg.subject || 'Sem assunto';
+            const date = parsed.date
+                ? new Date(parsed.date).toLocaleString('pt-BR')
+                : 'Data não informada';
+            const body = parsed.body || 'Sem conteúdo na mensagem.';
 
-            const out = `👥 Sender: ${sender}
-📝 Subject: ${subject}
-🕜 Date: ${date}
-📩 Message: ${body}`;
+            const out = formatStylishReply(
+                `👥 *Remetente:* ${sender}
+│❒ 📝 *Assunto:* ${subject}
+│❒ 🕜 *Data:* ${date}
+│❒ 📩 *Mensagem:*
+│❒ ${body}`
+            );
 
             await m.reply(out);
         }
     } catch (err) {
-        console.error(err);
-        return m.reply("⚠ Error fetching inbox. Try again later.");
+        console.error('TempInbox error:', err);
+        return m.reply(
+            formatStylishReply(
+                'Não foi possível buscar sua caixa de entrada agora.\n│❒ Tente novamente em alguns instantes.'
+            )
+        );
     }
 };
