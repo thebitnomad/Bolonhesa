@@ -3,7 +3,7 @@ const { translate } = require('@vitalets/google-translate-api');
 module.exports = {
     name: 'translate',
     aliases: ['tr', 'trans'],
-    description: 'Translates text to different languages',
+    description: 'Traduz textos para diferentes idiomas.',
     run: async (context) => {
         const { client, m, prefix } = context;
 
@@ -11,12 +11,23 @@ module.exports = {
             return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n◈━━━━━━━━━━━━━━━━◈`;
         };
 
-        const fullText = m.body.replace(new RegExp(`^${prefix}(translate|tr|trans)\\s*`, 'i'), '').trim();
+        const fullText = m.body
+            .replace(new RegExp(`^${prefix}(translate|tr|trans)\\s*`, 'i'), '')
+            .trim();
 
         if (!fullText && !m.quoted?.text) {
-            return client.sendMessage(m.chat, {
-                text: formatStylishReply(`How to use:\n• ${prefix}tr id hello world\n• ${prefix}tr ja Hello how are you?\n• Reply to a message with: ${prefix}tr en`)
-            }, { quoted: m });
+            return client.sendMessage(
+                m.chat,
+                {
+                    text: formatStylishReply(
+                        `Como usar o comando de tradução:\n` +
+                        `• ${prefix}tr id hello world\n` +
+                        `• ${prefix}tr ja Hello how are you?\n` +
+                        `• Responda uma mensagem com: ${prefix}tr en`
+                    )
+                },
+                { quoted: m }
+            );
         }
 
         let lang, text;
@@ -36,52 +47,99 @@ module.exports = {
         }
 
         try {
-            await client.sendMessage(m.chat, {
-                text: formatStylishReply(`Translating to ${lang.toUpperCase()}... 🔄`)
-            }, { quoted: m });
+            await client.sendMessage(
+                m.chat,
+                {
+                    text: formatStylishReply(
+                        `Traduzindo para ${lang.toUpperCase()}... 🔄`
+                    )
+                },
+                { quoted: m }
+            );
 
-            // Perform translation
             const result = await translate(text, { to: lang });
-            
-            // Language names for display
+
             const languageNames = {
-                'id': 'Indonesian', 'en': 'English', 'ja': 'Japanese', 'fr': 'French',
-                'es': 'Spanish', 'de': 'German', 'it': 'Italian', 'pt': 'Portuguese',
-                'ru': 'Russian', 'zh': 'Chinese', 'ko': 'Korean', 'ar': 'Arabic',
-                'hi': 'Hindi', 'tr': 'Turkish', 'nl': 'Dutch', 'sv': 'Swedish',
-                'pl': 'Polish', 'th': 'Thai', 'vi': 'Vietnamese'
+                id: 'Indonésio',
+                en: 'Inglês',
+                ja: 'Japonês',
+                fr: 'Francês',
+                es: 'Espanhol',
+                de: 'Alemão',
+                it: 'Italiano',
+                pt: 'Português',
+                ru: 'Russo',
+                zh: 'Chinês',
+                ko: 'Coreano',
+                ar: 'Árabe',
+                hi: 'Hindi',
+                tr: 'Turco',
+                nl: 'Holandês',
+                sv: 'Sueco',
+                pl: 'Polonês',
+                th: 'Tailandês',
+                vi: 'Vietnamita'
             };
 
-            // Safely get source language - handle different response structures
-            let fromLang = 'Auto';
+            let fromLang = 'Detecção automática';
             if (result.from && result.from.language && result.from.language.iso) {
-                fromLang = languageNames[result.from.language.iso] || result.from.language.iso.toUpperCase();
+                fromLang =
+                    languageNames[result.from.language.iso] ||
+                    result.from.language.iso.toUpperCase();
             } else if (result.raw && result.raw.src) {
-                fromLang = languageNames[result.raw.src] || result.raw.src.toUpperCase();
+                fromLang =
+                    languageNames[result.raw.src] ||
+                    result.raw.src.toUpperCase();
             }
 
             const toLang = languageNames[lang] || lang.toUpperCase();
 
-            // Send result
-            await client.sendMessage(m.chat, {
-                text: formatStylishReply(`🌐 Translation Result\n\n📥 From: ${fromLang}\n📤 To: ${toLang}\n\n📝 Original:\n${text}\n\n✅ Translated:\n${result.text}`)
-            }, { quoted: m });
-
+            await client.sendMessage(
+                m.chat,
+                {
+                    text: formatStylishReply(
+                        `🌐 Resultado da tradução\n\n` +
+                        `📥 De: ${fromLang}\n` +
+                        `📤 Para: ${toLang}\n\n` +
+                        `📝 Texto original:\n${text}\n\n` +
+                        `✅ Texto traduzido:\n${result.text}`
+                    )
+                },
+                { quoted: m }
+            );
         } catch (error) {
-            console.error('Translation error:', error);
-            
-            let errorMessage = 'Translation failed!';
-            if (error.message.includes('Invalid target language')) {
-                errorMessage = 'Invalid language code! Use: en, id, ja, fr, es, de, etc.';
-            } else if (error.message.includes('Network')) {
-                errorMessage = 'Network error! Try again.';
-            } else if (error.message.includes('undefined')) {
-                errorMessage = 'API response error. Try again.';
+            console.error(
+                formatStylishReply(
+                    `Ocorreu um erro ao processar a tradução.`
+                ),
+                error
+            );
+
+            let errorMessage = 'A tradução falhou.';
+            if (error.message && error.message.includes('Invalid target language')) {
+                errorMessage =
+                    'O código de idioma é inválido. Use exemplos como: en, id, ja, fr, es, de, pt, etc.';
+            } else if (error.message && error.message.includes('Network')) {
+                errorMessage =
+                    'Houve um problema de conexão com a rede. Tente novamente em alguns instantes.';
+            } else if (error.message && error.message.includes('undefined')) {
+                errorMessage =
+                    'Houve um problema na resposta da API. Tente novamente.';
             }
 
-            await client.sendMessage(m.chat, {
-                text: formatStylishReply(`❌ ${errorMessage}\n\n💡 Usage:\n${prefix}tr id Hello world\n${prefix}tr ja How are you?\nReply to message with: ${prefix}tr en`)
-            }, { quoted: m });
+            await client.sendMessage(
+                m.chat,
+                {
+                    text: formatStylishReply(
+                        `❌ ${errorMessage}\n\n` +
+                        `💡 Exemplo de uso:\n` +
+                        `${prefix}tr id Hello world\n` +
+                        `${prefix}tr ja How are you?\n` +
+                        `Responder uma mensagem com: ${prefix}tr en`
+                    )
+                },
+                { quoted: m }
+            );
         }
     }
 };
