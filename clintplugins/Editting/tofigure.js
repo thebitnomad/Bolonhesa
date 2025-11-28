@@ -13,72 +13,114 @@ async function uploadImage(buffer) {
 
     try {
         const response = await axios.post('https://qu.ax/upload.php', form, {
-            headers: form.getHeaders(),
+            headers: form.getHeaders()
         });
 
         const link = response.data?.files?.[0]?.url;
-        if (!link) throw new Error('No URL returned in response');
+        if (!link) {
+            throw new Error('Nenhuma URL foi retornada pelo servidor de upload.');
+        }
 
-        fs.unlinkSync(tempFilePath);
         return { url: link };
     } catch (error) {
-        if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
-        throw new Error(`Upload error: ${error.message}`);
+        throw new Error(`Erro no upload da imagem: ${error.message}`);
+    } finally {
+        if (fs.existsSync(tempFilePath)) {
+            fs.unlinkSync(tempFilePath);
+        }
     }
 }
 
 module.exports = async (context) => {
     const { client, mime, m } = context;
 
-    // Choose between quoted or direct message
+    // Escolhe entre mensagem citada ou direta
     const quoted = m.quoted ? m.quoted : m;
     const quotedMime = quoted.mimetype || mime || '';
 
     if (!/image/.test(quotedMime)) {
-        return m.reply('◈━━━━━━━━━━━━━━━━◈\n❒ Please reply to or send an image with this command.\n◈━━━━━━━━━━━━━━━━◈');
+        return m.reply(
+            `◈━━━━━━━━━━━━━━━━◈
+│❒ Envie ou responda a este comando com uma imagem.
+│❒ Exemplo: responda à foto e envie o comando.
+◈━━━━━━━━━━━━━━━━◈`
+        );
     }
 
-    await m.reply('◈━━━━━━━━━━━━━━━━◈\n❒ Creating your figure-style image... Please wait ✨\n◈━━━━━━━━━━━━━━━━◈');
+    await m.reply(
+        `◈━━━━━━━━━━━━━━━━◈
+│❒ Criando sua imagem em estilo “figure”...
+│❒ Por favor, aguarde alguns instantes. ✨
+◈━━━━━━━━━━━━━━━━◈`
+    );
 
     try {
-        // Step 1: Download the image buffer
+        // 1. Baixar o buffer da imagem
         const media = await quoted.download();
         if (!media) {
-            return m.reply('◈━━━━━━━━━━━━━━━━◈\n❒ Failed to download the image. Try again.\n◈━━━━━━━━━━━━━━━━◈');
+            return m.reply(
+                `◈━━━━━━━━━━━━━━━━◈
+│❒ Não foi possível baixar a imagem enviada.
+│❒ Tente novamente com outra foto.
+◈━━━━━━━━━━━━━━━━◈`
+            );
         }
 
-        // Step 2: Limit size to 10MB
+        // 2. Limitar tamanho a 10MB
         if (media.length > 10 * 1024 * 1024) {
-            return m.reply('◈━━━━━━━━━━━━━━━━◈\n❒ The image is too large (max 10MB).\n◈━━━━━━━━━━━━━━━━◈');
+            return m.reply(
+                `◈━━━━━━━━━━━━━━━━◈
+│❒ A imagem é muito grande.
+│❒ Tamanho máximo permitido: 10MB.
+◈━━━━━━━━━━━━━━━━◈`
+            );
         }
 
-        // Step 3: Upload to get public URL
+        // 3. Fazer upload para obter URL pública
         const { url: imageUrl } = await uploadImage(media);
 
-        // Step 4: Call the tofigur API
-        const apiURL = `https://api.fikmydomainsz.xyz/imagecreator/tofigur?url=${encodeURIComponent(imageUrl)}`;
+        // 4. Chamar a API tofigur
+        const apiURL = `https://api.fikmydomainsz.xyz/imagecreator/tofigur?url=${encodeURIComponent(
+            imageUrl
+        )}`;
         const response = await axios.get(apiURL);
 
-        // Step 5: Validate API response
+        // 5. Validar resposta da API
         if (!response.data || !response.data.status || !response.data.result) {
-            throw new Error('Invalid response from API');
+            throw new Error('Resposta inválida recebida da API de conversão.');
         }
 
         const resultUrl = response.data.result;
 
-        // Step 6: Download the generated figure image
-        const figureBuffer = (await axios.get(resultUrl, { responseType: 'arraybuffer' })).data;
+        // 6. Baixar a imagem gerada em estilo figure
+        const figureBuffer = (
+            await axios.get(resultUrl, { responseType: 'arraybuffer' })
+        ).data;
 
-        // Step 7: Send back the image
+        // 7. Enviar a imagem de volta
         await client.sendMessage(
             m.chat,
             {
                 image: Buffer.from(figureBuffer),
-                caption: '◈━━━━━━━━━━━━━━━━◈\n❒ Your image has been turned into a figure-style art! 🎨\n◈━━━━━━━━━━━━━━━━◈',
+                caption: `◈━━━━━━━━━━━━━━━━◈
+│❒ Sua imagem foi convertida para o estilo “figure”. 🎨
+│❒ Se quiser, envie outra foto para transformar também.
+◈━━━━━━━━━━━━━━━━◈`
             },
             { quoted: m }
         );
     } catch (err) {
-        await m.reply(`◈━━━━━━━━━━━━━━━━◈\n❒ Error while generating figure image:\n${err.message}\n◈━━━━━━━━━━━━━━━━◈`);
+        console.error(
+            `◈━━━━━━━━━━━━━━━━◈
+│❒ Erro ao gerar imagem em estilo figure: ${err.message}
+◈━━━━━━━━━━━━━━━━◈`
+        );
+
+        await m.reply(
+            `◈━━━━━━━━━━━━━━━━◈
+│❒ Ocorreu um erro ao gerar a imagem em estilo “figure”.
+│❒ Detalhes: ${err.message}
+◈━━━━━━━━━━━━━━━━◈`
+        );
     }
 };
