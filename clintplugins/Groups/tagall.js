@@ -4,21 +4,34 @@ module.exports = async (context) => {
     if (!m.isGroup) {
         return client.sendMessage(
             m.chat,
-            { text: '◈━━━━━━━━━━━━━━━━◈\n❒ Command meant for groups.\n◈━━━━━━━━━━━━━━━━◈' },
+            {
+                text:
+                    `◈━━━━━━━━━━━━━━━━◈\n` +
+                    `│❒ Este comando só pode ser usado em grupos.\n` +
+                    `◈━━━━━━━━━━━━━━━━◈`
+            },
             { quoted: m }
         );
     }
 
     try {
-        const mentions = participants.map(a => a.id);
-        const txt = [
+        const mentions = participants.map((a) => a.id);
+
+        const header = [
             `◈━━━━━━━━━━━━━━━━◈`,
-            `❒ Hi You have been tagged here.`,
-            `  Message: ${text ? text : 'No Message!'}`,
-            '',
-            ...mentions.map(id => `📧 @${id.split('@')[0]}`),
-            `◈━━━━━━━━━━━━━━━━◈`
-        ].join('\n');
+            `│❒ Todos os membros foram marcados neste grupo.`,
+            `│❒ Mensagem: ${text && text.trim().length ? text : 'Nenhuma mensagem foi enviada.'}`,
+            `│❒ Use com responsabilidade para não atrapalhar a galera. 😉`,
+            `│❒ Membros mencionados:`,
+        ];
+
+        const body = mentions.map(
+            (id) => `│❒ 📧 @${id.split('@')[0]}`
+        );
+
+        const footer = [`◈━━━━━━━━━━━━━━━━◈`];
+
+        const txt = [...header, ...body, ...footer].join('\n');
 
         await client.sendMessage(
             m.chat,
@@ -27,9 +40,16 @@ module.exports = async (context) => {
         );
     } catch (error) {
         console.error(`Tagall error: ${error.message}`);
+
         await client.sendMessage(
             m.chat,
-            { text: '◈━━━━━━━━━━━━━━━━◈\n❒ Failed to tag participants. Try again later.\n◈━━━━━━━━━━━━━━━━◈' },
+            {
+                text:
+                    `◈━━━━━━━━━━━━━━━━◈\n` +
+                    `│❒ Não foi possível mencionar todos os participantes agora.\n` +
+                    `│❒ Tente novamente em alguns instantes.\n` +
+                    `◈━━━━━━━━━━━━━━━━◈`
+            },
             { quoted: m }
         );
     }
