@@ -1,100 +1,175 @@
+const middleware = require("../../utility/botUtil/middleware");
+
 module.exports = {
   name: 'fuck',
   aliases: ['screw', 'bang'],
-  description: 'Sends a toxic, realistic "fuck" reaction to a tagged or quoted user',
+  description: 'Envia uma reação “tóxica/brincadeira” para um usuário marcado ou citado (apenas interação de grupo).',
   run: async (context) => {
-    const { client, m } = context;
+    await middleware(context, async () => {
+      const { client, m } = context;
 
-    try {
-      console.log(`Fuck command context: isGroup=${m.isGroup}, mentionedJid=${JSON.stringify(m.mentionedJid)}, quotedSender=${m.quoted?.sender || 'none'}, sender=${m.sender}`);
+      const formatStylishReply = (message) => {
+        return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n◈━━━━━━━━━━━━━━━━◈`;
+      };
 
-      if (!m.mentionedJid || m.mentionedJid.length === 0) {
-        if (!m.quoted || !m.quoted.sender) {
-          console.error('No tagged or quoted user provided');
-          return m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Yo, perv, tag someone or quote a message to fuck! I ain’t doing this without a target!`);
+      try {
+        console.log(
+          formatStylishReply(
+            `Comando de interação (fuck) acionado. isGroup=${m.isGroup}, mentionedJid=${JSON.stringify(
+              m.mentionedJid
+            )}, quotedSender=${m.quoted?.sender || 'none'}, sender=${m.sender}`
+          )
+        );
+
+        if (!m.mentionedJid || m.mentionedJid.length === 0) {
+          if (!m.quoted || !m.quoted.sender) {
+            console.error(
+              formatStylishReply(
+                'Nenhum usuário marcado ou mensagem citada para interação.'
+              )
+            );
+            return m.reply(
+              formatStylishReply(
+                `Marque alguém ou responda a uma mensagem para usar este comando de interação.\n` +
+                `Exemplo: *@usuario* ou responda uma mensagem e use o comando.`
+              )
+            );
+          }
         }
-      }
 
-      const targetUser = m.mentionedJid[0] || (m.quoted ? m.quoted.sender : null);
-      console.log(`Target JID: ${targetUser}`);
+        const targetUser = m.mentionedJid?.[0] || (m.quoted ? m.quoted.sender : null);
+        console.log(
+          formatStylishReply(
+            `Usuário alvo identificado: ${targetUser || 'nenhum'}`
+          )
+        );
 
-      if (
-        !targetUser ||
-        typeof targetUser !== 'string' ||
-        (!targetUser.includes('@s.whatsapp.net') && !targetUser.includes('@lid'))
-      ) {
-        console.error(`Invalid target user: ${JSON.stringify(targetUser)}`);
-        return m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Invalid user, dumbass! Tag or quote a real person to fuck!`);
-      }
-
-      const targetNumber = targetUser.split('@')[0];
-      const senderNumber = m.sender.split('@')[0];
-      if (!targetNumber || !senderNumber) {
-        console.error(`Failed to extract numbers: target=${targetUser}, sender=${m.sender}`);
-        return m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Something’s fucked up with the user IDs. Try again, idiot!`);
-      }
-
-      const fuckingMsg = await client.sendMessage(
-        m.chat,
-        {
-          text: `◈━━━━━━━━━━━━━━━━◈\n│❒ @${senderNumber} is getting ready to fuck @${targetNumber}... 😈\n│❒ This is gonna be wild, bitch!\n◈━━━━━━━━━━━━━━━━◈`,
-          mentions: [m.sender, targetUser],
-        },
-        { quoted: m }
-      );
-
-      await new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 2000));
-
-      const intensities = [
-        {
-          level: 'Awkward',
-          description: 'a clumsy, embarrassing attempt that made @TARGET laugh their ass off! @SENDER, you’re a fucking disaster!',
-          emoji: '😂',
-        },
-        {
-          level: 'Steamy',
-          description: 'a hot and heavy session that got @TARGET all flustered! @SENDER, you’re not half bad!',
-          emoji: '🔥',
-        },
-        {
-          level: 'Legendary',
-          description: 'an earth-shattering fuck that left @TARGET in awe! @SENDER, you’re a goddamn sex god!',
-          emoji: '💦🔥',
-        },
-      ];
-      const intensity = intensities[Math.floor(Math.random() * intensities.length)];
-
-      const resultMsg = `◈━━━━━━━━━━━━━━━━◈
-*FUCK REPORT* ${intensity.emoji}
-
-*INITIATOR:* @${senderNumber}
-*VICTIM:* @${targetNumber}
-*INTENSITY:* ${intensity.level}
-
-*VERDICT:* ${intensity.description.replace('@TARGET', `@${targetNumber}`).replace('@SENDER', `@${senderNumber}`)}
-
-*DISCLAIMER:* This was 100% consensual in this fictional world, you filthy animal! Cry about it! 😈
-◈━━━━━━━━━━━━━━━━◈`;
-
-      await client.sendMessage(
-        m.chat,
-        {
-          text: resultMsg,
-          mentions: [m.sender, targetUser],
-        },
-        { quoted: m }
-      );
-
-      if (fuckingMsg && fuckingMsg.key) {
-        try {
-          await client.sendMessage(m.chat, { delete: fuckingMsg.key });
-        } catch (deleteError) {
-          console.error(`Failed to delete fucking message: ${deleteError.stack}`);
+        if (
+          !targetUser ||
+          typeof targetUser !== 'string' ||
+          (!targetUser.includes('@s.whatsapp.net') && !targetUser.includes('@lid'))
+        ) {
+          console.error(
+            formatStylishReply(
+              `Usuário alvo inválido: ${JSON.stringify(targetUser)}`
+            )
+          );
+          return m.reply(
+            formatStylishReply(
+              `Não consegui identificar um usuário válido.\n` +
+              `Marque ou responda a alguém do grupo para usar este comando.`
+            )
+          );
         }
+
+        const targetNumber = targetUser.split('@')[0];
+        const senderNumber = m.sender.split('@')[0];
+
+        if (!targetNumber || !senderNumber) {
+          console.error(
+            formatStylishReply(
+              `Falha ao extrair números: target=${targetUser}, sender=${m.sender}`
+            )
+          );
+          return m.reply(
+            formatStylishReply(
+              `Algo deu errado ao identificar os participantes.\n` +
+              `Tente novamente em alguns instantes.`
+            )
+          );
+        }
+
+        const initialMsg = await client.sendMessage(
+          m.chat,
+          {
+            text:
+              `◈━━━━━━━━━━━━━━━━◈\n` +
+              `│❒ @${senderNumber} resolveu zoar um pouco com @${targetNumber}... 😈\n` +
+              `│❒ Calma, é só brincadeira de grupo, nada aqui é sério. 😅\n` +
+              `◈━━━━━━━━━━━━━━━━◈`,
+            mentions: [m.sender, targetUser],
+          },
+          { quoted: m }
+        );
+
+        await new Promise((resolve) =>
+          setTimeout(resolve, 1000 + Math.random() * 2000)
+        );
+
+        const intensities = [
+          {
+            level: 'Leve',
+            description:
+              'uma zoeira básica que fez @TARGET dar risada e @SENDER passar recibo na frente de todo mundo. Clima de boa! 😂',
+            emoji: '😂',
+          },
+          {
+            level: 'Tensa',
+            description:
+              'uma resenha pesada que deixou @TARGET sem resposta por alguns segundos. @SENDER mandou bem demais na zoeira! 🔥',
+            emoji: '🔥',
+          },
+          {
+            level: 'Lendária',
+            description:
+              'uma interação tão absurda que o grupo inteiro parou para ler. @SENDER entrou oficialmente para o hall da fama das zoeiras do grupo! 💥',
+            emoji: '💥',
+          },
+        ];
+
+        const intensity =
+          intensities[Math.floor(Math.random() * intensities.length)];
+
+        const resultMsg =
+          `◈━━━━━━━━━━━━━━━━◈\n` +
+          `│❒ *RELATÓRIO DE ZOEIRA* ${intensity.emoji}\n` +
+          `│\n` +
+          `│❒ *Iniciador:* @${senderNumber}\n` +
+          `│❒ *Alvo da zoeira:* @${targetNumber}\n` +
+          `│❒ *Nível:* ${intensity.level}\n` +
+          `│\n` +
+          `│❒ *Resumo:* ${intensity.description
+            .replace('@TARGET', `@${targetNumber}`)
+            .replace('@SENDER', `@${senderNumber}`)}\n` +
+          `│\n` +
+          `│❒ *AVISO:* Isso é apenas uma brincadeira de interação no grupo.\n` +
+          `│❒ Se alguém se sentir incomodado, é só avisar e o comando não será usado.\n` +
+          `◈━━━━━━━━━━━━━━━━◈`;
+
+        await client.sendMessage(
+          m.chat,
+          {
+            text: resultMsg,
+            mentions: [m.sender, targetUser],
+          },
+          { quoted: m }
+        );
+
+        if (initialMsg && initialMsg.key) {
+          try {
+            await client.sendMessage(m.chat, { delete: initialMsg.key });
+          } catch (deleteError) {
+            console.error(
+              formatStylishReply(
+                `Falha ao apagar mensagem inicial de interação: ${deleteError.message}`
+              )
+            );
+          }
+        }
+      } catch (error) {
+        console.error(
+          formatStylishReply(
+            `Erro ao executar o comando de interação (fuck): ${error.message}`
+          ),
+          error
+        );
+        await m.reply(
+          formatStylishReply(
+            `Não foi possível completar a interação agora.\n` +
+            `Tente novamente em alguns instantes.`
+          )
+        );
       }
-    } catch (error) {
-      console.error(`Fuck command exploded: ${error.stack}`);
-      await m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Shit broke harder than your bedframe! Can’t fuck right now, you unlucky bastard.`);
-    }
+    });
   },
 };
