@@ -1,53 +1,63 @@
-const { getSettings } = require('../../Database/config');
-
 module.exports = {
   name: 'ping',
   aliases: ['p'],
-  description: 'Checks the bot\'s response time and server status',
+  description: 'Verifica o tempo de resposta e o status do bot',
   run: async (context) => {
     const { client, m, toxicspeed } = context;
 
     try {
-      // Format uptime for bot
+      // Formata uptime do bot em texto legível
       const formatUptime = (seconds) => {
         const days = Math.floor(seconds / (3600 * 24));
         const hours = Math.floor((seconds % (3600 * 24)) / 3600);
         const minutes = Math.floor((seconds % 3600) / 60);
         const secs = Math.floor(seconds % 60);
-        
+
         const parts = [];
-        if (days > 0) parts.push(`${days} days`);
-        if (hours > 0) parts.push(`${hours} hours`);
-        if (minutes > 0) parts.push(`${minutes} minutes`);
-        if (secs > 0) parts.push(`${secs} seconds`);
-        
-        return parts.join(', ') || '0 seconds';
+        if (days > 0) parts.push(`${days} dia${days > 1 ? 's' : ''}`);
+        if (hours > 0) parts.push(`${hours} hora${hours > 1 ? 's' : ''}`);
+        if (minutes > 0) parts.push(`${minutes} minuto${minutes > 1 ? 's' : ''}`);
+        if (secs > 0) parts.push(`${secs} segundo${secs > 1 ? 's' : ''}`);
+
+        return parts.join(', ') || '0 segundos';
       };
 
       const botUptime = formatUptime(process.uptime());
-      const pingSpeed = (toxicspeed || 0.0094).toFixed(4);
-      
-      // Random CPU usage between 5% and 45%
-      const randomCpuUsage = (Math.floor(Math.random() * 40) + 5) + '%';
 
-      const pingText = `
-*— Bot Status ⌬*
-• *Runtime :* ${botUptime}
-• *Response Speed :* ${pingSpeed} ms
-• *CPU Usage :* ${randomCpuUsage}
+      // Trata toxicspeed de forma mais segura (segundos ou ms)
+      const rawSpeed = Number(toxicspeed || 0.0094);
+      const speedMs = rawSpeed < 10 ? rawSpeed * 1000 : rawSpeed;
+      const pingSpeed = speedMs.toFixed(2);
 
-_⌬_ 
-      `.trim();
+      // Uso de CPU aleatório para efeito visual
+      const randomCpuUsage = `${Math.floor(Math.random() * 40) + 5}%`;
 
-      await client.sendMessage(m.chat, {
-        text: pingText
-      }, { quoted: m });
+      const pingText = `◈━━━━━━━━━━━━━━━━◈
+│❒ *Status do Bot ⌬*
+│❒ *Tempo online:* ${botUptime}
+│❒ *Velocidade de resposta:* ${pingSpeed} ms
+│❒ *Uso de CPU:* ${randomCpuUsage}
+│❒
+│❒ Tudo funcionando por aqui, ${m.pushName}. 😉
+◈━━━━━━━━━━━━━━━━◈`;
 
+      await client.sendMessage(
+        m.chat,
+        { text: pingText },
+        { quoted: m }
+      );
     } catch (error) {
       console.error(`Ping command error: ${error}`);
-      await client.sendMessage(m.chat, {
-        text: `◎━━━━━━━━━━━━━━━━◎\n│❒ Ping's fucked! My circuits are overheating from your stupidity.\n◎━━━━━━━━━━━━━━━━◎`
-      }, { quoted: m });
+      await client.sendMessage(
+        m.chat,
+        {
+          text: `◈━━━━━━━━━━━━━━━━◈
+│❒ Algo deu errado ao verificar o ping.
+│❒ Tente novamente em alguns instantes.
+◈━━━━━━━━━━━━━━━━◈`
+        },
+        { quoted: m }
+      );
     }
   }
 };
