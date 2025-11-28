@@ -103,7 +103,7 @@ module.exports = {
 
           const caption =
             i === 0
-              ? `Pσɯҽɾԃ Ⴆყ Tσxιƈ-ɱԃȥ\n\n${formatStylishReply(
+              ? `Powered by 9bot.com.br\n\n${formatStylishReply(
                   `*Resultado da busca no Pinterest*\n\n• Pesquisa: _${query}_\n• Imagem ${i + 1}/${images.length}\n• Alimentado por *${botname}*`
                 )}`
               : "";
