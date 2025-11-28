@@ -3,7 +3,7 @@ const FormData = require('form-data');
 const fs = require('fs');
 const path = require('path');
 
-// Upload function to send image to qu.ax and get a URL
+// Função para fazer upload da imagem no qu.ax e obter uma URL pública
 async function uploadImage(buffer) {
     const tempFilePath = path.join(__dirname, `temp_${Date.now()}.jpg`);
     fs.writeFileSync(tempFilePath, buffer);
@@ -13,69 +13,109 @@ async function uploadImage(buffer) {
 
     try {
         const response = await axios.post('https://qu.ax/upload.php', form, {
-            headers: form.getHeaders(),
+            headers: form.getHeaders()
         });
 
         const link = response.data?.files?.[0]?.url;
-        if (!link) throw new Error('No URL returned in response');
+        if (!link) {
+            throw new Error('Nenhuma URL foi retornada na resposta do servidor.');
+        }
 
-        fs.unlinkSync(tempFilePath);
         return { url: link };
     } catch (error) {
-        if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
-        throw new Error(`Upload error: ${error.message}`);
+        throw new Error(`Erro ao enviar a imagem para o servidor: ${error.message}`);
+    } finally {
+        if (fs.existsSync(tempFilePath)) {
+            fs.unlinkSync(tempFilePath);
+        }
     }
 }
 
 module.exports = async (context) => {
     const { client, mime, m } = context;
 
-    // Detect if image comes from current message or quoted one
+    // Detectar se a imagem vem da mensagem atual ou de uma mensagem respondida
     const quoted = m.quoted ? m.quoted : m;
     const quotedMime = quoted.mimetype || mime || '';
 
     if (!/image/.test(quotedMime)) {
-        return m.reply('◈━━━━━━━━━━━━━━━━◈\n❒ Please reply to or send an image with this command.\n◈━━━━━━━━━━━━━━━━◈');
+        return m.reply(
+            `◈━━━━━━━━━━━━━━━━◈
+│❒ Envie ou responda a este comando com uma imagem.
+│❒ Exemplo: responda à foto e envie o comando.
+◈━━━━━━━━━━━━━━━━◈`
+        );
     }
 
-    await m.reply('◈━━━━━━━━━━━━━━━━◈\n❒ Creating your Ghibli-style artwork... please wait 🎨\n◈━━━━━━━━━━━━━━━━◈');
+    await m.reply(
+        `◈━━━━━━━━━━━━━━━━◈
+│❒ Criando sua arte no estilo *Studio Ghibli*...
+│❒ Por favor, aguarde alguns instantes. 🎨
+◈━━━━━━━━━━━━━━━━◈`
+    );
 
     try {
-        // Step 1: Download image
+        // Passo 1: Baixar a imagem
         const media = await quoted.download();
         if (!media) {
-            return m.reply('◈━━━━━━━━━━━━━━━━◈\n❒ Failed to download the image. Try again.\n◈━━━━━━━━━━━━━━━━◈');
+            return m.reply(
+                `◈━━━━━━━━━━━━━━━━◈
+│❒ Não foi possível baixar a imagem enviada.
+│❒ Tente novamente com outra foto.
+◈━━━━━━━━━━━━━━━━◈`
+            );
         }
 
-        // Step 2: Size limit check
-        if (media.length > 10 * 1024 * 1024) {
-            return m.reply('◈━━━━━━━━━━━━━━━━◈\n❒ The image is too large (max 10MB).\n◈━━━━━━━━━━━━━━━━◈');
+        // Passo 2: Verificação de limite de tamanho (10MB)
+        const maxSize = 10 * 1024 * 1024;
+        if (media.length > maxSize) {
+            return m.reply(
+                `◈━━━━━━━━━━━━━━━━◈
+│❒ A imagem é muito grande.
+│❒ Tamanho máximo permitido: 10MB.
+◈━━━━━━━━━━━━━━━━◈`
+            );
         }
 
-        // Step 3: Upload image to get a public URL
+        // Passo 3: Upload da imagem para obter uma URL pública
         const { url: imageUrl } = await uploadImage(media);
 
-        // Step 4: Call the toGhibli API
+        // Passo 4: Chamada para a API toGhibli
         const response = await axios.get('https://fgsi.koyeb.app/api/ai/image/toGhibli', {
             params: {
                 apikey: 'fgsiapi-2dcdfa06-6d',
-                url: imageUrl,
+                url: imageUrl
             },
             responseType: 'arraybuffer',
+            timeout: 90000
         });
 
         const ghibliImage = Buffer.from(response.data);
 
-        // Step 5: Send the Ghibli-style image back
+        // Passo 5: Enviar a imagem no estilo Ghibli de volta ao usuário
         await client.sendMessage(
             m.chat,
             {
                 image: ghibliImage,
-                caption: '◈━━━━━━━━━━━━━━━━◈\n❒ Your image has been reimagined in *Studio Ghibli* style! 🌸\n◈━━━━━━━━━━━━━━━━◈',
+                caption: `◈━━━━━━━━━━━━━━━━◈
+│❒ Sua imagem foi reimaginada no estilo *Studio Ghibli*! 🌸
+│❒ Se quiser, envie outra foto para transformar também.
+◈━━━━━━━━━━━━━━━━◈`
             },
             { quoted: m }
         );
     } catch (err) {
-        await m.reply(`◈━━━━━━━━━━━━━━━━◈\n❒ Error while generating Ghibli-style image: ${err.message}\n◈━━━━━━━━━━━━━━━━◈`);
+        console.error(
+            `◈━━━━━━━━━━━━━━━━◈
+│❒ Erro ao gerar imagem no estilo Ghibli: ${err.message}
+◈━━━━━━━━━━━━━━━━◈`
+        );
+
+        await m.reply(
+            `◈━━━━━━━━━━━━━━━━◈
+│❒ Ocorreu um erro ao gerar a imagem no estilo *Studio Ghibli*.
+│❒ Detalhes: ${err.message}
+◈━━━━━━━━━━━━━━━━◈`
+        );
     }
 };
