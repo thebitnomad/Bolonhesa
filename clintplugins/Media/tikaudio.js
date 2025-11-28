@@ -3,48 +3,106 @@ const fetch = require("node-fetch");
 module.exports = async (context) => {
     const { client, m, text, fetchJson } = context;
 
-    const fetchTikTokData = async (url, retries = 3) => {
-        for (let attempt = 0; attempt < retries; attempt++) {
-            const data = await fetchJson(url);
-            if (
-                data &&
-                data.status === 200 &&
-                data.tiktok &&
-                data.tiktok.music
-            ) {
-                return data;
+    const formatStylishReply = (message) => {
+        return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n◈━━━━━━━━━━━━━━━━◈\n> Pσɯҽɾԃ Ⴆყ Tσxιƈ-ɱԃȥ`;
+    };
+
+    const fetchTikTokData = async (url, retries = 3, delay = 1500) => {
+        let lastError;
+        for (let attempt = 1; attempt <= retries; attempt++) {
+            try {
+                const data = await fetchJson(url);
+
+                if (
+                    data &&
+                    (data.status === 200 || data.status === true) &&
+                    data.tiktok &&
+                    data.tiktok.music
+                ) {
+                    return data;
+                }
+
+                lastError = new Error("Resposta da API inválida ou incompleta.");
+            } catch (err) {
+                lastError = err;
+            }
+
+            if (attempt < retries) {
+                await new Promise((resolve) => setTimeout(resolve, delay));
             }
         }
-        throw new Error("Failed to fetch valid TikTok data after multiple attempts.");
+
+        throw lastError || new Error("Falha ao obter dados do TikTok após várias tentativas.");
     };
 
     try {
-        if (!text) return m.reply("Provide a TikTok link for the audio.");
-        if (!text.includes("tiktok.com")) return m.reply("That is not a valid TikTok link.");
+        const link = (text || "").trim();
 
-        const url = `https://api.dreaded.site/api/tiktok?url=${text}`;
-        const data = await fetchTikTokData(url);
+        if (!link) {
+            return m.reply(
+                formatStylishReply(
+                    "Envie um link válido do *TikTok* para eu baixar o áudio pra você. 🎶"
+                )
+            );
+        }
 
+        if (!link.includes("tiktok.com")) {
+            return m.reply(
+                formatStylishReply(
+                    "Esse link não parece ser do *TikTok*.\nVerifique o endereço e tente novamente. 😉"
+                )
+            );
+        }
+
+        const apiUrl = `https://api.dreaded.site/api/tiktok?url=${encodeURIComponent(link)}`;
+
+        await m.reply(
+            formatStylishReply(
+                "Um instante... 🔍\nEstou buscando o áudio desse TikTok pra você."
+            )
+        );
+
+        const data = await fetchTikTokData(apiUrl);
         const tikAudioUrl = data.tiktok.music;
 
-        m.reply(`TikTok audio data fetched successfully! Sending. . .`);
+        if (!tikAudioUrl) {
+            throw new Error("Não encontrei o áudio desse TikTok na resposta da API.");
+        }
+
+        await m.reply(
+            formatStylishReply(
+                "Áudio encontrado com sucesso! 🎧\nEnviando o arquivo para você agora..."
+            )
+        );
 
         const response = await fetch(tikAudioUrl);
 
         if (!response.ok) {
-            throw new Error(`Failed to download audio: HTTP ${response.status}`);
+            throw new Error(`Falha ao baixar o áudio: HTTP ${response.status}`);
         }
 
         const arrayBuffer = await response.arrayBuffer();
         const audioBuffer = Buffer.from(arrayBuffer);
 
-        await client.sendMessage(m.chat, {
-            audio: audioBuffer,
-            mimetype: "audio/mpeg",
-            ptt: false,
-        }, { quoted: m });
-
+        await client.sendMessage(
+            m.chat,
+            {
+                audio: audioBuffer,
+                mimetype: "audio/mpeg",
+                ptt: false,
+            },
+            { quoted: m }
+        );
     } catch (error) {
-        m.reply(`Error: ${error.message}`);
+        const errMsg =
+            error && error.message
+                ? error.message
+                : "Ocorreu um erro desconhecido ao processar o áudio do TikTok.";
+
+        m.reply(
+            formatStylishReply(
+                `Não consegui baixar o áudio desse TikTok agora. 😥\n\nDetalhes: ${errMsg}\nTente novamente em alguns instantes ou envie outro link.`
+            )
+        );
     }
 };
