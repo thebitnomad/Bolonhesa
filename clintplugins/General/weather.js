@@ -1,18 +1,41 @@
+const fs = require('fs');
+
 module.exports = async (context) => {
   const { m, text } = context;
 
+  const formatStylishReply = (message) => {
+    return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n◈━━━━━━━━━━━━━━━━◈`;
+  };
+
   try {
     if (!text) {
-      return m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Yo, genius, give me a city or town name! Don’t waste my time.`);
+      return m.reply(
+        formatStylishReply(
+          `Por favor, envie o nome de uma cidade ou região para consultar o clima.\n` +
+          `Exemplo: !tempo São Paulo`
+        )
+      );
     }
 
-    const response = await fetch(`http://api.openweathermap.org/data/2.5/weather?q=${text}&units=metric&appid=1ad47ec6172f19dfaf89eb3307f74785`);
+    const encodedCity = encodeURIComponent(text.trim());
+    const response = await fetch(
+      `http://api.openweathermap.org/data/2.5/weather?q=${encodedCity}&units=metric&lang=pt_br&appid=1ad47ec6172f19dfaf89eb3307f74785`
+    );
     const data = await response.json();
 
-    console.log(`✅ Fetched weather data for ${text}`);
+    console.log(
+      formatStylishReply(
+        `Dados de clima obtidos para: ${text}`
+      )
+    );
 
     if (data.cod !== 200) {
-      return m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ What the hell? Can’t find ${text}. Pick a real place, idiot.`);
+      return m.reply(
+        formatStylishReply(
+          `Não consegui encontrar informações de clima para *${text}*.\n` +
+          `Verifique se o nome da cidade está correto e tente novamente.`
+        )
+      );
     }
 
     const cityName = data.name;
@@ -28,29 +51,41 @@ module.exports = async (context) => {
     const sunrise = new Date(data.sys.sunrise * 1000);
     const sunset = new Date(data.sys.sunset * 1000);
 
-    await m.reply(`◈━━━━━━━━━━━━━━━━◈
-│❒ Weather in *${cityName}* 🌎
+    await m.reply(
+      `◈━━━━━━━━━━━━━━━━◈
+│❒ Clima em *${cityName}* 🌎
 ├──────────────┤
-│❒ 🌡️ Temp: ${temperature}°C
+│❒ 🌡️ Temperatura: ${temperature}°C (mín.: ${minTemperature}°C / máx.: ${maxTemperature}°C)
 ├──────────────┤
-│❒ 🥵 Feels Like: ${feelsLike}°C
+│❒ 🥵 Sensação térmica: ${feelsLike}°C
 ├──────────────┤
-│❒ 📝 Conditions: ${description}
+│❒ 📝 Condições: ${description}
 ├──────────────┤
-│❒ 💧 Humidity: ${humidity}%
+│❒ 💧 Umidade: ${humidity}%
 ├──────────────┤
-│❒ 🌀 Wind: ${windSpeed} m/s
+│❒ 🌀 Vento: ${windSpeed} m/s
 ├──────────────┤
-│❒ 🌧️ Rain (1h): ${rainVolume} mm
+│❒ 🌧️ Chuva (1h): ${rainVolume} mm
 ├──────────────┤
-│❒ ☁️ Clouds: ${cloudiness}%
+│❒ ☁️ Nebulosidade: ${cloudiness}%
 ├──────────────┤
-│❒ 🌄 Sunrise: ${sunrise.toLocaleTimeString()}
+│❒ 🌄 Nascer do sol: ${sunrise.toLocaleTimeString('pt-BR')}
 ├──────────────┤
-│❒ 🌅 Sunset: ${sunset.toLocaleTimeString()}
-◈━━━━━━━━━━━━━━━━◈`);
+│❒ 🌅 Pôr do sol: ${sunset.toLocaleTimeString('pt-BR')}
+◈━━━━━━━━━━━━━━━━◈`
+    );
   } catch (e) {
-    console.error(`❌ Error fetching weather for ${text}: ${e.message}`);
-    await m.reply(`◈━━━━━━━━━━━━━━━━◈\n│❒ Ugh, something broke, or ${text} ain’t a real place. Try again, moron.`);
+    console.error(
+      formatStylishReply(
+        `Erro ao buscar dados de clima para ${text || 'cidade não informada'}: ${e.message}`
+      )
+    );
+
+    await m.reply(
+      formatStylishReply(
+        `Não foi possível obter os dados de clima no momento.\n` +
+        `Tente novamente em alguns instantes.`
+      )
+    );
   }
 };
