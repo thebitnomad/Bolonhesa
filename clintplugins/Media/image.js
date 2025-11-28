@@ -2,14 +2,24 @@ const fetch = require("node-fetch");
 const axios = require("axios");
 
 module.exports = {
-  name: 'image',
-  aliases: ['img', 'pic', 'searchimage'],
-  description: 'Searches for images based on your query',
+  name: "image",
+  aliases: ["img", "pic", "searchimage"],
+  description: "Pesquisa imagens com base na sua mensagem",
   run: async (context) => {
     const { client, m, prefix, botname } = context;
 
     const formatStylishReply = (message) => {
-      return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n┗━━━━━━━━━━━━━━━┛`;
+      return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n◈━━━━━━━━━━━━━━━━◈\n> Pσɯҽɾԃ Ⴆყ Tσxιƈ-ɱԃȥ`;
+    };
+
+    const logStyled = (message, type = "log") => {
+      if (type === "error") {
+        console.error(formatStylishReply(message));
+      } else if (type === "warn") {
+        console.warn(formatStylishReply(message));
+      } else {
+        console.log(formatStylishReply(message));
+      }
     };
 
     // Helper: Download image into a Buffer
@@ -20,20 +30,24 @@ module.exports = {
       return { buffer, mime };
     };
 
-    const fetchWithRetry = async (url, options, retries = 3, delay = 1000) => {
+    const fetchWithRetry = async (url, options = {}, retries = 3, delay = 1000) => {
       for (let attempt = 1; attempt <= retries; attempt++) {
         try {
+          logStyled(`Tentativa ${attempt} de buscar imagens na URL: ${url}`);
           const response = await fetch(url, options);
           if (!response.ok) {
-            throw new Error(`API failed with status ${response.status}`);
+            throw new Error(`A API retornou o status ${response.status}`);
           }
           return response;
         } catch (error) {
+          logStyled(
+            `Tentativa ${attempt} falhou: ${error.message}. Tentando novamente em ${delay}ms...`,
+            "warn"
+          );
           if (attempt === retries) {
             throw error;
           }
-          console.error(`Attempt ${attempt} failed: ${error.message}. Retrying in ${delay}ms...`);
-          await new Promise(resolve => setTimeout(resolve, delay));
+          await new Promise((resolve) => setTimeout(resolve, delay));
         }
       }
     };
@@ -41,26 +55,46 @@ module.exports = {
     /**
      * Extract search query from message
      */
-    const query = m.body.replace(new RegExp(`^${prefix}(image|img|pic|searchimage)\\s*`, 'i'), '').trim();
+    const query = m.body
+      .replace(new RegExp(`^${prefix}(image|img|pic|searchimage)\\s*`, "i"), "")
+      .trim();
+
     if (!query) {
-      return client.sendMessage(m.chat, {
-        text: `◈━━━━━━━━━━━━━━━━◈\n│❒ Yo, @${m.sender.split('@')[0]}! 😤 You forgot the search query!\n│❒ Example: ${prefix}image cute cats\n┗━━━━━━━━━━━━━━━┛`,
-        mentions: [m.sender]
-      }, { quoted: m });
+      return client.sendMessage(
+        m.chat,
+        {
+          text: formatStylishReply(
+            `Olá, @${m.sender.split("@")[0]}! 😊\nVocê esqueceu de digitar o termo da pesquisa.\n\nExemplo: ${prefix}image gatos fofos`
+          ),
+          mentions: [m.sender],
+        },
+        { quoted: m }
+      );
     }
 
     try {
       /**
        * Send loading message
        */
-      const loadingMsg = await client.sendMessage(m.chat, {
-        text: formatStylishReply(`Searching for images of: "${query}"... 🔍\nHold tight!`)
-      }, { quoted: m });
+      const loadingMsg = await client.sendMessage(
+        m.chat,
+        {
+          text: formatStylishReply(
+            `Procurando imagens de: "${query}" 🔍\nPor favor, aguarde um instante...`
+          ),
+        },
+        { quoted: m }
+      );
 
       /**
        * Call the Google Images API
        */
-      const apiUrl = `https://anabot.my.id/api/search/gimage?query=${encodeURIComponent(query)}&apikey=freeApikey`;
+      const apiUrl = `https://anabot.my.id/api/search/gimage?query=${encodeURIComponent(
+        query
+      )}&apikey=freeApikey`;
+
+      logStyled(`Consultando API de imagens em: ${apiUrl}`);
+
       const response = await fetchWithRetry(apiUrl, { timeout: 15000 });
       const data = await response.json();
 
@@ -68,30 +102,43 @@ module.exports = {
        * Validate API response
        */
       if (!data.success || !data.data?.result || data.data.result.length === 0) {
-        await client.sendMessage(m.chat, { 
-          delete: loadingMsg.key 
+        await client.sendMessage(m.chat, {
+          delete: loadingMsg.key,
         });
-        return client.sendMessage(m.chat, {
-          text: formatStylishReply(`No images found for "${query}"! 😢\nTry a different search term.`)
-        }, { quoted: m });
+
+        return client.sendMessage(
+          m.chat,
+          {
+            text: formatStylishReply(
+              `Não encontrei nenhuma imagem para "${query}" 😢\nTente usar outro termo de pesquisa.`
+            ),
+          },
+          { quoted: m }
+        );
       }
 
       /**
        * Get images from response (limit to 10 for performance)
        */
       const images = data.data.result.slice(0, 10);
-      
+
       // Delete loading message
-      await client.sendMessage(m.chat, { 
-        delete: loadingMsg.key 
+      await client.sendMessage(m.chat, {
+        delete: loadingMsg.key,
       });
 
       /**
        * Send success message
        */
-      await client.sendMessage(m.chat, {
-        text: formatStylishReply(`Found ${data.data.result.length} images for "${query}"!\nSending ${images.length} best results... 📸`)
-      }, { quoted: m });
+      await client.sendMessage(
+        m.chat,
+        {
+          text: formatStylishReply(
+            `Encontrei ${data.data.result.length} imagens para "${query}".\nEnviarei as ${images.length} melhores opções pra você 📸`
+          ),
+        },
+        { quoted: m }
+      );
 
       /**
        * Prepare and send image album
@@ -103,28 +150,42 @@ module.exports = {
         try {
           // Download image into buffer
           const { buffer, mime } = await downloadImageBuffer(image.url);
-          
+
           // Prepare caption for each image
-          const caption = `◈━━━━━━━━━━━━━━━━◈\n│❒ *Image Search Result*\n│❒ Query: _${query}_\n│❒ Size: ${image.width}x${image.height}\n│❒ Image ${index + 1}/${images.length}\n│❒ Powered by *${botname}*\n┗━━━━━━━━━━━━━━━┛`;
+          const caption =
+            index === 0
+              ? formatStylishReply(
+                  `*Resultado da busca de imagens*\n\n• Pesquisa: _${query}_\n• Tamanho: ${image.width}x${image.height}\n• Imagem ${index + 1}/${images.length}\n• Alimentado por *${botname}*`
+                )
+              : "";
 
           // Add to album
           albumImages.push({
             image: buffer,
             mimetype: mime,
-            caption: index === 0 ? caption : '' // Only caption first image to avoid spam
+            caption,
           });
 
           successfulDownloads++;
         } catch (error) {
-          console.warn(`Failed to download image ${index + 1}:`, error.message);
+          logStyled(
+            `Falha ao baixar a imagem ${index + 1}: ${error.message}`,
+            "warn"
+          );
           // Continue with other images even if one fails
         }
       }
 
       if (albumImages.length === 0) {
-        return client.sendMessage(m.chat, {
-          text: formatStylishReply(`Failed to download any images for "${query}"! 😢\nThe images might be temporarily unavailable.`)
-        }, { quoted: m });
+        return client.sendMessage(
+          m.chat,
+          {
+            text: formatStylishReply(
+              `Não consegui baixar nenhuma imagem para "${query}" 😢\nAs imagens podem estar temporariamente indisponíveis.`
+            ),
+          },
+          { quoted: m }
+        );
       }
 
       /**
@@ -134,57 +195,86 @@ module.exports = {
         await client.sendMessage(
           m.chat,
           {
-            albumMessage: albumImages
+            albumMessage: albumImages,
           },
           { quoted: m }
         );
 
         // Send completion message
         if (successfulDownloads < images.length) {
-          await client.sendMessage(m.chat, {
-            text: formatStylishReply(`Sent ${successfulDownloads} images for "${query}"!\n(${images.length - successfulDownloads} failed to load)`)
-          }, { quoted: m });
+          await client.sendMessage(
+            m.chat,
+            {
+              text: formatStylishReply(
+                `Enviei ${successfulDownloads} imagens para "${query}".\n(${images.length - successfulDownloads} não puderam ser carregadas)`
+              ),
+            },
+            { quoted: m }
+          );
         }
-
       } catch (albumError) {
-        console.error("Failed to send album, trying individual images:", albumError);
-        
+        logStyled(
+          `Falha ao enviar o álbum de imagens, tentando enviar individualmente: ${albumError.message}`,
+          "error"
+        );
+
         // Fallback: send images individually
         let individualSentCount = 0;
-        for (const img of albumImages.slice(0, 5)) { // Limit to 5 for individual sending
+        for (const img of albumImages.slice(0, 5)) {
           try {
             await client.sendMessage(
               m.chat,
               {
                 image: img.image,
                 mimetype: img.mimetype,
-                caption: individualSentCount === 0 ? `◈━━━━━━━━━━━━━━━━◈\n│❒ *Image Search Results*\n│❒ Query: _${query}_\n│❒ Powered by *${botname}*\n┗━━━━━━━━━━━━━━━┛` : ''
+                caption:
+                  individualSentCount === 0
+                    ? formatStylishReply(
+                        `*Resultados da busca de imagens*\n\n• Pesquisa: _${query}_\n• Alimentado por *${botname}*`
+                      )
+                    : "",
               },
               { quoted: m }
             );
             individualSentCount++;
+
             // Small delay between sends
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise((resolve) => setTimeout(resolve, 1000));
           } catch (e) {
-            console.warn("Failed to send individual image:", e.message);
+            logStyled(
+              `Falha ao enviar imagem individualmente: ${e.message}`,
+              "warn"
+            );
           }
         }
 
         if (individualSentCount > 0) {
-          await client.sendMessage(m.chat, {
-            text: formatStylishReply(`Sent ${individualSentCount} images individually for "${query}"!`)
-          }, { quoted: m });
+          await client.sendMessage(
+            m.chat,
+            {
+              text: formatStylishReply(
+                `Enviei ${individualSentCount} imagens individualmente para "${query}".`
+              ),
+            },
+            { quoted: m }
+          );
         } else {
-          throw new Error("All sending methods failed");
+          throw new Error("Não foi possível enviar nenhuma imagem.");
         }
       }
-
     } catch (error) {
-      console.error('Image search error:', error);
-      await client.sendMessage(m.chat, {
-        text: `◈━━━━━━━━━━━━━━━━◈\n│❒ Oops, @${m.sender.split('@')[0]}! 😤 Image search failed!\n│❒ Error: ${error.message}\n┗━━━━━━━━━━━━━━━┛`,
-        mentions: [m.sender]
-      }, { quoted: m });
+      logStyled(`Erro na busca de imagens: ${error.message}`, "error");
+
+      await client.sendMessage(
+        m.chat,
+        {
+          text: formatStylishReply(
+            `Ops, @${m.sender.split("@")[0]}! 😥\nAconteceu um erro ao buscar as imagens.\n\nDetalhes: ${error.message}`
+          ),
+          mentions: [m.sender],
+        },
+        { quoted: m }
+      );
     }
-  }
+  },
 };
