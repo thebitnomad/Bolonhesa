@@ -211,7 +211,7 @@ async function startToxic() {
       return message;
     },
     version: version,
-    browser: Browsers.ubuntu('Chrome'),
+    browser: ["Ubuntu", "Chrome", "128"], 
     logger: pino({ level: 'silent' }),
     auth: {
       creds: state.creds,
