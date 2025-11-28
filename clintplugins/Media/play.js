@@ -9,20 +9,26 @@ if (!fs.existsSync(tempDir)) {
 }
 
 const isValidYouTubeUrl = (url) => {
-  return /^https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/(watch\?v=|shorts\/|embed\/)?[A-Za-z0-9_-]{11}(\?.*)?$/.test(url);
+  return /^https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/(watch\?v=|shorts\/|embed\/)?[A-Za-z0-9_-]{11}(\?.*)?$/.test(
+    url
+  );
 };
 
 module.exports = async (context) => {
   const { client, m, text } = context;
 
   const formatStylishReply = (message) => {
-    return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n◈━━━━━━━━━━━━━━━━◈\n> Pσɯҽɾԃ Ⴆყ Tσxιƈ-ɱԃȥ`;
+    return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n◈━━━━━━━━━━━━━━━━◈\n> Powered by 9bot.com.br`;
   };
 
   if (!text) {
     return client.sendMessage(
       m.chat,
-      { text: formatStylishReply("Yo, drop a song name, fam! 🎵 Ex: .play Not Like Us") },
+      {
+        text: formatStylishReply(
+          "Envie o nome de uma música para eu procurar pra você. 🎵\nExemplo: .play Not Like Us"
+        ),
+      },
       { quoted: m, ad: true }
     );
   }
@@ -30,7 +36,11 @@ module.exports = async (context) => {
   if (text.length > 100) {
     return client.sendMessage(
       m.chat,
-      { text: formatStylishReply("Keep it short, homie! Song name max 100 chars. 📝") },
+      {
+        text: formatStylishReply(
+          "Tente usar um nome de música mais curto.\nO limite é de 100 caracteres. 📝"
+        ),
+      },
       { quoted: m, ad: true }
     );
   }
@@ -39,36 +49,38 @@ module.exports = async (context) => {
     const searchQuery = `${text} official`;
     const searchResult = await yts(searchQuery);
     const video = searchResult.videos[0];
+
     if (!video) {
       return client.sendMessage(
         m.chat,
-        { text: formatStylishReply("No tunes found, bruh! 😕 Try another search!") },
+        {
+          text: formatStylishReply(
+            "Não encontrei nenhuma música com esse nome. 😕\nTente outro termo de pesquisa."
+          ),
+        },
         { quoted: m, ad: true }
       );
     }
 
-    // Validate YouTube URL
     if (!isValidYouTubeUrl(video.url)) {
-      throw new Error("Invalid YouTube URL");
+      throw new Error("URL inválida do YouTube.");
     }
 
-    // Use the new API endpoint
-    const apiUrl = `https://api.privatezia.biz.id/api/downloader/ytplaymp3?query=${encodeURIComponent(video.url)}`;
-    
-    // Call the API
+    const apiUrl = `https://api.privatezia.biz.id/api/downloader/ytplaymp3?query=${encodeURIComponent(
+      video.url
+    )}`;
+
     const response = await axios.get(apiUrl);
     const apiData = response.data;
 
-    // Check if the API call was successful
     if (!apiData.status || !apiData.result || !apiData.result.downloadUrl) {
-      throw new Error("API failed to process the video");
+      throw new Error("A API não conseguiu processar o vídeo.");
     }
 
     const timestamp = Date.now();
     const fileName = `audio_${timestamp}.mp3`;
     const filePath = path.join(tempDir, fileName);
 
-    // Download the audio file from the API's download URL
     const audioResponse = await axios({
       method: "get",
       url: apiData.result.downloadUrl,
@@ -84,12 +96,16 @@ module.exports = async (context) => {
     });
 
     if (!fs.existsSync(filePath) || fs.statSync(filePath).size === 0) {
-      throw new Error("Download failed or file is empty");
+      throw new Error("Falha no download ou arquivo vazio.");
     }
 
     await client.sendMessage(
       m.chat,
-      { text: formatStylishReply(`Droppin' *${apiData.result.title}* for ya, fam! Crank it up! 🔥🎧`) },
+      {
+        text: formatStylishReply(
+          `Enviando *${apiData.result.title}* para você. Aperte o play e aproveite! 🔥🎧`
+        ),
+      },
       { quoted: m, ad: true }
     );
 
@@ -102,8 +118,11 @@ module.exports = async (context) => {
         contextInfo: {
           externalAdReply: {
             title: apiData.result.title,
-            body: `${video.author.name || "Unknown Artist"} | Powered by Toxic-MD`,
-            thumbnailUrl: apiData.result.thumbnail || video.thumbnail || "https://via.placeholder.com/120x90",
+            body: `${video.author.name || "Artista desconhecido"} | Powered by 9bot.com.br`,
+            thumbnailUrl:
+              apiData.result.thumbnail ||
+              video.thumbnail ||
+              "https://via.placeholder.com/120x90",
             sourceUrl: video.url,
             mediaType: 1,
             renderLargerThumbnail: true,
@@ -119,8 +138,8 @@ module.exports = async (context) => {
   } catch (error) {
     await client.sendMessage(
       m.chat,
-      { text: formatStylishReply(`Yo, we hit a snag: ${error.message}. Pick another track! 😎`) },
-      { quoted: m, ad: true }
-    );
-  }
-};
+      {
+        text: formatStylishReply(
+          `Tivemos um problema ao tentar enviar a música.\n\nDetalhes: ${error.message}\nTente outra faixa. 😎`
+        ),
+      },
