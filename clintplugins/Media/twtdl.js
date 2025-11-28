@@ -4,33 +4,43 @@ module.exports = async (context) => {
     const { client, m, text, botname } = context;
 
     const formatStylishReply = (message) => {
-        return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n◈━━━━━━━━━━━━━━━━◈\n> Pσɯҽɾԃ Ⴆყ Tσxιƈ-ɱԃȥ`;
+        return `◈━━━━━━━━━━━━━━━━◈\n│❒ ${message}\n◈━━━━━━━━━━━━━━━━◈\n> Powered by 9bot.com.br`;
     };
 
-    const fetchWithRetry = async (url, options, retries = 3, delay = 1000) => {
+    const fetchWithRetry = async (url, options = {}, retries = 3, delay = 1000) => {
         for (let attempt = 1; attempt <= retries; attempt++) {
             try {
                 const response = await fetch(url, options);
                 if (!response.ok) {
-                    throw new Error(`API failed with status ${response.status}`);
+                    throw new Error(`API respondeu com status ${response.status}`);
                 }
                 return response;
             } catch (error) {
-                if (attempt === retries || error.type !== "request-timeout") {
+                if (attempt === retries) {
                     throw error;
                 }
-                console.error(`Attempt ${attempt} failed: ${error.message}. Retrying in ${delay}ms...`);
-                await new Promise(resolve => setTimeout(resolve, delay));
+                console.error(
+                    `Tentativa ${attempt} falhou: ${error.message}. Tentando novamente em ${delay}ms...`
+                );
+                await new Promise((resolve) => setTimeout(resolve, delay));
             }
         }
     };
 
     if (!text) {
-        return m.reply(formatStylishReply("Yo, drop a Twitter/X link, fam! 📹 Ex: .twitterdl https://x.com/user/status/123"));
+        return m.reply(
+            formatStylishReply(
+                "Envie um link válido do Twitter/X para eu baixar o vídeo pra você. 📹\nExemplo: .twitterdl https://x.com/user/status/123"
+            )
+        );
     }
 
     if (!text.includes("twitter.com") && !text.includes("x.com")) {
-        return m.reply(formatStylishReply("That’s not a valid Twitter/X link, you clueless twit! Try again."));
+        return m.reply(
+            formatStylishReply(
+                "Esse link não parece ser do Twitter/X. Verifique o endereço e tente novamente. 😉"
+            )
+        );
     }
 
     try {
@@ -42,20 +52,35 @@ module.exports = async (context) => {
 
         const data = await response.json();
 
-        if (!data || !data.status || !data.result || !data.result.video || !data.result.video.url) {
-            return m.reply(formatStylishReply("API’s actin’ shady, no video found! 😢 Try again later."));
+        if (
+            !data ||
+            !data.status ||
+            !data.result ||
+            !data.result.video ||
+            !data.result.video.url
+        ) {
+            return m.reply(
+                formatStylishReply(
+                    "Não encontrei nenhum vídeo nesse link. 😢\nTente novamente mais tarde ou envie outro vídeo."
+                )
+            );
         }
 
         const twtvid = data.result.video.url;
-        const title = data.result.title || "No title available";
+        const title = data.result.title || "Título não disponível";
 
         if (!twtvid) {
-            return m.reply(formatStylishReply("Invalid Twitter/X data. Make sure the video exists, fam!"));
+            return m.reply(
+                formatStylishReply(
+                    "Não consegui obter os dados desse vídeo do Twitter/X.\nVerifique se o vídeo existe e está público."
+                )
+            );
         }
 
         const videoResponse = await fetchWithRetry(twtvid, { timeout: 15000 });
+
         if (!videoResponse.ok) {
-            throw new Error(`Failed to download video: HTTP ${videoResponse.status}`);
+            throw new Error(`Falha ao baixar o vídeo: HTTP ${videoResponse.status}`);
         }
 
         const arrayBuffer = await videoResponse.arrayBuffer();
@@ -66,13 +91,19 @@ module.exports = async (context) => {
             {
                 video: videoBuffer,
                 mimetype: "video/mp4",
-                caption: formatStylishReply(`🎥 Twitter/X Video\n\n📌 *Title:* ${title}`),
+                caption: formatStylishReply(
+                    `🎥 Vídeo do Twitter/X\n\n📌 *Título:* ${title}`
+                ),
                 gifPlayback: false,
             },
             { quoted: m }
         );
     } catch (e) {
         console.error("Twitter/X download error:", e);
-        m.reply(formatStylishReply(`Yo, we hit a snag: ${e.message}. Check the URL and try again! 😎`));
+        m.reply(
+            formatStylishReply(
+                `Não consegui baixar esse vídeo agora. 😥\n\nDetalhes: ${e.message}\nVerifique o link e tente novamente.`
+            )
+        );
     }
 };
