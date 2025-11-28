@@ -5,6 +5,11 @@ module.exports = async (context) => {
         const { client, m } = context;
 
         await client.groupSettingUpdate(m.chat, 'announcement');
-                m.reply('◈━━━━━━━━━━━━━━━━◈\n❒ Group closed.\n◈━━━━━━━━━━━━━━━━◈');
+
+        m.reply(
+            `◈━━━━━━━━━━━━━━━━◈\n` +
+            `│❒ O grupo foi fechado. Agora somente administradores podem enviar mensagens.\n` +
+            `◈━━━━━━━━━━━━━━━━◈`
+        );
     });
 };
