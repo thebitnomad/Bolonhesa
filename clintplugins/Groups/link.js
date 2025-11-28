@@ -5,28 +5,37 @@ module.exports = async (context) => {
         const { client, m } = context;
 
         try {
-            let response = await client.groupInviteCode(m.chat); 
-            await client.sendText(m.chat, 
+            const response = await client.groupInviteCode(m.chat);
+
+            await client.sendText(
+                m.chat,
 `◈━━━━━━━━━━━━━━━━◈
-│❒ *GROUP LINK* ❒
+│❒ *LINK DO GRUPO* ❒
 ◈━━━━━━━━━━━━━━━━◈
-            
+
 https://chat.whatsapp.com/${response}
 
-📌 *Share this link to invite members*
-🔗 *Link generated successfully*`, 
-            m, { detectLink: true }); 
+│❒ 📌 Compartilhe este link para convidar novos membros.
+│❒ 🔗 Link gerado com sucesso.
+◈━━━━━━━━━━━━━━━━◈`,
+                m,
+                { detectLink: true }
+            );
 
         } catch (error) {
-            console.error('Error generating group link:', error);
-            await client.sendText(m.chat, 
+            console.error('Erro ao gerar o link do grupo:', error);
+
+            await client.sendText(
+                m.chat,
 `◈━━━━━━━━━━━━━━━━◈
-│❒ *ERROR* ❒
+│❒ *ERRO AO GERAR LINK* ❒
 ◈━━━━━━━━━━━━━━━━◈
 
-❌ Failed to generate group link.
-Please try again later.`, 
-            m);
+│❒ ❌ Não foi possível gerar o link do grupo neste momento.
+│❒ Tente novamente em alguns instantes.
+◈━━━━━━━━━━━━━━━━◈`,
+                m
+            );
         }
     });
 };
