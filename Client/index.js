@@ -15,6 +15,7 @@ const {
 const pino = require("pino");
 const { Boom } = require("@hapi/boom");
 const fs = require("fs");
+const path = require("path");
 const FileType = require("file-type");
 const { exec, spawn, execSync } = require("child_process");
 const axios = require("axios");
@@ -37,8 +38,6 @@ const { botname } = require('../Env/settings');
 const { DateTime } = require('luxon');
 const { commands, totalCommands } = require('../Handler/commandHandler');
 
-const path = require('path');
-
 const sessionName = path.join(__dirname, '..', 'Session');
 
 const groupEvents = require("../Handler/eventHandler");
@@ -46,6 +45,42 @@ const groupEvents2 = require("../Handler/eventHandler");
 const connectionHandler = require('../Handler/connectionHandler');
 const antidelete = require('../Functions/antidelete');
 const antilink = require('../Functions/antilink');
+
+// Function to write session from environment variable to creds.json
+function writeSessionToCreds() {
+  try {
+    if (process.env.SESSION) {
+      console.log('📝 Writing session data from environment variable to creds.json...');
+      
+      // Ensure Session directory exists
+      if (!fs.existsSync(sessionName)) {
+        fs.mkdirSync(sessionName, { recursive: true });
+        console.log('✅ Created Session directory');
+      }
+
+      // Parse the session data
+      let sessionData;
+      if (typeof process.env.SESSION === 'string') {
+        sessionData = JSON.parse(process.env.SESSION);
+      } else {
+        sessionData = process.env.SESSION;
+      }
+
+      // Write to creds.json
+      const credsPath = path.join(sessionName, 'creds.json');
+      fs.writeFileSync(credsPath, JSON.stringify(sessionData, null, 2));
+      console.log('✅ Successfully wrote creds.json from environment variable');
+      
+      return true;
+    } else {
+      console.log('ℹ️  No SESSION environment variable found, using existing auth state');
+      return false;
+    }
+  } catch (error) {
+    console.error('❌ Error writing session to creds.json:', error);
+    return false;
+  }
+}
 
 // Function to convert JSON session to Baileys authentication state
 function sessionToAuthState(sessionJson) {
@@ -153,11 +188,14 @@ const { checkDatabaseConnection } = require("../Database/config");
 
 async function initializeApp() {
   console.log('🚀 Starting Toxic-MD initialization...');
-  
+
+  // First, write session data if available
+  writeSessionToCreds();
+
   // Wait for database to be ready
   let dbConnected = false;
   let attempts = 0;
-  
+
   while (!dbConnected && attempts < 10) {
     dbConnected = await checkDatabaseConnection();
     if (!dbConnected) {
@@ -166,15 +204,15 @@ async function initializeApp() {
     }
     attempts++;
   }
-  
+
   if (!dbConnected) {
     console.log('❌ Could not connect to database after 10 attempts');
     console.log('💡 Checking DATABASE_URL:', process.env.DATABASE_URL ? 'Set' : 'Not set');
     process.exit(1);
   }
-  
+
   console.log('✅ Database connected successfully!');
-  
+
   // Now initialize authentication
   authenticationn();
 }
