@@ -79,7 +79,7 @@ module.exports = {
           },
           { quoted: m }
         );
-      */
+      
 
       const images = data.result.slice(0, 10);
       await client.sendMessage(m.chat, { delete: loadingMsg.key });
