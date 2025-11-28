@@ -1,4 +1,4 @@
-const { Sticker, createSticker, StickerTypes } = require('wa-sticker-formatter');
+const { Sticker, StickerTypes } = require('wa-sticker-formatter');
 const fs = require('fs').promises;
 const path = require('path');
 const { queue } = require('async');
@@ -7,7 +7,11 @@ const commandQueue = queue(async (task, callback) => {
     try {
         await task.run(task.context);
     } catch (error) {
-        console.error(`WatermarkSticker error: ${error.message}`);
+        console.error(
+            `◈━━━━━━━━━━━━━━━━◈
+│❒ Erro no comando WatermarkSticker: ${error.message}
+◈━━━━━━━━━━━━━━━━◈`
+        );
     }
     callback();
 }, 1); // 1 at a time
@@ -16,7 +20,11 @@ module.exports = async (context) => {
     const { client, m, mime, pushname } = context;
 
     if (!m.sender.includes('your-owner-number@s.whatsapp.net')) {
-        return m.reply('◈━━━━━━━━━━━━━━━━◈\n❒ Only owners can use this command.\n◈━━━━━━━━━━━━━━━━◈');
+        return m.reply(
+            `◈━━━━━━━━━━━━━━━━◈
+│❒ Apenas o proprietário do bot pode usar este comando.
+◈━━━━━━━━━━━━━━━━◈`
+        );
     }
 
     commandQueue.push({
@@ -24,39 +32,81 @@ module.exports = async (context) => {
         run: async ({ client, m, mime, pushname }) => {
             try {
                 if (!m.quoted) {
-                    return m.reply('◈━━━━━━━━━━━━━━━━◈\n❒ Quote an image, a short video, or a sticker to change watermark.\n◈━━━━━━━━━━━━━━━━◈');
+                    return m.reply(
+                        `◈━━━━━━━━━━━━━━━━◈
+│❒ Responda a uma imagem, vídeo curto ou figurinha para alterar a marca d'água.
+◈━━━━━━━━━━━━━━━━◈`
+                    );
                 }
 
-                if (!/image|video|image\/webp/.test(mime)) {
-                    return m.reply('◈━━━━━━━━━━━━━━━━◈\n❒ This is neither a sticker, image, nor a short video!\n◈━━━━━━━━━━━━━━━━◈');
+                const quotedMime = m.quoted.mimetype || mime || '';
+
+                if (!/image|video|image\/webp/.test(quotedMime)) {
+                    return m.reply(
+                        `◈━━━━━━━━━━━━━━━━◈
+│❒ Isto não é uma figurinha, imagem nem um vídeo curto válido.
+◈━━━━━━━━━━━━━━━━◈`
+                    );
                 }
 
                 if (m.quoted.videoMessage && m.quoted.videoMessage.seconds > 30) {
-                    return m.reply('◈━━━━━━━━━━━━━━━━◈\n❒ Videos must be 30 seconds or shorter.\n◈━━━━━━━━━━━━━━━━◈');
+                    return m.reply(
+                        `◈━━━━━━━━━━━━━━━━◈
+│❒ O vídeo precisa ter no máximo 30 segundos para virar figurinha.
+◈━━━━━━━━━━━━━━━━◈`
+                    );
                 }
 
-                const tempFile = path.join(__dirname, `temp-watermark-${Date.now()}.${/image\/webp/.test(mime) ? 'webp' : /image/.test(mime) ? 'jpg' : 'mp4'}`);
-                await m.reply('◈━━━━━━━━━━━━━━━━◈\n❒ A moment, Toxic-MD is creating the sticker...\n◈━━━━━━━━━━━━━━━━◈');
+                const extension = /image\/webp/.test(quotedMime)
+                    ? 'webp'
+                    : /image/.test(quotedMime)
+                    ? 'jpg'
+                    : 'mp4';
+
+                const tempFile = path.join(
+                    __dirname,
+                    `temp-watermark-${Date.now()}.${extension}`
+                );
+
+                await m.reply(
+                    `◈━━━━━━━━━━━━━━━━◈
+│❒ Um instante, o 9bot está criando a figurinha para você...
+◈━━━━━━━━━━━━━━━━◈`
+                );
 
                 const media = await client.downloadAndSaveMediaMessage(m.quoted, tempFile);
 
                 const stickerResult = new Sticker(media, {
-                    pack: pushname || 'ᅠᅠᅠᅠ',
-                    author: pushname || '𝐱𝐡_𝐜𝐥𝐢𝐧𝐭𝐨𝐧',
+                    pack: pushname || '9BOT',
+                    author: pushname || '9bot.com.br',
                     type: StickerTypes.FULL,
                     categories: ['🤩', '🎉'],
                     id: '12345',
-                    quality: 50, // Lower quality to reduce memory
+                    quality: 50,
                     background: 'transparent'
                 });
 
                 const buffer = await stickerResult.toBuffer();
                 await client.sendMessage(m.chat, { sticker: buffer }, { quoted: m });
 
-                await fs.unlink(tempFile).catch(() => console.warn('Failed to delete temp file'));
+                await fs.unlink(tempFile).catch(() =>
+                    console.warn(
+                        `◈━━━━━━━━━━━━━━━━◈
+│❒ Aviso: não foi possível apagar o arquivo temporário de figurinha.
+◈━━━━━━━━━━━━━━━━◈`
+                    )
+                );
             } catch (error) {
-                console.error(`WatermarkSticker error: ${error.message}`);
-                await m.reply('◈━━━━━━━━━━━━━━━━◈\n❒ An error occurred while creating the sticker. Please try again.\n◈━━━━━━━━━━━━━━━━◈');
+                console.error(
+                    `◈━━━━━━━━━━━━━━━━◈
+│❒ Erro ao criar a figurinha com nova marca d'água: ${error.message}
+◈━━━━━━━━━━━━━━━━◈`
+                );
+                await m.reply(
+                    `◈━━━━━━━━━━━━━━━━◈
+│❒ Ocorreu um erro ao criar a figurinha. Tente novamente em instantes.
+◈━━━━━━━━━━━━━━━━◈`
+                );
             }
         }
     });
