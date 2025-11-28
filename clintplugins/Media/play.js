@@ -143,4 +143,7 @@ module.exports = async (context) => {
           `Tivemos um problema ao tentar enviar a música.\n\nDetalhes: ${error.message}\nTente outra faixa. 😎`
         ),
       },
-      }
+      { quoted: m, ad: true } // ✅ opções do sendMessage
+    );
+  }
+};
