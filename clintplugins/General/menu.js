@@ -1,12 +1,11 @@
 const fs = require('fs');
 const path = require('path');
-const { generateWAMessageFromContent } = require('@whiskeysockets/baileys');
 const { getSettings } = require('../../Database/config');
 
 module.exports = {
   name: 'menu',
   aliases: ['help', 'commands', 'list'],
-  description: 'Exibe o menu de comandos do 9bot com botões interativos',
+  description: 'Exibe o menu de comandos do 9bot',
   run: async (context) => {
     const { client, m, mode, pict, botname, text, prefix } = context;
 
@@ -29,7 +28,7 @@ module.exports = {
     const settings = await getSettings();
     const effectivePrefix = settings.prefix || '.'; // Prefixo dinâmico do banco
 
-    // Texto do menu principal
+    // Menu completo em texto
     const menuText =
       `◈━━━━━━━━━━━━━━━━◈
 │❒ *( 💬 ) - Olá, @${m.pushName}*
@@ -39,74 +38,33 @@ module.exports = {
 
 - 計さ INFORMAÇÕES DO BOT ✓
 
-⌬ *Bot*:
-9bot
-
-⌬ *Prefixo*:
-${effectivePrefix} (decora isso direitinho 😌)
-
-⌬ *Modo*:
-${mode} ( ! )
+⌬ *Bot*: 9bot
+⌬ *Prefixo*: ${effectivePrefix}
+⌬ *Modo*: ${mode}
 
 ◈━━━━━━━━━━━━━━━━◈
 
-( ! ) *Use os botões abaixo ou digite os comandos manualmente.*`;
+📋 *COMANDOS PRINCIPAIS*:
 
-    // Use template buttons instead of nativeFlowMessage for better compatibility
+• *${prefix}fullmenu* - Mostrar todos os comandos
+• *${prefix}dev* - Contato do desenvolvedor  
+• *${prefix}ping* - Status e latência do bot
+• *${prefix}settings* - Configurações do bot
+
+🌐 *WEBSITE*: https://9bot.com.br
+
+◈━━━━━━━━━━━━━━━━◈
+
+*Digite o comando desejado com o prefixo ${effectivePrefix}*
+
+*Exemplo:* ${effectivePrefix}ping`;
+
+    // Envia apenas o texto com imagem
     await client.sendMessage(
       m.chat,
       {
         image: { url: 'https://mmg.whatsapp.net/v/t62.7119-24/539012045_745537058346694_1512031191239726227_n.enc?ccb=11-4&oh=01_Q5Aa2QGGiJj--6eHxoTTTTzuWtBgCrkcXBz9hN_y2s_Z1lrABA&oe=68D7901C&_nc_sid=5e03e0&mms3=true' },
         caption: menuText,
-        footer: `Powered by ${botname}`,
-        templateButtons: [
-          {
-            index: 1,
-            urlButton: {
-              displayText: '🌐 Website',
-              url: 'https://9bot.com.br'
-            }
-          },
-          {
-            index: 2,
-            quickReplyButton: {
-              displayText: '📋 Full Menu',
-              id: `${prefix}fullmenu`
-            }
-          },
-          {
-            index: 3,
-            quickReplyButton: {
-              displayText: '👨‍💻 Dev',
-              id: `${prefix}dev`
-            }
-          },
-          {
-            index: 4,
-            quickReplyButton: {
-              displayText: '📊 Status',
-              id: `${prefix}ping`
-            }
-          },
-          {
-            index: 5,
-            quickReplyButton: {
-              displayText: '⚙ Settings',
-              id: `${prefix}settings`
-            }
-          }
-        ],
-        contextInfo: {
-          externalAdReply: {
-            title: `${botname}`,
-            body: `Yo, ${m.pushName}! Bora ver o que o bot sabe fazer? 😈`,
-            mediaType: 1,
-            thumbnail: pict,
-            sourceUrl: 'https://9bot.com.br',
-            showAdAttribution: false,
-            renderLargerThumbnail: true,
-          },
-        }
       },
       { quoted: m }
     );
