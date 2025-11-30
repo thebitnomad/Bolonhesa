@@ -39,16 +39,22 @@ module.exports = {
 ║ 🌐 *SITE:* 9bot.com.br
 ╚═══════════════`;
 
-    // Envia apenas o texto
+    // Envia o texto com botões
     await client.sendMessage(
       m.chat,
       {
-        text: menuText
+        text: menuText,
+        buttons: [
+          { buttonId: `${prefix}fullmenu`, buttonText: { displayText: '📋 FULL MENU' }, type: 1 },
+          { buttonId: `${prefix}dev`, buttonText: { displayText: '👨‍💻 DEV' }, type: 1 },
+          { buttonId: `${prefix}ping`, buttonText: { displayText: '📊 PING' }, type: 1 },
+          { buttonId: `${prefix}settings`, buttonText: { displayText: '⚙️ SETTINGS' }, type: 1 }
+        ]
       },
       { quoted: m }
     );
 
-    // Áudio opcional
+    // Áudio opcional (mantido exatamente igual)
     const audioLinks = [
       'https://qu.ax/crnMP',
       'https://qu.ax/caeeD',
