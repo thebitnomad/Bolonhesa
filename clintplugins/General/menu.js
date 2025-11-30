@@ -22,39 +22,54 @@ module.exports = {
     const settings = await getSettings();
     const effectivePrefix = settings.prefix || '.';
 
-    // Menu simples em texto
+    // Menu principal com list buttons para categorias
     const menuText = 
 `╔═══════════════
-║ *${botname} - MENU*
+║ *${botname} - MENU PRINCIPAL*
 ║ Olá, @${m.pushName}
 ║ Prefixo: ${effectivePrefix}
 ║ Modo: ${mode}
 ╠═══════════════
-║ 📋 *COMANDOS:*
-║ • ${prefix}fullmenu - Todos os comandos
-║ • ${prefix}dev - Contato do dev
-║ • ${prefix}ping - Status do bot
-║ • ${prefix}settings - Configurações
+║ 📂 *CATEGORIAS:*
+║ 
+║ Selecione uma categoria abaixo
+║ para ver os comandos específicos!
 ║ 
 ║ 🌐 *SITE:* 9bot.com.br
 ╚═══════════════`;
 
-    // Envia o texto com botões
+    // Envia o texto com LIST BUTTONS para categorias
     await client.sendMessage(
       m.chat,
       {
         text: menuText,
-        buttons: [
-          { buttonId: `${prefix}fullmenu`, buttonText: { displayText: '📋 FULL MENU' }, type: 1 },
-          { buttonId: `${prefix}dev`, buttonText: { displayText: '👨‍💻 DEV' }, type: 1 },
-          { buttonId: `${prefix}ping`, buttonText: { displayText: '📊 PING' }, type: 1 },
-          { buttonId: `${prefix}settings`, buttonText: { displayText: '⚙️ SETTINGS' }, type: 1 }
+        title: `📱 ${botname} - MENU PRINCIPAL`,
+        buttonText: "📂 ABRIR CATEGORIAS",
+        sections: [
+          {
+            title: "🔧 CATEGORIAS DE COMANDOS",
+            rows: [
+              { title: "📜 GERAL", rowId: `${prefix}menugeral`, description: "Comandos gerais para todos" },
+              { title: "🛠️ CONFIGURAÇÕES", rowId: `${prefix}menusettings`, description: "Configurações do bot" },
+              { title: "👑 DONO", rowId: `${prefix}menuowner`, description: "Comandos exclusivos do dono" },
+              { title: "☁️ HEROKU", rowId: `${prefix}menuheroku`, description: "Comandos do Heroku" },
+              { title: "🔒 PRIVACIDADE", rowId: `${prefix}menuprivacy`, description: "Comandos de privacidade" },
+              { title: "👥 GRUPOS", rowId: `${prefix}menugroups`, description: "Comandos para grupos" },
+              { title: "🧠 INTELIGÊNCIA ARTIFICIAL", rowId: `${prefix}menuai`, description: "Comandos de IA" },
+              { title: "🎬 MÍDIA", rowId: `${prefix}menumedia`, description: "Comandos de mídia" },
+              { title: "✂️ EDIÇÃO", rowId: `${prefix}menueditting`, description: "Comandos de edição" },
+              { title: "🎨 LOGO", rowId: `${prefix}menulogo`, description: "Comandos de logo" },
+              { title: "🔞 +18", rowId: `${prefix}menuplus18`, description: "Comandos +18 (cuidado!)" },
+              { title: "🔧 UTILITÁRIOS", rowId: `${prefix}menuutils`, description: "Comandos utilitários" },
+              { title: "📋 TODOS OS COMANDOS", rowId: `${prefix}fullmenu`, description: "Lista completa de todos os comandos" }
+            ]
+          }
         ]
       },
       { quoted: m }
     );
 
-    // Áudio opcional (mantido exatamente igual)
+    // Áudio opcional
     const audioLinks = [
       'https://qu.ax/crnMP',
       'https://qu.ax/caeeD',
