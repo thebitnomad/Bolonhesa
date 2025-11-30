@@ -31,7 +31,7 @@ module.exports = {
       `
     *( 💬 ) - Olá, @${m.pushName}*
    Bem-vindo ao menu do bot.
-   Aqui você vê o que o *${botname}*      sabe fazer. 
+   Aqui você vê o que o *9Bot*🤖✅      sabe fazer. 
    
    NOSSA PÁGINA PRINCIPAL/SITE 🌟
        [https://9bot.com.br]
