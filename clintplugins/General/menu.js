@@ -22,48 +22,42 @@ module.exports = {
     const settings = await getSettings();
     const effectivePrefix = settings.prefix || '.';
 
-    // Menu principal com list buttons para categorias
+    // Menu simples em texto
     const menuText = 
 `╔═══════════════
-║ *${botname} - MENU PRINCIPAL*
+║ *${botname} - MENU*
 ║ Olá, @${m.pushName}
 ║ Prefixo: ${effectivePrefix}
 ║ Modo: ${mode}
 ╠═══════════════
-║ 📂 *CATEGORIAS:*
-║ 
-║ Selecione uma categoria abaixo
-║ para ver os comandos específicos!
+║ 📋 *COMANDOS:*
+║ • ${prefix}fullmenu - Todos os comandos
+║ • ${prefix}dev - Contato do dev
+║ • ${prefix}ping - Status do bot
+║ • ${prefix}settings - Configurações
 ║ 
 ║ 🌐 *SITE:* 9bot.com.br
 ╚═══════════════`;
 
-    // Envia o texto com LIST BUTTONS para categorias
+    // Envia o texto com botões normais
     await client.sendMessage(
       m.chat,
       {
         text: menuText,
-        title: `📱 ${botname} - MENU PRINCIPAL`,
-        buttonText: "📂 ABRIR CATEGORIAS",
-        sections: [
-          {
-            title: "🔧 CATEGORIAS DE COMANDOS",
-            rows: [
-              { title: "📜 GERAL", rowId: `${prefix}menugeral`, description: "Comandos gerais para todos" },
-              { title: "🛠️ CONFIGURAÇÕES", rowId: `${prefix}menusettings`, description: "Configurações do bot" },
-              { title: "👑 DONO", rowId: `${prefix}menuowner`, description: "Comandos exclusivos do dono" },
-              { title: "☁️ HEROKU", rowId: `${prefix}menuheroku`, description: "Comandos do Heroku" },
-              { title: "🔒 PRIVACIDADE", rowId: `${prefix}menuprivacy`, description: "Comandos de privacidade" },
-              { title: "👥 GRUPOS", rowId: `${prefix}menugroups`, description: "Comandos para grupos" },
-              { title: "🧠 INTELIGÊNCIA ARTIFICIAL", rowId: `${prefix}menuai`, description: "Comandos de IA" },
-              { title: "🎬 MÍDIA", rowId: `${prefix}menumedia`, description: "Comandos de mídia" },
-              { title: "✂️ EDIÇÃO", rowId: `${prefix}menueditting`, description: "Comandos de edição" },
-              { title: "🎨 LOGO", rowId: `${prefix}menulogo`, description: "Comandos de logo" },
-              { title: "🔞 +18", rowId: `${prefix}menuplus18`, description: "Comandos +18 (cuidado!)" },
-              { title: "🔧 UTILITÁRIOS", rowId: `${prefix}menuutils`, description: "Comandos utilitários" },
-              { title: "📋 TODOS OS COMANDOS", rowId: `${prefix}fullmenu`, description: "Lista completa de todos os comandos" }
-            ]
-          }
+        buttons: [
+          { buttonId: `${prefix}menugeral`, buttonText: { displayText: '📜 GERAL' }, type: 1 },
+          { buttonId: `${prefix}menugroups`, buttonText: { displayText: '👥 GRUPOS' }, type: 1 },
+          { buttonId: `${prefix}menuowner`, buttonText: { displayText: '👑 DONO' }, type: 1 },
+          { buttonId: `${prefix}menuai`, buttonText: { displayText: '🧠 IA' }, type: 1 },
+          { buttonId: `${prefix}menumedia`, buttonText: { displayText: '🎬 MÍDIA' }, type: 1 },
+          { buttonId: `${prefix}menusettings`, buttonText: { displayText: '🛠️ CONFIG' }, type: 1 },
+          { buttonId: `${prefix}menuheroku`, buttonText: { displayText: '☁️ HEROKU' }, type: 1 },
+          { buttonId: `${prefix}menuprivacy`, buttonText: { displayText: '🔒 PRIVACY' }, type: 1 },
+          { buttonId: `${prefix}menueditting`, buttonText: { displayText: '✂️ EDIÇÃO' }, type: 1 },
+          { buttonId: `${prefix}menulogo`, buttonText: { displayText: '🎨 LOGO' }, type: 1 },
+          { buttonId: `${prefix}menuplus18`, buttonText: { displayText: '🔞 +18' }, type: 1 },
+          { buttonId: `${prefix}menuutils`, buttonText: { displayText: '🔧 UTILS' }, type: 1 },
+          { buttonId: `${prefix}fullmenu`, buttonText: { displayText: '📋 FULL MENU' }, type: 1 }
         ]
       },
       { quoted: m }
