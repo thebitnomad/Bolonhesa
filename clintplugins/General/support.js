@@ -2,16 +2,13 @@ module.exports = async (context) => {
   const { client, m } = context;
 
   const message = `◈━━━━━━━━━━━━━━━━◈
-│❒ *Links de Suporte – 9bot*
-│❒
-│❒
-│❒ 📢 *Canal oficial:*
-│❒ https://whatsapp.com/channel/0029VagJlnG6xCSU2tS1Vz19
-│❒
-│❒ 👥 *Grupo de suporte:*
-│❒ https://chat.whatsapp.com/GoXKLVJgTAAC3556FXkfFI
-│❒
-│❒ Powered by 9bot.com.br
+│❒ *Links de Suporte 9bot¿
+
+
+Quer saber mais? Visite
+
+[https://9bot.com.br]
+
 ◈━━━━━━━━━━━━━━━━◈`;
 
   try {
