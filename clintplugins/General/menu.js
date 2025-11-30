@@ -12,7 +12,11 @@ module.exports = {
       await client.sendMessage(
         m.chat,
         {
-          text: `Yo ${m.pushName}, pra que complicar?\nÉ só usar *${prefix}menu* e tá tudo certo. 😉`
+          text:
+            `◈━━━━━━━━━━━━━━━━◈
+│❒ Yo ${m.pushName}, pra que complicar?
+│❒ É só usar *${prefix}menu* e tá tudo certo. 😉
+◈━━━━━━━━━━━━━━━━◈`,
         },
         { quoted: m, ad: true }
       );
@@ -22,48 +26,57 @@ module.exports = {
     const settings = await getSettings();
     const effectivePrefix = settings.prefix || '.';
 
-    // Menu simples em texto
-    const menuText = 
-`╔═══════════════
-║ *${botname} - MENU*
-║ Olá, @${m.pushName}
-║ Prefixo: ${effectivePrefix}
-║ Modo: ${mode}
-╠═══════════════
-║ 📋 *COMANDOS:*
-║ • ${prefix}fullmenu - Todos os comandos
-║ • ${prefix}dev - Contato do dev
-║ • ${prefix}ping - Status do bot
-║ • ${prefix}settings - Configurações
-║ 
-║ 🌐 *SITE:* 9bot.com.br
-╚═══════════════`;
+    // Texto do menu principal com o mesmo estilo
+    const menuText =
+      `
+    *( 💬 ) - Olá, @${m.pushName}*
+   Bem-vindo ao menu do bot.
+   Aqui você vê o que o *${botname}*      sabe fazer. 
+   
+   NOSSA PÁGINA PRINCIPAL/SITE 🌟
+       [https://9bot.com.br]
+◈━━━━━━━━━━━━━━━━◈
 
-    // Envia o texto com botões normais
+- 計さ INFORMAÇÕES DO BOT ✓
+
+⌬ *Bot*:
+9bot
+
+⌬ *Prefixo*:
+${effectivePrefix}
+
+⌬ *Modo*:
+${mode} ( ! )
+
+◈━━━━━━━━━━━━━━━━◈
+
+( ! ) *Selecione uma categoria abaixo para ver os comandos.*`;
+
+    // Envia o texto com botões normais (mantendo o mesmo estilo visual)
     await client.sendMessage(
       m.chat,
       {
         text: menuText,
         buttons: [
-          { buttonId: `${prefix}menugeral`, buttonText: { displayText: '📜 GERAL' }, type: 1 },
-          { buttonId: `${prefix}menugroups`, buttonText: { displayText: '👥 GRUPOS' }, type: 1 },
-          { buttonId: `${prefix}menuowner`, buttonText: { displayText: '👑 DONO' }, type: 1 },
-          { buttonId: `${prefix}menuai`, buttonText: { displayText: '🧠 IA' }, type: 1 },
-          { buttonId: `${prefix}menumedia`, buttonText: { displayText: '🎬 MÍDIA' }, type: 1 },
-          { buttonId: `${prefix}menusettings`, buttonText: { displayText: '🛠️ CONFIG' }, type: 1 },
-          { buttonId: `${prefix}menuheroku`, buttonText: { displayText: '☁️ HEROKU' }, type: 1 },
-          { buttonId: `${prefix}menuprivacy`, buttonText: { displayText: '🔒 PRIVACY' }, type: 1 },
-          { buttonId: `${prefix}menueditting`, buttonText: { displayText: '✂️ EDIÇÃO' }, type: 1 },
-          { buttonId: `${prefix}menulogo`, buttonText: { displayText: '🎨 LOGO' }, type: 1 },
-          { buttonId: `${prefix}menuplus18`, buttonText: { displayText: '🔞 +18' }, type: 1 },
-          { buttonId: `${prefix}menuutils`, buttonText: { displayText: '🔧 UTILS' }, type: 1 },
-          { buttonId: `${prefix}fullmenu`, buttonText: { displayText: '📋 FULL MENU' }, type: 1 }
+          { buttonId: `${prefix}menugeral`, buttonText: { displayText: '│❒GERALMENU' }, type: 1 },
+          { buttonId: `${prefix}menugroups`, buttonText: { displayText: '│❒GRUPOSMENU' }, type: 1 },
+          { buttonId: `${prefix}menuowner`, buttonText: { displayText: '│❒DONOMENU' }, type: 1 },
+          { buttonId: `${prefix}menuai`, buttonText: { displayText: '│❒IAMENH' }, type: 1 },
+          { buttonId: `${prefix}menumedia`, buttonText: { displayText: '│❒MÍDIAMENU' }, type: 1 },
+          { buttonId: `${prefix}menusettings`, buttonText: { displayText: '│❒CONFIGMENU' }, type: 1 },
+          { buttonId: `${prefix}menuheroku`, buttonText: { displayText: '│❒HEROKUMENU' }, type: 1 },
+          { buttonId: `${prefix}menuprivacy`, buttonText: { displayText: '│❒PRIVACYMENU' }, type: 1 },
+          { buttonId: `${prefix}menueditting`, buttonText: { displayText: '│❒EDIÇÃOMENU' }, type: 1 },
+          { buttonId: `${prefix}menulogo`, buttonText: { displayText: '│❒LOGOMENU' }, type: 1 },
+          { buttonId: `${prefix}menuplus18`, buttonText: { displayText: '│❒+18MENU' }, type: 1 },
+          { buttonId: `${prefix}menuutils`, buttonText: { displayText: '│❒UTILSMENU' }, type: 1 },
+          { buttonId: `${prefix}support`, buttonText: { displayText: 'ABRIR PÁGINA DE SUPORTE/AJUDA' }, type: 1 }
         ]
       },
       { quoted: m }
     );
 
-    // Áudio opcional
+    // Áudio opcional (mantido igual)
     const audioLinks = [
       'https://qu.ax/crnMP',
       'https://qu.ax/caeeD',
